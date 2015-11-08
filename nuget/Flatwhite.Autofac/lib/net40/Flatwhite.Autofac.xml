@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Flatwhite.Autofac</name>
+    </assembly>
+    <members>
+        <member name="T:Flatwhite.AutofacIntergration.FlatwhiteBuilderInterceptModule">
+            <summary>
+            Scan types that were decorated or have members decorated with <see cref="T:Flatwhite.OutputCacheAttribute"/> and enable default cache Interceptor (<see cref="T:Flatwhite.CacheInterceptor"/>) on them
+            </summary>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.CacheWithStrategy``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},Flatwhite.ICacheStrategy)">
+            <summary>
+            Cache with a custom <see cref="T:Flatwhite.ICacheStrategy"/>
+            <para>NOTE: Call method <see cref="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableFlatwhiteCache(Autofac.ContainerBuilder)"/> once on the <see cref="T:Autofac.ContainerBuilder"/> after created to enable Flatwhite caching</para>
+            </summary>
+            <typeparam name="TLimit">Registration limit type.</typeparam>
+            <typeparam name="TActivatorData">Activator data type.</typeparam>
+            <typeparam name="TStyle">Registration style.</typeparam>
+            <param name="builder">Registration to apply interception to.</param>
+            <param name="strategy"></param>
+            <returns>Registration builder allowing the registration to be configured.</returns>
+            <exception cref="T:System.ArgumentNullException">builder or interceptorServices</exception>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.CacheWithAttribute``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2})">
+            <summary>
+            Cache rule will be based on the decorated <see cref="T:Flatwhite.OutputCacheAttribute"/> on type or public members
+            <para>NOTE: Call method <see cref="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableFlatwhiteCache(Autofac.ContainerBuilder)"/> once on the <see cref="T:Autofac.ContainerBuilder"/> after created to enable Flatwhite caching</para>
+            </summary>
+            <typeparam name="TLimit"></typeparam>
+            <typeparam name="TActivatorData"></typeparam>
+            <typeparam name="TStyle"></typeparam>
+            <param name="builder"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableFlatwhiteCache(Autofac.ContainerBuilder)">
+            <summary>
+            Call this method once after you create <see cref="T:Autofac.ContainerBuilder"/> to enable Flatwhite caching
+            </summary>
+            <param name="builder"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.AutofacIntergration.RegistrationExtensions">
+            https://github.com/autofac/Autofac.Extras.DynamicProxy/blob/master/src/Autofac.Extras.DynamicProxy/RegistrationExtensions.cs
+            <summary>
+            Adds registration syntax to the <see cref="T:Autofac.ContainerBuilder"/> type.
+            </summary>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.RegistrationExtensions.EnableClassInterceptors``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2})">
+            <summary>
+            Enable class interception on the target type. Interceptors will be determined
+            via Intercept attributes on the class or added with InterceptedBy().
+            Only virtual methods can be intercepted this way.
+            </summary>
+            <typeparam name="TLimit">Registration limit type.</typeparam>
+            <typeparam name="TRegistrationStyle">Registration style.</typeparam>
+            <typeparam name="TConcreteReflectionActivatorData">Activator data type.</typeparam>
+            <param name="registration">Registration to apply interception to.</param>
+            <returns>Registration builder allowing the registration to be configured.</returns>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.RegistrationExtensions.EnableClassInterceptors``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},Castle.DynamicProxy.ProxyGenerationOptions,System.Type[])">
+            <summary>
+            Enable class interception on the target type. Interceptors will be determined
+            via Intercept attributes on the class or added with InterceptedBy().
+            Only virtual methods can be intercepted this way.
+            </summary>
+            <typeparam name="TLimit">Registration limit type.</typeparam>
+            <typeparam name="TRegistrationStyle">Registration style.</typeparam>
+            <typeparam name="TConcreteReflectionActivatorData">Activator data type.</typeparam>
+            <param name="registration">Registration to apply interception to.</param>
+            <param name="options">Proxy generation options to apply.</param>
+            <param name="additionalInterfaces">Additional interface types. Calls to their members will be proxied as well.</param>
+            <returns>Registration builder allowing the registration to be configured.</returns>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.RegistrationExtensions.EnableInterfaceInterceptors``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2})">
+            <summary>
+            Enable interface interception on the target type. Interceptors will be determined
+            via Intercept attributes on the class or interface, or added with InterceptedBy() calls.
+            </summary>
+            <typeparam name="TLimit">Registration limit type.</typeparam>
+            <typeparam name="TActivatorData">Activator data type.</typeparam>
+            <typeparam name="TSingleRegistrationStyle">Registration style.</typeparam>
+            <param name="registration">Registration to apply interception to.</param>
+            <returns>Registration builder allowing the registration to be configured.</returns>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.RegistrationExtensions.EnableInterfaceInterceptors``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},Castle.DynamicProxy.ProxyGenerationOptions)">
+            <summary>
+            Enable interface interception on the target type. Interceptors will be determined
+            via Intercept attributes on the class or interface, or added with InterceptedBy() calls.
+            </summary>
+            <typeparam name="TLimit">Registration limit type.</typeparam>
+            <typeparam name="TActivatorData">Activator data type.</typeparam>
+            <typeparam name="TSingleRegistrationStyle">Registration style.</typeparam>
+            <param name="registration">Registration to apply interception to.</param>
+            <param name="options">Proxy generation options to apply.</param>
+            <returns>Registration builder allowing the registration to be configured.</returns>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.RegistrationExtensions.InterceptedBy``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},Autofac.Core.Service[])">
+            <summary>
+            Allows a list of interceptor services to be assigned to the registration.
+            </summary>
+            <typeparam name="TLimit">Registration limit type.</typeparam>
+            <typeparam name="TActivatorData">Activator data type.</typeparam>
+            <typeparam name="TStyle">Registration style.</typeparam>
+            <param name="builder">Registration to apply interception to.</param>
+            <param name="interceptorServices">The interceptor services.</param>
+            <returns>Registration builder allowing the registration to be configured.</returns>
+            <exception cref="T:System.ArgumentNullException">builder or interceptorServices</exception>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.RegistrationExtensions.InterceptedBy``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},System.Type[])">
+            <summary>
+            Allows a list of interceptor services to be assigned to the registration.
+            </summary>
+            <typeparam name="TLimit">Registration limit type.</typeparam>
+            <typeparam name="TActivatorData">Activator data type.</typeparam>
+            <typeparam name="TStyle">Registration style.</typeparam>
+            <param name="builder">Registration to apply interception to.</param>
+            <param name="interceptorServiceTypes">The types of the interceptor services.</param>
+            <returns>Registration builder allowing the registration to be configured.</returns>
+            <exception cref="T:System.ArgumentNullException">builder or interceptorServices</exception>
+        </member>
+    </members>
+</doc>

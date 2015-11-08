@@ -1,0 +1,12 @@
+/packages
+bin
+obj
+/src/_ReSharper.*
+/src/*.pdb*
+/.hg
+/.hgignore
+*.suo
+*.user
+*.pdb
+*.nupkg
+*.bak
