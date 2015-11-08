@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Flatwhite.Tests
 {
@@ -7,6 +8,8 @@ namespace Flatwhite.Tests
     public interface IBlogService
     {
         object GetById(Guid postId);
+        
+        Task<object> GetByIdAsync(Guid userId);
 
         [NoCache] // This should be applied if EnableInterfaceInterceptors
         IEnumerable<object> GetComments(Guid postId, int count);
@@ -19,6 +22,13 @@ namespace Flatwhite.Tests
         {
             InvokeCount++;
             return new {};
+        }
+
+        public async Task<object> GetByIdAsync(Guid userId)
+        {
+            await Task.Delay(1000);
+            InvokeCount++;
+            return new { };
         }
 
         [OutputCache(Duration = 2000)]  // This should be applied if EnableClassInterceptors

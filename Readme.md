@@ -58,7 +58,7 @@ builder.RegisterType<UserService>()
 	    );
 ```
 
-4/ If you want to cache on just some of the methods, you can selectively do like below. Again, it work only on virtual methods if you are registering class service, interface service is fine.
+4/ If you want to cache on just some of the methods, you can selectively do like below. Again, it works only on virtual methods if you are registering class service, interface service is fine.
 
 ```C#
 var builder = new ContainerBuilder().EnableFlatwhiteCache();

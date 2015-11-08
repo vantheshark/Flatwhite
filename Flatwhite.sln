@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flatwhite.Tests", "Flatwhit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flatwhite.Autofac", "Flatwhite.Autofac\Flatwhite.Autofac.csproj", "{83C18D0C-EFC6-472E-BF94-007F22EED959}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{80A704A3-DD4B-49B5-B5F1-FB3AC47ACFD2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flatwhite.WebApi.Tests", "Tests\Flatwhite.WebApi.Tests\Flatwhite.WebApi.Tests.csproj", "{BD7F40A1-A9B1-41FC-9733-6236701C60A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,8 +31,15 @@ Global
 		{83C18D0C-EFC6-472E-BF94-007F22EED959}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83C18D0C-EFC6-472E-BF94-007F22EED959}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83C18D0C-EFC6-472E-BF94-007F22EED959}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD7F40A1-A9B1-41FC-9733-6236701C60A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD7F40A1-A9B1-41FC-9733-6236701C60A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD7F40A1-A9B1-41FC-9733-6236701C60A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD7F40A1-A9B1-41FC-9733-6236701C60A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BD7F40A1-A9B1-41FC-9733-6236701C60A7} = {80A704A3-DD4B-49B5-B5F1-FB3AC47ACFD2}
 	EndGlobalSection
 EndGlobal
