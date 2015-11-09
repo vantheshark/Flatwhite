@@ -7,7 +7,7 @@ namespace Flatwhite.Strategy
     {
         private OutputCacheAttribute CacheAttribute => ((SingleCacheAttributeProvider) _cacheAttributeProvider).Attribute;
 
-        internal CacheOutputForAllMethod(int defaultDuration) : base(new SingleCacheAttributeProvider(new OutputCacheAttribute {Duration = defaultDuration }))
+        internal CacheOutputForAllMethod(int defaultDuration) : base(Global.AttributeProvider, new SingleCacheAttributeProvider(new OutputCacheAttribute {Duration = defaultDuration }))
         {
             CacheKeyProvider = new DefaultCacheKeyProvider(_cacheAttributeProvider);
         }

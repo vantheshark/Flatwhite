@@ -19,6 +19,11 @@ namespace Flatwhite
         public int Duration { get; set; }
 
         /// <summary>
+        /// Gets or sets a value in miliseconds that indicates whether a cache entry should be evicted if it has not been accessed in a given span of time.
+        /// </summary>
+        /// TODO: public int SlidingExpiration { get; set; }
+
+        /// <summary>
         /// The duration in miliseconds the cache engine should keep the expired cache value while refreshing the cache data asynchronously
         /// </summary>
         /// TODO: public int RefreshingTimeout { get; set; }

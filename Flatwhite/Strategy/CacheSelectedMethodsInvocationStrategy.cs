@@ -43,7 +43,7 @@ namespace Flatwhite.Strategy
         /// </summary>
 
 
-        internal CacheSelectedMethodsInvocationStrategy() : base(new ExpressionBaseCacheAttributeProvider<T, TCacheAttribute>())
+        internal CacheSelectedMethodsInvocationStrategy() : base(Global.AttributeProvider, new ExpressionBaseCacheAttributeProvider<T, TCacheAttribute>())
         {
             CacheKeyProvider = new DefaultCacheKeyProvider(_cacheAttributeProvider);
         }

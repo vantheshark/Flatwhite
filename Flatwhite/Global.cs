@@ -10,6 +10,7 @@
             ContextProvider = new EmptyContextProvider();
             CacheProvider = new ObjectCacheProvider();
             CacheStrategyProvider = new DefaultCacheStrategyProvider();
+            AttributeProvider = new DefaulAttributeProvider();
             CacheAttributeProvider = new DefaultCacheAttributeProvider();
             CacheKeyProvider = new DefaultCacheKeyProvider(CacheAttributeProvider);
         }
@@ -32,8 +33,13 @@
         public static ICacheStrategyProvider CacheStrategyProvider { get; set; }
 
         /// <summary>
-        /// Cache attribute provider
+        /// OutputCache attribute provider
         /// </summary>
         public static ICacheAttributeProvider CacheAttributeProvider { get; set; }
+
+        /// <summary>
+        /// Attribute provider
+        /// </summary>
+        public static IAttributeProvider AttributeProvider { get; set; }
     }
 }

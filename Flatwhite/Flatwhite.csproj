@@ -49,12 +49,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Argument.cs" />
+    <Compile Include="DefaulAttributeProvider.cs" />
     <Compile Include="DefaultCacheAttributeProvider.cs" />
     <Compile Include="DefaultCacheKeyProvider.cs" />
     <Compile Include="DefaultCacheStrategyProvider.cs" />
     <Compile Include="ExpressionHelper.cs" />
-    <Compile Include="BaseInterceptor.cs" />
     <Compile Include="CacheInterceptor.cs" />
+    <Compile Include="IAttributeProvider.cs" />
     <Compile Include="Strategy\CacheStrategies.cs" />
     <Compile Include="Strategy\CacheOutputForAllMethod.cs" />
     <Compile Include="Strategy\CacheSelectedMethodsInvocationStrategy.cs" />

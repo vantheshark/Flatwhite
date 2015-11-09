@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -6,17 +10,22 @@ namespace Flatwhite.WebApi.Tests.Controllers
 {
     public class ValuesController : ApiController
     {
-        [OutputCache(Duration = 10000)]
+        [OutputCache(Duration = 2000)]
         public virtual async Task<IEnumerable<string>> Get()
         {
-            await Task.Delay(100000);
-            return new string[] { "value1", "value2" };
+            await Task.Delay(2000);
+            return new[] { "value1", "value2" };
         }
 
         // GET api/values/5
-        public string Get(int id)
+        [OutputCache(Duration = 2000)]
+        public virtual async Task<HttpResponseMessage> Get(string id)
         {
-            return "value";
+            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"https://www.nuget.org/packages?q={id}"));
+            return new HttpResponseMessage()
+            {
+                Content = new StringContent(content,Encoding.UTF8,"text/html")
+            };
         }
 
         // POST api/values

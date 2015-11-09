@@ -16,6 +16,19 @@
             <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
+        <member name="T:Flatwhite.DefaulAttributeProvider">
+            <summary>
+            Default attribute provider
+            </summary>
+        </member>
+        <member name="M:Flatwhite.DefaulAttributeProvider.GetAttributes(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get all attributes decorated on method or declarative type
+            </summary>
+            <param name="methodInfo"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
         <member name="T:Flatwhite.DefaultCacheKeyProvider">
             <summary>
             Default cache key provider
@@ -30,19 +43,6 @@
         <member name="M:Flatwhite.DefaultCacheKeyProvider.GetCacheKey(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Resolve cache key
-            </summary>
-            <param name="invocation"></param>
-            <param name="invocationContext"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Flatwhite.BaseInterceptor">
-            <summary>
-            A class which defined a method to determine whether should stop on an invocation
-            </summary>
-        </member>
-        <member name="M:Flatwhite.BaseInterceptor.CanIntercept(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            Determine whether should stop on an invocation
             </summary>
             <param name="invocation"></param>
             <param name="invocationContext"></param>
@@ -67,6 +67,19 @@
             Main method to get value from cache if any, set value to cache if there was no cache
             </summary>
             <param name="invocation"></param>
+        </member>
+        <member name="T:Flatwhite.IAttributeProvider">
+            <summary>
+            An provider to get all attributes decorated on method or declarative type
+            </summary>
+        </member>
+        <member name="M:Flatwhite.IAttributeProvider.GetAttributes(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get all attributes decorated on method or declarative type
+            </summary>
+            <param name="methodInfo"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
         </member>
         <member name="T:Flatwhite.Strategy.CacheStrategies">
             <summary>
@@ -187,11 +200,20 @@
             The cache attribute provider
             </summary>
         </member>
-        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.#ctor(Flatwhite.ICacheAttributeProvider)">
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.#ctor(Flatwhite.IAttributeProvider,Flatwhite.ICacheAttributeProvider)">
             <summary>
             Initialize default cache strategy with a <see cref="T:Flatwhite.ICacheAttributeProvider"/>
             </summary>
+            <param name="attributeProvider"></param>
             <param name="cacheAttributeProvider"></param>
+        </member>
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.CanIntercept(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Determine whether it can intercept the invocation
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
         </member>
         <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetCacheTime(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
@@ -295,7 +317,12 @@
         </member>
         <member name="P:Flatwhite.Global.CacheAttributeProvider">
             <summary>
-            Cache attribute provider
+            OutputCache attribute provider
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Global.AttributeProvider">
+            <summary>
+            Attribute provider
             </summary>
         </member>
         <member name="T:Flatwhite.ICacheAttributeProvider">
@@ -363,6 +390,14 @@
             Provide the cache strategy
             </summary>
         </member>
+        <member name="M:Flatwhite.ICacheStrategy.CanIntercept(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Determine whether it can intercept the invocation
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
         <member name="M:Flatwhite.ICacheStrategy.GetCacheTime(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get cache time by invocation and context
@@ -418,6 +453,11 @@
             Use this attribute to decorate on a method where we don't want to cache while the class or interface decorated with OutputCache attribute
             </summary>
         </member>
+        <member name="T:Flatwhite.NoInterceptAttribute">
+            <summary>
+            Use this attribute to decorate on a method where we don't want to intercept by Caslte dynamic proxy
+            </summary>
+        </member>
         <member name="T:Flatwhite.OutputCacheAttribute">
             <summary>
             Use this attribute to decorate on a method which has return type and you want the library to cache the result
@@ -434,6 +474,10 @@
             </summary>
         </member>
         <member name="P:Flatwhite.OutputCacheAttribute.VaryByParam">
+            <summary>
+            Gets or sets a value in miliseconds that indicates whether a cache entry should be evicted if it has not been accessed in a given span of time.
+            </summary>
+            TODO: public int SlidingExpiration { get; set; }
             <summary>
             The duration in miliseconds the cache engine should keep the expired cache value while refreshing the cache data asynchronously
             </summary>

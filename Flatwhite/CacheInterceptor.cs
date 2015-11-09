@@ -8,7 +8,7 @@ namespace Flatwhite
     /// Use this to intercept services to enable caching on methods that have return value
     /// <para>Only methods decorated with <see cref="OutputCacheAttribute"/> will have its result cached</para>
     /// </summary>
-    public class CacheInterceptor : BaseInterceptor, IInterceptor
+    public class CacheInterceptor : IInterceptor
     {
         private readonly ICacheStrategy _cacheStrategy;
         private readonly IContextProvider _contextProvider;
@@ -39,14 +39,14 @@ namespace Flatwhite
         public void Intercept(IInvocation invocation)
         {
             var context = _contextProvider.GetContext();
+            var strategy = _cacheStrategy ?? Global.CacheStrategyProvider.GetStrategy(invocation, context);
 
-            if (invocation.Method.ReturnType == typeof(void) || !CanIntercept(invocation, context))
+            if (!strategy.CanIntercept(invocation, context))
             {
                 invocation.Proceed();
                 return;
             }
 
-            var strategy = _cacheStrategy ?? Global.CacheStrategyProvider.GetStrategy(invocation, context);
             var cacheTime = strategy.GetCacheTime(invocation, context);
             if (cacheTime <= 0)
             {
@@ -55,7 +55,7 @@ namespace Flatwhite
             }
 
             var key = strategy.CacheKeyProvider.GetCacheKey(invocation, context);
-
+            
             lock (_cacheLock)
             {
                 var result = _cacheProvider.Get(key);
