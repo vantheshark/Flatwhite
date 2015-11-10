@@ -215,6 +215,10 @@
       <Project>{83c18d0c-efc6-472e-bf94-007f22eed959}</Project>
       <Name>Flatwhite.Autofac</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Flatwhite.WebApi\Flatwhite.WebApi.csproj">
+      <Project>{31cdf9b3-0801-484b-a915-03cc8c81ec5b}</Project>
+      <Name>Flatwhite.WebApi</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Flatwhite\Flatwhite.csproj">
       <Project>{85a5ab52-0da1-49c4-96c1-4cab1731348c}</Project>
       <Name>Flatwhite</Name>

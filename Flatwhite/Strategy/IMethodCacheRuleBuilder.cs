@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-using Castle.DynamicProxy;
+
 
 namespace Flatwhite.Strategy
 {
@@ -36,6 +36,6 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="changeMonitorFactory"></param>
         /// <returns></returns>
-        IMethodCacheStrategy<T> WithChangeMonitors(Func<IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> changeMonitorFactory);
+        IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> changeMonitorFactory);
     }
 }

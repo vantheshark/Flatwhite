@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.Caching;
-using Castle.DynamicProxy;
+
 
 namespace Flatwhite
 {
@@ -37,6 +37,6 @@ namespace Flatwhite
         /// The change monitors factory configured for current expression
         /// <para>These change monitors instances will be created and assign to the cache policy for the new cache</para>
         /// </summary>
-        public Func<IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> ChangeMonitorFactory { get; set; }
+        public Func<_IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> ChangeMonitorFactory { get; set; }
     }
 }

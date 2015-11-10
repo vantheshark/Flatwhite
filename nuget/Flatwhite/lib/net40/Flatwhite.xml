@@ -40,7 +40,7 @@
             </summary>
             <param name="cacheAttributeProvider"></param>
         </member>
-        <member name="M:Flatwhite.DefaultCacheKeyProvider.GetCacheKey(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.DefaultCacheKeyProvider.GetCacheKey(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Resolve cache key
             </summary>
@@ -62,7 +62,7 @@
             <param name="cacheProvider"></param>
             <param name="cacheStrategy">If not provided, the strategy will be resolved from Global.CacheStrategyProvider</param>
         </member>
-        <member name="M:Flatwhite.CacheInterceptor.Intercept(Castle.DynamicProxy.IInvocation)">
+        <member name="M:Flatwhite.CacheInterceptor.Intercept(Flatwhite._IInvocation)">
             <summary>
             Main method to get value from cache if any, set value to cache if there was no cache
             </summary>
@@ -80,6 +80,22 @@
             <param name="methodInfo"></param>
             <param name="invocationContext"></param>
             <returns></returns>
+        </member>
+        <member name="T:Flatwhite._IInterceptor">
+            <summary>
+            Copy from Castle.Core.IInterceptor
+            </summary>
+        </member>
+        <member name="M:Flatwhite._IInterceptor.Intercept(Flatwhite._IInvocation)">
+            <summary>
+            Intercept the invocation
+            </summary>
+            <param name="invocation"></param>
+        </member>
+        <member name="T:Flatwhite._IInvocation">
+            <summary>
+            Copy from Castle.Core.Invocation
+            </summary>
         </member>
         <member name="T:Flatwhite.Strategy.CacheStrategies">
             <summary>
@@ -170,7 +186,7 @@
             <param name="custom"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.WithChangeMonitors(System.Func{Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.WithChangeMonitors(System.Func{Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
             <summary>
             Set the change monitors factory that will create the new change monitors when new cache entry is created
             </summary>
@@ -182,7 +198,7 @@
             Cache key provider
             </summary>
         </member>
-        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.GetChangeMonitors(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get change monitors
             </summary>
@@ -207,7 +223,7 @@
             <param name="attributeProvider"></param>
             <param name="cacheAttributeProvider"></param>
         </member>
-        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.CanIntercept(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.CanIntercept(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Determine whether it can intercept the invocation
             </summary>
@@ -215,7 +231,7 @@
             <param name="invocationContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetCacheTime(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetCacheTime(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get cache time from <see cref="T:Flatwhite.OutputCacheAttribute"/>
             </summary>
@@ -223,7 +239,7 @@
             <param name="invocationContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetChangeMonitors(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get empty list change monitor
             </summary>
@@ -263,7 +279,7 @@
             <param name="custom"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.WithChangeMonitors(System.Func{Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
+        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.WithChangeMonitors(System.Func{Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
             <summary>
             Set the change monitors factory that will create the new change monitors when new cache entry is created
             https://msdn.microsoft.com/en-us/library/system.runtime.caching.changemonitor(v=vs.110).aspx
@@ -343,7 +359,7 @@
             A provider to resolve a unique key for caching by invocation and context
             </summary>
         </member>
-        <member name="M:Flatwhite.ICacheKeyProvider.GetCacheKey(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.ICacheKeyProvider.GetCacheKey(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get unique cache key
             </summary>
@@ -390,7 +406,7 @@
             Provide the cache strategy
             </summary>
         </member>
-        <member name="M:Flatwhite.ICacheStrategy.CanIntercept(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.ICacheStrategy.CanIntercept(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Determine whether it can intercept the invocation
             </summary>
@@ -398,7 +414,7 @@
             <param name="invocationContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.ICacheStrategy.GetCacheTime(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.ICacheStrategy.GetCacheTime(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get cache time by invocation and context
             </summary>
@@ -406,7 +422,7 @@
             <param name="invocationContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.ICacheStrategy.GetChangeMonitors(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.ICacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get the change monitor by invocation and context
             </summary>
@@ -424,7 +440,7 @@
             A provider to resolve <see cref="T:Flatwhite.ICacheStrategy"/>
             </summary>
         </member>
-        <member name="M:Flatwhite.ICacheStrategyProvider.GetStrategy(Castle.DynamicProxy.IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.ICacheStrategyProvider.GetStrategy(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get cache strategy by invocation and context
             </summary>

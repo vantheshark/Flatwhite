@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Runtime.Caching;
-using Castle.DynamicProxy;
+
 
 namespace Flatwhite.Strategy
 {
@@ -103,7 +103,7 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="changeMonitorFactory"></param>
         /// <returns></returns>
-        public IMethodCacheStrategy<T> WithChangeMonitors(Func<IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> changeMonitorFactory)
+        public IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> changeMonitorFactory)
         {
             _currentExpression.ChangeMonitorFactory = changeMonitorFactory;
             return this;
@@ -121,7 +121,7 @@ namespace Flatwhite.Strategy
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public override IEnumerable<ChangeMonitor> GetChangeMonitors(IInvocation invocation, IDictionary<string, object> invocationContext)
+        public override IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             foreach (var e in Expressions)
             {

@@ -24,7 +24,7 @@ namespace Flatwhite.Tests.Autofac
                 .RegisterInstance(svc)
                 .AsImplementedInterfaces()
                 .EnableInterfaceInterceptors()
-                .InterceptedBy(typeof(CacheInterceptor));
+                .InterceptedBy(typeof(CacheInterceptorAdaptor));
             builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
             var container = builder.Build();
 

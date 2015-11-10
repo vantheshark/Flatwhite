@@ -11,7 +11,7 @@ namespace Flatwhite
         /// <summary>
         /// Default OutputCacheAttribute
         /// </summary>
-        internal static readonly OutputCacheAttribute Default = new OutputCacheAttribute();
+        public static readonly OutputCacheAttribute Default = new OutputCacheAttribute();
 
         /// <summary>
         /// Gets or sets the cache duration, in miliseconds.

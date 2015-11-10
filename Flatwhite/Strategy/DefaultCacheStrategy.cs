@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
-using Castle.DynamicProxy;
+
 
 namespace Flatwhite.Strategy
 {
@@ -39,12 +39,12 @@ namespace Flatwhite.Strategy
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public bool CanIntercept(IInvocation invocation, IDictionary<string, object> invocationContext)
+        public bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             if (!_methodInfoCache.ContainsKey(invocation.Method))
             {
-                var possible = invocation.Method.ReturnType != typeof (void) &&
-                              (invocation.Method.IsVirtual || invocation.Method.DeclaringType != null && invocation.Method.DeclaringType.IsInterface);
+                //https://msdn.microsoft.com/en-us/library/system.reflection.methodbase.isvirtual(v=vs.110).aspx
+                var possible = invocation.Method.ReturnType != typeof (void) && invocation.Method.IsVirtual && !invocation.Method.IsFinal;
                 if (possible)
                 {
                     var atts = _attributeProvider.GetAttributes(invocation.Method, invocationContext);
@@ -62,7 +62,7 @@ namespace Flatwhite.Strategy
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public virtual int GetCacheTime(IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual int GetCacheTime(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             OutputCacheAttribute att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
             return att?.Duration ?? 0;
@@ -74,7 +74,7 @@ namespace Flatwhite.Strategy
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             yield break;
         }

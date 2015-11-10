@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.Caching;
-using Castle.DynamicProxy;
+
 
 namespace Flatwhite
 {
@@ -8,7 +8,7 @@ namespace Flatwhite
     /// Use this to intercept services to enable caching on methods that have return value
     /// <para>Only methods decorated with <see cref="OutputCacheAttribute"/> will have its result cached</para>
     /// </summary>
-    public class CacheInterceptor : IInterceptor
+    public class CacheInterceptor : _IInterceptor
     {
         private readonly ICacheStrategy _cacheStrategy;
         private readonly IContextProvider _contextProvider;
@@ -36,7 +36,7 @@ namespace Flatwhite
         /// Main method to get value from cache if any, set value to cache if there was no cache
         /// </summary>
         /// <param name="invocation"></param>
-        public void Intercept(IInvocation invocation)
+        public void Intercept(_IInvocation invocation)
         {
             var context = _contextProvider.GetContext();
             var strategy = _cacheStrategy ?? Global.CacheStrategyProvider.GetStrategy(invocation, context);

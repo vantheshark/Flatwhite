@@ -16,8 +16,9 @@ namespace Flatwhite.WebApi.Tests
         public void Configuration(IAppBuilder app)
         {
             var builder = new ContainerBuilder().EnableFlatwhiteCache();
-            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+            builder.RegisterType<WebApiCacheStrategyProvider>().AsImplementedInterfaces().SingleInstance();
 
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
             builder.RegisterType<ValuesController>().AsSelf().CacheWithAttribute();
 
             var container = builder.Build();

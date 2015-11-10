@@ -8,11 +8,12 @@ namespace Flatwhite.WebApi.Tests.Controllers
 {
     public class HomeController : Controller
     {
+        [OutputCache(Duration = 2000)]
         public ActionResult Index()
         {
             ViewBag.Title = "Home Page";
 
-            return View();
+            return new ContentResult();
         }
     }
 }

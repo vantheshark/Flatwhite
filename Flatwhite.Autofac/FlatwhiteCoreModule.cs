@@ -17,8 +17,9 @@ namespace Flatwhite.AutofacIntergration
             
 
             builder.RegisterType<DefaultCacheStrategy>().As<ICacheStrategy>();
-            builder.RegisterType<CacheInterceptor>()
+            builder.RegisterType<CacheInterceptorAdaptor>()
                    .Keyed<IInterceptor>(typeof(CacheInterceptor))
+                   .Named<IInterceptor>(typeof(CacheInterceptor).Name)
                    .AsSelf();
         }
     }

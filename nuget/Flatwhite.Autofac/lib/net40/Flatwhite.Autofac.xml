@@ -4,9 +4,40 @@
         <name>Flatwhite.Autofac</name>
     </assembly>
     <members>
+        <member name="T:Flatwhite.AutofacIntergration.CacheInterceptorAdaptor">
+            <summary>
+            An adaptor of <see cref="T:Flatwhite._IInterceptor"/>
+            </summary>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.CacheInterceptorAdaptor.#ctor(Flatwhite.IContextProvider,Flatwhite.ICacheProvider,Flatwhite.ICacheStrategy)">
+            <summary>
+            Initializes an instance of <see cref="T:Flatwhite.AutofacIntergration.CacheInterceptorAdaptor"/>
+            </summary>
+            <param name="contextProvider"></param>
+            <param name="cacheProvider"></param>
+            <param name="cacheStrategy"></param>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.CacheInterceptorAdaptor.Intercept(Castle.DynamicProxy.IInvocation)">
+            <summary>
+            Intercept the dynamic proxy invocation by calling Flatwhite Intercept method
+            </summary>
+            <param name="invocation"></param>
+        </member>
         <member name="T:Flatwhite.AutofacIntergration.FlatwhiteBuilderInterceptModule">
             <summary>
             Scan types that were decorated or have members decorated with <see cref="T:Flatwhite.OutputCacheAttribute"/> and enable default cache Interceptor (<see cref="T:Flatwhite.CacheInterceptor"/>) on them
+            </summary>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.FlatwhiteBuilderInterceptModule.Load(Autofac.ContainerBuilder)">
+            <summary>
+            Check all <see cref="T:Autofac.Core.IComponentRegistration"/> and enable Interface or Class interceptor on the component if the register services have <see cref="T:Flatwhite.OutputCacheAttribute"/> 
+            decorated on the type or methods
+            </summary>
+            <param name="builder"></param>
+        </member>
+        <member name="T:Flatwhite.AutofacIntergration.CacheRegistrationExtensions">
+            <summary>
+            Adds registration syntax to the <see cref="T:Autofac.ContainerBuilder"/> type to support Flatwhite output cache
             </summary>
         </member>
         <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.CacheWithStrategy``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},Flatwhite.ICacheStrategy)">

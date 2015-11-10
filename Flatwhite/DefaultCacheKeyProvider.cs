@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Castle.DynamicProxy;
+
 
 namespace Flatwhite
 {
@@ -30,7 +30,7 @@ namespace Flatwhite
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public virtual string GetCacheKey(IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual string GetCacheKey(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             // The cache key must be different for different instance of same type
             var key = new StringBuilder($"Flatwhite::{(invocation.Method.DeclaringType ?? invocation.TargetType).FullName}.{invocation.Method.Name}(");

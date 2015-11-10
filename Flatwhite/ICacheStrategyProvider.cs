@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Castle.DynamicProxy;
+
 
 namespace Flatwhite
 {
@@ -14,6 +14,6 @@ namespace Flatwhite
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        ICacheStrategy GetStrategy(IInvocation invocation, IDictionary<string, object> invocationContext);
+        ICacheStrategy GetStrategy(_IInvocation invocation, IDictionary<string, object> invocationContext);
     }
 }

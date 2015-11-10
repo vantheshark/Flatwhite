@@ -5,8 +5,12 @@ using Autofac.Builder;
 using Autofac.Core;
 using Castle.DynamicProxy;
 
+
 namespace Flatwhite.AutofacIntergration
 {
+    /// <summary>
+    /// Adds registration syntax to the <see cref="ContainerBuilder"/> type to support Flatwhite output cache
+    /// </summary>
     public static class CacheRegistrationExtensions
     {
         private static ContainerBuilder _currentBuilder;
@@ -28,7 +32,7 @@ namespace Flatwhite.AutofacIntergration
                 throw new InvalidOperationException($"Please call {nameof(EnableFlatwhiteCache)} on ContainerBuilder first!");
             }
 
-            var interceptor = new CacheInterceptor(Global.ContextProvider, Global.CacheProvider, strategy);
+            var interceptor = new CacheInterceptorAdaptor(Global.ContextProvider, Global.CacheProvider, strategy);
             var id = Guid.NewGuid();
             _currentBuilder.RegisterInstance(interceptor).Keyed<IInterceptor>(id);
             
@@ -73,7 +77,7 @@ namespace Flatwhite.AutofacIntergration
             {
                 builder.EnableInterfaceInterceptors();
             }
-            return builder.InterceptedBy(typeof(CacheInterceptor));
+            return builder.InterceptedBy(typeof(CacheInterceptorAdaptor));
         }
 
         /// <summary>

@@ -6,11 +6,6 @@ namespace Flatwhite
 {
     internal static class ExpressionHelper
     {
-        public static string GetUniqueKey<T>(Expression<Func<T, object>> functionExpression) where T : class
-        {
-            return null;
-        }
-
         public static MethodInfo ToMethodInfo<T>(Expression<Func<T, object>> method) where T : class
         {
             MethodInfo mInfo;

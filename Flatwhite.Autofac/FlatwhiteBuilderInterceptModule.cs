@@ -12,6 +12,11 @@ namespace Flatwhite.AutofacIntergration
     /// </summary>
     public class FlatwhiteBuilderInterceptModule : Module
     {
+        /// <summary>
+        /// Check all <see cref="IComponentRegistration"/> and enable Interface or Class interceptor on the component if the register services have <see cref="OutputCacheAttribute"/> 
+        /// decorated on the type or methods
+        /// </summary>
+        /// <param name="builder"></param>
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterModule(new FlatwhiteCoreModule());
@@ -58,17 +63,15 @@ namespace Flatwhite.AutofacIntergration
                     if (typesWithAttributes.Any(t => t.IsClass))
                     {
                         rb = RegistrationBuilder.ForType(typesWithAttributes.First(type => type.IsClass));
-                        rb.EnableClassInterceptors().InterceptedBy(typeof (CacheInterceptor));
+                        rb.EnableClassInterceptors().InterceptedBy(typeof (CacheInterceptorAdaptor));
                         ((ComponentRegistration)r).Activator = rb.ActivatorData.Activator;
                         // NOTE: Find where to set it to rb.ActivatorData.ImplementationType;
                     }
                     else
                     {
                         rb = RegistrationBuilder.ForType(typesWithAttributes.First(type => type.IsInterface));
-                        rb.EnableInterfaceInterceptors().InterceptedBy(typeof(CacheInterceptor));
+                        rb.EnableInterfaceInterceptors().InterceptedBy(typeof(CacheInterceptorAdaptor));
                     }
-
-                    rb.InterceptedBy(typeof (CacheInterceptor));
 
                     foreach (var pair in rb.RegistrationData.Metadata)
                         r.Metadata[pair.Key] = pair.Value;

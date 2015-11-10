@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Caching;
-using Castle.DynamicProxy;
+
 
 namespace Flatwhite
 {
@@ -17,7 +17,7 @@ namespace Flatwhite
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        bool CanIntercept(IInvocation invocation, IDictionary<string, object> invocationContext);
+        bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext);
 
         /// <summary>
         /// Get cache time by invocation and context
@@ -25,7 +25,7 @@ namespace Flatwhite
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        int GetCacheTime(IInvocation invocation, IDictionary<string, object> invocationContext);
+        int GetCacheTime(_IInvocation invocation, IDictionary<string, object> invocationContext);
         
         /// <summary>
         /// Get the change monitor by invocation and context
@@ -33,7 +33,7 @@ namespace Flatwhite
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        IEnumerable<ChangeMonitor> GetChangeMonitors(IInvocation invocation, IDictionary<string, object> invocationContext);
+        IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext);
 
         /// <summary>
         /// Cache key provider
