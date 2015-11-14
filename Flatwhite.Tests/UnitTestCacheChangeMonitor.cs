@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Caching;
-using System.Text;
 
 namespace Flatwhite.Tests
 {
     public class UnitTestCacheChangeMonitor : ChangeMonitor
     {
-        public UnitTestCacheChangeMonitor()
+        private readonly string _cacheKey;
+
+        public UnitTestCacheChangeMonitor(string cacheKey)
         {
+            _cacheKey = cacheKey;
             UniqueId = Guid.NewGuid().ToString();
             InitializationComplete();
         }
@@ -26,7 +26,7 @@ namespace Flatwhite.Tests
         /// <param name="state"></param>
         public void FireChangeEvent(object state)
         {
-            OnChanged(state);
+            OnChanged(_cacheKey);
         }
     }
 }

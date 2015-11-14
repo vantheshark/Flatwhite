@@ -5,7 +5,6 @@ using Autofac.Builder;
 using Autofac.Core;
 using Castle.DynamicProxy;
 
-
 namespace Flatwhite.AutofacIntergration
 {
     /// <summary>
@@ -32,7 +31,7 @@ namespace Flatwhite.AutofacIntergration
                 throw new InvalidOperationException($"Please call {nameof(EnableFlatwhiteCache)} on ContainerBuilder first!");
             }
 
-            var interceptor = new CacheInterceptorAdaptor(Global.ContextProvider, Global.CacheProvider, strategy);
+            var interceptor = new CacheInterceptorAdaptor(Global.ContextProvider, strategy);
             var id = Guid.NewGuid();
             _currentBuilder.RegisterInstance(interceptor).Keyed<IInterceptor>(id);
             

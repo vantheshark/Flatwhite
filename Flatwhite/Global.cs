@@ -1,4 +1,7 @@
-﻿namespace Flatwhite
+﻿using System.ComponentModel;
+using Flatwhite.Provider;
+
+namespace Flatwhite
 {
     /// <summary>
     /// Global config
@@ -7,22 +10,26 @@
     {
         static Global()
         {
+            Cache = new MethodInfoCache();
+
             ContextProvider = new EmptyContextProvider();
-            CacheProvider = new ObjectCacheProvider();
             CacheStrategyProvider = new DefaultCacheStrategyProvider();
             AttributeProvider = new DefaulAttributeProvider();
             CacheAttributeProvider = new DefaultCacheAttributeProvider();
-            CacheKeyProvider = new DefaultCacheKeyProvider(CacheAttributeProvider);
+            
+            HashCodeGeneratorProvider = new DefaultHashCodeGeneratorProvider();
+            HashCodeGeneratorProvider.Register<object>(new DefaultHashCodeGenerator());
+
+            CacheKeyProvider = new DefaultCacheKeyProvider(CacheAttributeProvider, HashCodeGeneratorProvider);
+
+            CacheStoreProvider = new DefaultCacheStoreProvider();
+            CacheStoreProvider.RegisterStore(new ObjectCacheStore());
         }
 
         /// <summary>
         /// Context provider
         /// </summary>
         public static IContextProvider ContextProvider { get; set; }
-        /// <summary>
-        /// Cache provider
-        /// </summary>
-        public static ICacheProvider CacheProvider { get; set; }
         /// <summary>
         /// Cache key provider
         /// </summary>
@@ -31,15 +38,27 @@
         /// Cache strategy provider
         /// </summary>
         public static ICacheStrategyProvider CacheStrategyProvider { get; set; }
-
         /// <summary>
         /// OutputCache attribute provider
         /// </summary>
         public static ICacheAttributeProvider CacheAttributeProvider { get; set; }
-
         /// <summary>
         /// Attribute provider
         /// </summary>
         public static IAttributeProvider AttributeProvider { get; set; }
+        /// <summary>
+        /// Parameter serializer provider
+        /// </summary>
+        public static IHashCodeGeneratorProvider HashCodeGeneratorProvider { get; set; }
+
+        /// <summary>
+        /// A provider to resolve cache stores
+        /// </summary>
+        public static ICacheStoreProvider CacheStoreProvider { get; set; }
+
+        /// <summary>
+        /// Internal cache for Flatwhite objects
+        /// </summary>
+        internal static MethodInfoCache Cache { get; set; }
     }
 }

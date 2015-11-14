@@ -1,9 +1,9 @@
-﻿using System.Reflection;
-using System.Web.Http;
+﻿using System.Web.Http;
 using Autofac;
 using Autofac.Integration.WebApi;
 using Flatwhite.AutofacIntergration;
-using Flatwhite.WebApi.Tests.Controllers;
+using Flatwhite.Provider;
+using Flatwhite.WebApi.CacheControl;
 using Microsoft.Owin;
 using Owin;
 
@@ -15,28 +15,35 @@ namespace Flatwhite.WebApi.Tests
     {
         public void Configuration(IAppBuilder app)
         {
-            var builder = new ContainerBuilder().EnableFlatwhiteCache();
-            builder.RegisterType<WebApiCacheStrategyProvider>().AsImplementedInterfaces().SingleInstance();
-
-            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
-            builder.RegisterType<ValuesController>().AsSelf().CacheWithAttribute();
-
-            var container = builder.Build();
-
-            app.UseAutofacMiddleware(container)
-               .UseWebApi(CreateHttpConfiguration(container));
-
-        }
-        private static HttpConfiguration CreateHttpConfiguration(IContainer container)
-        {
-            var config = new HttpConfiguration
-            {
-                DependencyResolver = new AutofacWebApiDependencyResolver(container)
-            };
-
+            var config = new HttpConfiguration();
+            //var container = BuildAutofacContainer(config);
+            
             WebApiConfig.Register(config);
 
-            return config;
+            app.UseWebApi(config)
+               .UseFlatwhiteCache<Startup>(config)
+               //.UseAutofacMiddleware(container) // Comment this line if you don't use autofac
+               ;
+
+        }
+
+        private IContainer BuildAutofacContainer(HttpConfiguration config)
+        {
+            var builder = new ContainerBuilder().EnableFlatwhiteCache();
+
+            // This will also be set to Global.CacheStrategyProvider in UseFlatwhiteCache method
+            builder.RegisterType<WebApiCacheStrategyProvider>().As<ICacheStrategyProvider>().SingleInstance();
+
+            // This is required by EtagHeaderHandler
+            builder.RegisterType<CacheResponseBuilder>().As<ICacheResponseBuilder>().SingleInstance();
+
+            // This is required by CachControlHeaderHandlerProvider
+            builder.RegisterType<EtagHeaderHandler>().As<ICachControlHeaderHandler>().SingleInstance();
+            //NOTE: Register more instance of ICachControlHeaderHandler here
+
+            var container = builder.Build();
+            config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+            return container;
         }
     }
 }

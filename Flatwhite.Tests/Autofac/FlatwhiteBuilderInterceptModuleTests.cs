@@ -11,6 +11,11 @@ namespace Flatwhite.Tests.Autofac
     [TestFixture]
     public class FlatwhiteBuilderInterceptModuleTests
     {
+        [SetUp]
+        public void ShowSomeTrace()
+        {
+            Global.Cache = new MethodInfoCache();
+        }
         [Test]
         public void Test_service_registered_as_self_and_implemented_interfaces_should_have_class_interceptors_enabled()
         {
@@ -21,7 +26,8 @@ namespace Flatwhite.Tests.Autofac
                 .AsSelf();
 
             builder.RegisterModule<FlatwhiteBuilderInterceptModule>();
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
+            
             var container = builder.Build();
            
             dynamic @interface = container.Resolve<IBlogService>();
@@ -34,7 +40,8 @@ namespace Flatwhite.Tests.Autofac
             {
                 var blog2 = @class.GetById(Guid.Empty);
             }
-            Assert.AreEqual(1, @class.InvokeCount);
+            // Because the cache was created for the first call to get blog1
+            Assert.AreEqual(0, @class.InvokeCount);
         }
 
         [Test]
@@ -46,7 +53,8 @@ namespace Flatwhite.Tests.Autofac
                 .AsSelf();
 
             builder.RegisterModule<FlatwhiteBuilderInterceptModule>();
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
             var container = builder.Build();
 
             var svc = container.Resolve<BlogService>();
@@ -67,7 +75,7 @@ namespace Flatwhite.Tests.Autofac
                 .AsImplementedInterfaces();
 
             builder.RegisterModule<FlatwhiteBuilderInterceptModule>();
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
             var container = builder.Build();
 
             var svc = container.Resolve<IBlogService>();
@@ -93,7 +101,7 @@ namespace Flatwhite.Tests.Autofac
                 .AsImplementedInterfaces();
 
             builder.RegisterModule<FlatwhiteBuilderInterceptModule>();
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
             var container = builder.Build();
 
             var svc = container.Resolve<IBlogService>();

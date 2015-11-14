@@ -1,9 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
+using Flatwhite.Provider;
 
 
 namespace Flatwhite.Strategy
@@ -20,7 +20,6 @@ namespace Flatwhite.Strategy
         /// </summary>
         // ReSharper disable once InconsistentNaming
         protected readonly ICacheAttributeProvider _cacheAttributeProvider;
-        private readonly IDictionary<MethodInfo, bool> _methodInfoCache = new Dictionary<MethodInfo, bool>();
 
         /// <summary>
         /// Initialize default cache strategy with a <see cref="ICacheAttributeProvider"/>
@@ -41,7 +40,7 @@ namespace Flatwhite.Strategy
         /// <returns></returns>
         public bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            if (!_methodInfoCache.ContainsKey(invocation.Method))
+            if (!Global.Cache.InterceptableCache.ContainsKey(invocation.Method))
             {
                 //https://msdn.microsoft.com/en-us/library/system.reflection.methodbase.isvirtual(v=vs.110).aspx
                 var possible = invocation.Method.ReturnType != typeof (void) && invocation.Method.IsVirtual && !invocation.Method.IsFinal;
@@ -50,10 +49,10 @@ namespace Flatwhite.Strategy
                     var atts = _attributeProvider.GetAttributes(invocation.Method, invocationContext);
                     possible = !atts.Any(a => a is NoInterceptAttribute);
                 }
-                _methodInfoCache[invocation.Method] = possible;
+                Global.Cache.InterceptableCache[invocation.Method] = possible;
             }
 
-            return _methodInfoCache[invocation.Method];
+            return Global.Cache.InterceptableCache[invocation.Method];
         }
 
         /// <summary>
@@ -69,12 +68,25 @@ namespace Flatwhite.Strategy
         }
 
         /// <summary>
-        /// Get empty list change monitor
+        /// Get cache store id for current invocation and context
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public uint GetCacheStoreId(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        {
+            OutputCacheAttribute att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
+            return att?.CacheStoreId ?? 0;
+        }
+
+        /// <summary>
+        /// Get empty list change monitor
+        /// </summary>
+        /// <param name="invocation"></param>
+        /// <param name="invocationContext"></param>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
+        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext, string cacheKey)
         {
             yield break;
         }

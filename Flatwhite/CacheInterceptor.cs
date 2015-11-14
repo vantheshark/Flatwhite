@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.Caching;
-
+using Flatwhite.Provider;
 
 namespace Flatwhite
 {
@@ -12,7 +12,7 @@ namespace Flatwhite
     {
         private readonly ICacheStrategy _cacheStrategy;
         private readonly IContextProvider _contextProvider;
-        private readonly ICacheProvider _cacheProvider;
+        
         
         private readonly object _cacheLock = new object();
 
@@ -20,15 +20,16 @@ namespace Flatwhite
         /// Specify time to live for caching and optional changeMonitor factory
         /// </summary>
         /// <param name="contextProvider"></param>
-        /// <param name="cacheProvider"></param>
         /// <param name="cacheStrategy">If not provided, the strategy will be resolved from Global.CacheStrategyProvider</param>
         public CacheInterceptor(
             IContextProvider contextProvider,
-            ICacheProvider cacheProvider,
             ICacheStrategy cacheStrategy = null)
         {
+            if (contextProvider == null)
+            {
+                throw new ArgumentNullException(nameof(contextProvider));
+            }
             _contextProvider = contextProvider;
-            _cacheProvider = cacheProvider;
             _cacheStrategy = cacheStrategy;
         }
 
@@ -40,7 +41,7 @@ namespace Flatwhite
         {
             var context = _contextProvider.GetContext();
             var strategy = _cacheStrategy ?? Global.CacheStrategyProvider.GetStrategy(invocation, context);
-
+            
             if (!strategy.CanIntercept(invocation, context))
             {
                 invocation.Proceed();
@@ -58,17 +59,20 @@ namespace Flatwhite
             
             lock (_cacheLock)
             {
-                var result = _cacheProvider.Get(key);
+                var cacheStoreId = strategy.GetCacheStoreId(invocation, context);
+                var cacheStore = Global.CacheStoreProvider.GetCacheStore(cacheStoreId);
+                var result = cacheStore.Get(key);
                 if (result == null) // No cache
                 {
                     invocation.Proceed();
                     var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(cacheTime)};
-                    var changeMonitors = strategy.GetChangeMonitors(invocation, context);
+                    var changeMonitors = strategy.GetChangeMonitors(invocation, context, key);
                     foreach(var mon in changeMonitors)
                     {
                         policy.ChangeMonitors.Add(mon);
                     }
-                    _cacheProvider.Set(key, invocation.ReturnValue, policy);
+                    
+                    cacheStore.Set(key, invocation.ReturnValue, policy);
                 }
                 else
                 {

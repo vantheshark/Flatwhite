@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using Castle.DynamicProxy;
+using Flatwhite.Provider;
 
 namespace Flatwhite.AutofacIntergration
 {
@@ -15,10 +16,9 @@ namespace Flatwhite.AutofacIntergration
         /// Initializes an instance of <see cref="CacheInterceptorAdaptor"/>
         /// </summary>
         /// <param name="contextProvider"></param>
-        /// <param name="cacheProvider"></param>
         /// <param name="cacheStrategy"></param>
-        public CacheInterceptorAdaptor(IContextProvider contextProvider, ICacheProvider cacheProvider, ICacheStrategy cacheStrategy = null) 
-            : base(contextProvider, cacheProvider, cacheStrategy)
+        public CacheInterceptorAdaptor(IContextProvider contextProvider, ICacheStrategy cacheStrategy = null) 
+            : base(contextProvider, cacheStrategy)
         {
         }
         

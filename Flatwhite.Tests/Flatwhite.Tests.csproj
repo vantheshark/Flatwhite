@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Flatwhite.Tests</RootNamespace>
     <AssemblyName>Flatwhite.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -69,7 +69,7 @@
     <Compile Include="IUserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTestCacheChangeMonitor.cs" />
-    <Compile Include="UnitTestCacheProvider.cs" />
+    <Compile Include="UnitTestCacheStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Flatwhite.Autofac\Flatwhite.Autofac.csproj">

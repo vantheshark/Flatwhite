@@ -1,3 +1,6 @@
+* 1.0.2
+- Fix bug and support WebApi
+
 * 1.0.1
 - Created
 

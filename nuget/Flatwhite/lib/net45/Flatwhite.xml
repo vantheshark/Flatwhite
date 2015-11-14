@@ -1,0 +1,846 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Flatwhite</name>
+    </assembly>
+    <members>
+        <member name="T:Flatwhite.Argument">
+            <summary>
+            A class which can provide any argument for caching stuff
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Argument.Any``1">
+            <summary>
+            Match any argument value compatible with type <typeparamref name="T"/>.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Provider.DefaulAttributeProvider">
+            <summary>
+            Default attribute provider
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaulAttributeProvider.GetAttributes(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get all attributes decorated on method or declarative type
+            </summary>
+            <param name="methodInfo"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Provider.DefaultCacheKeyProvider">
+            <summary>
+            Default cache key provider
+            </summary>
+        </member>
+        <member name="F:Flatwhite.Provider.DefaultCacheKeyProvider._cacheAttributeProvider">
+            <summary>
+            Cache attribute provider
+            </summary>
+        </member>
+        <member name="F:Flatwhite.Provider.DefaultCacheKeyProvider._hashCodeGeneratorProvider">
+            <summary>
+            Hashcode generator provider
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheKeyProvider.#ctor(Flatwhite.Provider.ICacheAttributeProvider,Flatwhite.Provider.IHashCodeGeneratorProvider)">
+            <summary>
+            Initialize a default cache key provider using <see cref="T:Flatwhite.Provider.ICacheAttributeProvider"/>
+            </summary>
+            <param name="cacheAttributeProvider"></param>
+            <param name="hashCodeGeneratorProvider"></param>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheKeyProvider.GetCacheKey(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Resolve cache key
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheKeyProvider.BuildWithCustom(System.Collections.Generic.IDictionary{System.String,System.Object},System.String,System.Text.StringBuilder)">
+            <summary>
+            Build the key with provided varyByParams
+            </summary>
+            <param name="invocationContext"></param>
+            <param name="customKey"></param>
+            <param name="key"></param>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheKeyProvider.BuildWithParams(Flatwhite._IInvocation,System.Reflection.ParameterInfo[],System.String[],System.Text.StringBuilder)">
+            <summary>
+            Build the key with provided varyByCustoms
+            </summary>
+            <param name="invocation"></param>
+            <param name="parameters"></param>
+            <param name="varyByParams"></param>
+            <param name="key"></param>
+        </member>
+        <member name="T:Flatwhite.Provider.DefaultCacheStoreProvider">
+            <summary>
+            The default implementation of <see cref="T:Flatwhite.Provider.ICacheStoreProvider" /> using private dictionaries
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheStoreProvider.GetCacheStore(System.UInt32)">
+            <summary>
+            Get the <see cref="T:Flatwhite.ICacheStore" />
+            </summary>
+            <param name="storeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheStoreProvider.GetAsyncCacheStore(System.UInt32)">
+            <summary>
+            Get the <see cref="T:Flatwhite.IAsyncCacheStore" /> by storeId, if couldn't find it it will try to get the <see cref="T:Flatwhite.ICacheStore" /> with the same id
+            </summary>
+            <param name="storeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheStoreProvider.RegisterStore(Flatwhite.ICacheStore,System.UInt32)">
+            <summary>
+            Register the <see cref="T:Flatwhite.ICacheStore" />
+            </summary>
+            <param name="store"></param>
+            <param name="storeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheStoreProvider.RegisterAsyncStore(Flatwhite.IAsyncCacheStore,System.UInt32)">
+            <summary>
+            Register the <see cref="T:Flatwhite.IAsyncCacheStore" />
+            </summary>
+            <param name="store"></param>
+            <param name="storeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheStoreProvider.Dispose">
+            <summary>
+            Clear all the dictionary
+            </summary>
+        </member>
+        <member name="T:Flatwhite.Provider.DefaultHashCodeGeneratorProvider">
+            <summary>
+            Provide default implementation of <see cref="T:Flatwhite.Provider.IHashCodeGeneratorProvider" />
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultHashCodeGeneratorProvider.#ctor">
+            <summary>
+            Use <see cref="T:Flatwhite.ToStringHashCodeGenerator" /> for all primitive types
+            Use <see cref="T:Flatwhite.DefaultHashCodeGenerator" /> for unregistered types
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultHashCodeGeneratorProvider.GetForType(System.Type)">
+            <summary>
+            Return <see cref="T:Flatwhite.IHashCodeGenerator" /> for type.
+            <para>if Type implemented ToString(), the type will be registered and <see cref="T:Flatwhite.ToStringHashCodeGenerator" /> will be used </para>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultHashCodeGeneratorProvider.Register``1(Flatwhite.IHashCodeGenerator)">
+            <summary>
+            Register a custom serializer for T
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashCodeGenerator"></param>
+        </member>
+        <member name="T:Flatwhite.Provider.IAttributeProvider">
+            <summary>
+            An provider to get all attributes decorated on method or declarative type
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.IAttributeProvider.GetAttributes(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get all attributes decorated on method or declarative type
+            </summary>
+            <param name="methodInfo"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Provider.ICacheStoreProvider">
+            <summary>
+            A provider to register and resolve <see cref="T:Flatwhite.ICacheStore" /> or <see cref="T:Flatwhite.IAsyncCacheStore" /> by id (integer)
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.ICacheStoreProvider.GetCacheStore(System.UInt32)">
+            <summary>
+            Get the <see cref="T:Flatwhite.ICacheStore" />
+            </summary>
+            <param name="storeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.ICacheStoreProvider.GetAsyncCacheStore(System.UInt32)">
+            <summary>
+            Get the <see cref="T:Flatwhite.IAsyncCacheStore" />
+            </summary>
+            <param name="storeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.ICacheStoreProvider.RegisterStore(Flatwhite.ICacheStore,System.UInt32)">
+            <summary>
+            Register the <see cref="T:Flatwhite.ICacheStore" />
+            </summary>
+            <param name="store"></param>
+            <param name="storeId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.ICacheStoreProvider.RegisterAsyncStore(Flatwhite.IAsyncCacheStore,System.UInt32)">
+            <summary>
+            Register the <see cref="T:Flatwhite.IAsyncCacheStore" />
+            </summary>
+            <param name="store"></param>
+            <param name="storeId"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Provider.IHashCodeGeneratorProvider">
+            <summary>
+            Provides an abstraction for resolving <see cref="T:Flatwhite.IHashCodeGenerator" />
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.IHashCodeGeneratorProvider.GetForType(System.Type)">
+            <summary>
+            Return <see cref="T:Flatwhite.IHashCodeGenerator" />
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Provider.IHashCodeGeneratorProvider.Register``1(Flatwhite.IHashCodeGenerator)">
+            <summary>
+            Register a custom serializer for T
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="hashCodeGenerator"></param>
+        </member>
+        <member name="T:Flatwhite.Provider.ICacheAttributeProvider">
+            <summary>
+            Get cache attribute for a method info
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.ICacheAttributeProvider.GetCacheAttribute(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get 1 cache attribute
+            </summary>
+            <param name="methodInfo"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Provider.ICacheKeyProvider">
+            <summary>
+            A provider to resolve a unique key for caching by invocation and context
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.ICacheKeyProvider.GetCacheKey(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get unique cache key
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Provider.ICacheStrategyProvider">
+            <summary>
+            A provider to resolve <see cref="T:Flatwhite.ICacheStrategy"/>
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.ICacheStrategyProvider.GetStrategy(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get cache strategy by invocation and context
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Provider.IContextProvider">
+            <summary>
+            A provider to resolve a context which is a key/value dictionary. This could be a HttpRequestContext or a WebApi context or anything from current thread
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.IContextProvider.GetContext">
+            <summary>
+            Get context
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Provider.EmptyContextProvider">
+            <summary>
+            A default context provider which returns empty dictionary
+            </summary>
+        </member>
+        <member name="T:Flatwhite.Provider.SingleCacheAttributeProvider">
+            <summary>
+            The provider that will return 1 <see cref="T:Flatwhite.OutputCacheAttribute"/> no matter what MethodInfo and context is
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Provider.SingleCacheAttributeProvider.Attribute">
+            <summary>
+            The attribute that will be returned
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.SingleCacheAttributeProvider.#ctor(Flatwhite.OutputCacheAttribute)">
+            <summary>
+            Initialize the provider with the provided attribute
+            </summary>
+            <param name="attribute"></param>
+        </member>
+        <member name="M:Flatwhite.Provider.SingleCacheAttributeProvider.GetCacheAttribute(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Return the set attribute
+            </summary>
+            <param name="methodInfo"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Provider.ExpressionBaseCacheAttributeProvider`2">
+            <summary>
+            Cache attribute provider to return different cache attribute by different method expression
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.ExpressionBaseCacheAttributeProvider`2.#ctor">
+            <summary>
+            Initialize an ExpressionBaseCacheAttributeProvider
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.ExpressionBaseCacheAttributeProvider`2.GetCacheAttribute(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get cache attribute
+            </summary>
+            <param name="methodInfo"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Flatwhite.Provider.ExpressionBaseCacheAttributeProvider`2.Expressions">
+            <summary>
+            List of configured expressions
+            </summary>
+        </member>
+        <member name="T:Flatwhite.CacheInterceptor">
+            <summary>
+            Use this to intercept services to enable caching on methods that have return value
+            <para>Only methods decorated with <see cref="T:Flatwhite.OutputCacheAttribute"/> will have its result cached</para>
+            </summary>
+        </member>
+        <member name="M:Flatwhite.CacheInterceptor.#ctor(Flatwhite.Provider.IContextProvider,Flatwhite.ICacheStrategy)">
+            <summary>
+            Specify time to live for caching and optional changeMonitor factory
+            </summary>
+            <param name="contextProvider"></param>
+            <param name="cacheStrategy">If not provided, the strategy will be resolved from Global.CacheStrategyProvider</param>
+        </member>
+        <member name="M:Flatwhite.CacheInterceptor.Intercept(Flatwhite._IInvocation)">
+            <summary>
+            Main method to get value from cache if any, set value to cache if there was no cache
+            </summary>
+            <param name="invocation"></param>
+        </member>
+        <member name="T:Flatwhite.IAsyncCacheStore">
+            <summary>
+            Async cache provider
+            </summary>
+        </member>
+        <member name="M:Flatwhite.IAsyncCacheStore.SetAsync(System.String,System.Object,System.Runtime.Caching.CacheItemPolicy)">
+            <summary>
+            When overridden in a derived class, inserts a cache entry into the cache.
+            </summary>
+            <param name="key">A unique identifier for the cache entry.</param>
+            <param name="value">The object to insert.</param>
+            <param name="policy">An object that contains eviction details for the cache entry. This object provides more options for eviction than a simple absolute expiration.</param>
+        </member>
+        <member name="M:Flatwhite.IAsyncCacheStore.RemoveAsync(System.String)">
+            <summary>
+            When overridden in a derived class, removes the cache entry from the cache.
+            </summary>
+            <param name="key">A unique identifier for the cache entry.></param>
+            <returns>An object that represents the value of the removed cache entry that was specified by the key, or null if the specified entry was not found.</returns>
+        </member>
+        <member name="M:Flatwhite.IAsyncCacheStore.GetAsync(System.String)">
+            <summary>
+            When overridden in a derived class, gets the specified cache entry from the cache as an object.
+            </summary>
+            <param name="key">A unique identifier for the cache entry to get.</param>
+            <returns>The cache entry that is identified by key.</returns>
+        </member>
+        <member name="M:Flatwhite.IAsyncCacheStore.ContainsAsync(System.String)">
+            <summary>
+            When overridden in a derived class, checks whether the cache entry already exists in the cache.
+            </summary>
+            <param name="key">A unique identifier for the cache entry.</param>
+            <returns>true if the cache contains a cache entry with the same key value as key; otherwise, false.</returns>
+        </member>
+        <member name="P:Flatwhite.IAsyncCacheStore.StoreId">
+            <summary>
+            The unique number represent the <see cref="T:Flatwhite.IAsyncCacheStore" />
+            </summary>
+        </member>
+        <member name="T:Flatwhite._IInterceptor">
+            <summary>
+            Copy from Castle.Core.IInterceptor
+            </summary>
+        </member>
+        <member name="M:Flatwhite._IInterceptor.Intercept(Flatwhite._IInvocation)">
+            <summary>
+            Intercept the invocation
+            </summary>
+            <param name="invocation"></param>
+        </member>
+        <member name="T:Flatwhite._IInvocation">
+            <summary>
+            Copy from Castle.Core.Invocation
+            </summary>
+        </member>
+        <member name="T:Flatwhite.IHashCodeGenerator">
+            <summary>
+            Provides an abstraction for serialize a custom value from invocationContext when building the cache key by <see cref="T:Flatwhite.Provider.ICacheKeyProvider"></see>
+            implementation can be registered via the <see cref="T:Flatwhite.IHashCodeGenerator"/>.
+            </summary>
+        </member>
+        <member name="M:Flatwhite.IHashCodeGenerator.GetCode(System.Object)">
+            <summary>
+            Return the code which will be use as a part of cache key
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.DefaultHashCodeGenerator">
+            <summary>
+            Provie default implementation of <see cref="T:Flatwhite.IHashCodeGenerator"/>.
+            </summary>
+        </member>
+        <member name="M:Flatwhite.DefaultHashCodeGenerator.GetCode(System.Object)">
+            <summary>
+            Return the code which will be use as a part of cache key
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.ToStringHashCodeGenerator.GetCode(System.Object)">
+            <summary>
+            Return the code which will be use as a part of cache key
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Strategy.CacheStrategies">
+            <summary>
+            A factory class to provide default <see cref="T:Flatwhite.ICacheStrategy"/>
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheStrategies.AllMethods">
+            <summary>
+            Enable caching for all methods that have output value, default cache time is 1 second
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheStrategies.ForService``1">
+            <summary>
+            Enable caching on selected methods only
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Strategy.CacheOutputForAllMethod">
+            <summary>
+            A cache strategy to cache for all methods
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheOutputForAllMethod.VaryByParam(System.String)">
+            <summary>
+            Set vary by params
+            </summary>
+            <param name="params"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheOutputForAllMethod.VaryByCustom(System.String)">
+            <summary>
+            Set vary by custom
+            </summary>
+            <param name="customParams"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheOutputForAllMethod.Duration(System.Int32)">
+            <summary>
+            Set cache duration in miliseconds
+            </summary>
+            <param name="durationMiliseconds"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Flatwhite.Strategy.CacheOutputForAllMethod.CacheKeyProvider">
+            <summary>
+            Cache key provider
+            </summary>
+        </member>
+        <member name="T:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2">
+            <summary>
+            A strategy to cache on only selected methods
+            </summary>
+            <typeparam name="T"></typeparam>
+            <typeparam name="TCacheAttribute"></typeparam>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.#ctor">
+            <summary>
+            The setting for a specific invocation
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.ForMember(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
+            <summary>
+            Specify the member for the output cache
+            </summary>
+            <param name="functionExpression"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.Duration(System.Int32)">
+            <summary>
+            Set the cache duration
+            </summary>
+            <param name="duration"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.VaryByParam(System.String)">
+            <summary>
+            Set vary by param for the method
+            </summary>
+            <param name="param"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.VaryByCustom(System.String)">
+            <summary>
+            Set var by custom for the method
+            </summary>
+            <param name="custom"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.WithChangeMonitors(System.Func{Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String,System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
+            <summary>
+            Set the change monitors factory that will create the new change monitors when new cache entry is created
+            </summary>
+            <param name="changeMonitorFactory"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.CacheKeyProvider">
+            <summary>
+            Cache key provider
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String)">
+            <summary>
+            Get change monitors
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Strategy.DefaultCacheStrategy">
+            <summary>
+            Default strategy which will enable cache for methods with <see cref="T:Flatwhite.OutputCacheAttribute"/> decorated
+            </summary>
+        </member>
+        <member name="F:Flatwhite.Strategy.DefaultCacheStrategy._cacheAttributeProvider">
+            <summary>
+            The cache attribute provider
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.#ctor(Flatwhite.Provider.IAttributeProvider,Flatwhite.Provider.ICacheAttributeProvider)">
+            <summary>
+            Initialize default cache strategy with a <see cref="T:Flatwhite.Provider.ICacheAttributeProvider"/>
+            </summary>
+            <param name="attributeProvider"></param>
+            <param name="cacheAttributeProvider"></param>
+        </member>
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.CanIntercept(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Determine whether it can intercept the invocation
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetCacheTime(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get cache time from <see cref="T:Flatwhite.OutputCacheAttribute"/>
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetCacheStoreId(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get cache store id for current invocation and context
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String)">
+            <summary>
+            Get empty list change monitor
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Flatwhite.Strategy.DefaultCacheStrategy.CacheKeyProvider">
+            <summary>
+            Default cache key provider
+            </summary>
+        </member>
+        <member name="T:Flatwhite.Strategy.IMethodCacheRuleBuilder`1">
+            <summary>
+            The member cache rule builder for a memthod on type T
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.Duration(System.Int32)">
+            <summary>
+            Set duration
+            </summary>
+            <param name="duration"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.VaryByParam(System.String)">
+            <summary>
+            Set vảy by param
+            </summary>
+            <param name="param"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.VaryByCustom(System.String)">
+            <summary>
+            Set vary by custom
+            </summary>
+            <param name="custom"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.WithChangeMonitors(System.Func{Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String,System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
+            <summary>
+            Set the change monitors factory that will create the new change monitors when new cache entry is created
+            https://msdn.microsoft.com/en-us/library/system.runtime.caching.changemonitor(v=vs.110).aspx
+            </summary>
+            <param name="changeMonitorFactory"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Strategy.IMethodCacheStrategy`1">
+            <summary>
+            A method cache strategy created for selected member
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:Flatwhite.Strategy.ITypeCacheRuleBuilder`1">
+            <summary>
+            The rule builder for a type
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Flatwhite.Strategy.ITypeCacheRuleBuilder`1.ForMember(System.Linq.Expressions.Expression{System.Func{`0,System.Object}})">
+            <summary>
+            Create a cache strategy for a member
+            </summary>
+            <param name="functionExpression"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.Global">
+            <summary>
+            Global config
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Global.ContextProvider">
+            <summary>
+            Context provider
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Global.CacheKeyProvider">
+            <summary>
+            Cache key provider
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Global.CacheStrategyProvider">
+            <summary>
+            Cache strategy provider
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Global.CacheAttributeProvider">
+            <summary>
+            OutputCache attribute provider
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Global.AttributeProvider">
+            <summary>
+            Attribute provider
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Global.HashCodeGeneratorProvider">
+            <summary>
+            Parameter serializer provider
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Global.CacheStoreProvider">
+            <summary>
+            A provider to resolve cache stores
+            </summary>
+        </member>
+        <member name="P:Flatwhite.Global.Cache">
+            <summary>
+            Internal cache for Flatwhite objects
+            </summary>
+        </member>
+        <member name="T:Flatwhite.ICacheStore">
+            <summary>
+            Cache provider
+            </summary>
+        </member>
+        <member name="M:Flatwhite.ICacheStore.Set(System.String,System.Object,System.Runtime.Caching.CacheItemPolicy)">
+            <summary>
+            When overridden in a derived class, inserts a cache entry into the cache.
+            </summary>
+            <param name="key">A unique identifier for the cache entry.</param>
+            <param name="value">The object to insert.</param>
+            <param name="policy">An object that contains eviction details for the cache entry. This object provides more options for eviction than a simple absolute expiration.</param>
+        </member>
+        <member name="M:Flatwhite.ICacheStore.Remove(System.String)">
+            <summary>
+            When overridden in a derived class, removes the cache entry from the cache.
+            </summary>
+            <param name="key">A unique identifier for the cache entry.></param>
+            <returns>An object that represents the value of the removed cache entry that was specified by the key, or null if the specified entry was not found.</returns>
+        </member>
+        <member name="M:Flatwhite.ICacheStore.Get(System.String)">
+            <summary>
+            When overridden in a derived class, gets the specified cache entry from the cache as an object.
+            </summary>
+            <param name="key">A unique identifier for the cache entry to get.</param>
+            <returns>The cache entry that is identified by key.</returns>
+        </member>
+        <member name="M:Flatwhite.ICacheStore.Contains(System.String)">
+            <summary>
+            When overridden in a derived class, checks whether the cache entry already exists in the cache.
+            </summary>
+            <param name="key">A unique identifier for the cache entry.</param>
+            <returns>true if the cache contains a cache entry with the same key value as key; otherwise, false.</returns>
+        </member>
+        <member name="P:Flatwhite.ICacheStore.StoreId">
+            <summary>
+            The unique number represent the <see cref="T:Flatwhite.ICacheStore" />
+            </summary>
+        </member>
+        <member name="T:Flatwhite.ICacheStrategy">
+            <summary>
+            Provide the cache strategy
+            </summary>
+        </member>
+        <member name="M:Flatwhite.ICacheStrategy.CanIntercept(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Determine whether it can intercept the invocation
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.ICacheStrategy.GetCacheTime(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get cache time by invocation and context
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.ICacheStrategy.GetCacheStoreId(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get cache store id for current invocation and context
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.ICacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String)">
+            <summary>
+            Get the change monitor by invocation and context
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Flatwhite.ICacheStrategy.CacheKeyProvider">
+            <summary>
+            Cache key provider
+            </summary>
+        </member>
+        <member name="T:Flatwhite.NoCacheAttribute">
+            <summary>
+            Use this attribute to decorate on a method where we don't want to cache while the class or interface decorated with OutputCache attribute
+            </summary>
+        </member>
+        <member name="T:Flatwhite.NoInterceptAttribute">
+            <summary>
+            Use this attribute to decorate on a method where we don't want to intercept by Caslte dynamic proxy
+            </summary>
+        </member>
+        <member name="T:Flatwhite.OutputCacheAttribute">
+            <summary>
+            Use this attribute to decorate on a method which has return type and you want the library to cache the result
+            </summary>
+        </member>
+        <member name="F:Flatwhite.OutputCacheAttribute.Default">
+            <summary>
+            Default OutputCacheAttribute
+            </summary>
+        </member>
+        <member name="P:Flatwhite.OutputCacheAttribute.Duration">
+            <summary>
+            Gets or sets the cache duration, in miliseconds.
+            </summary>
+        </member>
+        <member name="P:Flatwhite.OutputCacheAttribute.VaryByParam">
+            <summary>
+            https://tools.ietf.org/html/rfc5861
+            </summary>
+            public uint StaleWhileRevalidate { get; set; }
+             <summary>
+             https://tools.ietf.org/html/rfc5861#4.1
+             </summary>
+            public uint StaleIfError { get; set; }
+            <summary>
+            A semicolon-separated list of strings that correspond to to parameter values
+            </summary>
+        </member>
+        <member name="P:Flatwhite.OutputCacheAttribute.VaryByCustom">
+            <summary>
+            Gets or sets the vary-by-custom value which could be used to make the cache key
+            </summary>
+        </member>
+        <member name="P:Flatwhite.OutputCacheAttribute.CacheStoreType">
+            <summary>
+            The custom cache store type, if provided, the cache store will be resolved by the 
+            </summary>
+        </member>
+        <member name="P:Flatwhite.OutputCacheAttribute.CacheStoreId">
+            <summary>
+            The store id that we want to keep the cache (mem/redis, etc)
+            </summary>
+        </member>
+        <member name="T:Flatwhite.ExpressionSetting`2">
+            <summary>
+            Output cache settings for a method expression
+            </summary>
+            <typeparam name="T"></typeparam>
+            <typeparam name="TCacheAttribute"></typeparam>
+        </member>
+        <member name="M:Flatwhite.ExpressionSetting`2.#ctor">
+            <summary>
+            Init an instance of ExpressionSetting with empty ChangeMonitor list and default cache attribute
+            </summary>
+        </member>
+        <member name="P:Flatwhite.ExpressionSetting`2.Expression">
+            <summary>
+            The expression represents the method invocation
+            </summary>
+        </member>
+        <member name="P:Flatwhite.ExpressionSetting`2.CacheAttribute">
+            <summary>
+            The cache attribute for the current expression
+            </summary>
+        </member>
+        <member name="P:Flatwhite.ExpressionSetting`2.ChangeMonitorFactory">
+            <summary>
+            The change monitors factory configured for current expression
+            <para>These change monitors instances will be created and assign to the cache policy for the new cache</para>
+            </summary>
+        </member>
+    </members>
+</doc>

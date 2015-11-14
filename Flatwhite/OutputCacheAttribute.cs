@@ -19,14 +19,14 @@ namespace Flatwhite
         public int Duration { get; set; }
 
         /// <summary>
-        /// Gets or sets a value in miliseconds that indicates whether a cache entry should be evicted if it has not been accessed in a given span of time.
+        /// https://tools.ietf.org/html/rfc5861
         /// </summary>
-        /// TODO: public int SlidingExpiration { get; set; }
+        /// public uint StaleWhileRevalidate { get; set; }
 
         /// <summary>
-        /// The duration in miliseconds the cache engine should keep the expired cache value while refreshing the cache data asynchronously
+        /// https://tools.ietf.org/html/rfc5861#4.1
         /// </summary>
-        /// TODO: public int RefreshingTimeout { get; set; }
+        ///public uint StaleIfError { get; set; }
 
         /// <summary>
         /// A semicolon-separated list of strings that correspond to to parameter values
@@ -34,8 +34,18 @@ namespace Flatwhite
         public string VaryByParam { get; set; }
 
         /// <summary>
-        /// Gets or sets the vary-by-custom value.
+        /// Gets or sets the vary-by-custom value which could be used to make the cache key
         /// </summary>
         public string VaryByCustom { get; set; }
+
+        /// <summary>
+        /// The custom cache store type, if provided, the cache store will be resolved by the 
+        /// </summary>
+        public Type CacheStoreType { get; set; }
+
+        /// <summary>
+        /// The store id that we want to keep the cache (mem/redis, etc)
+        /// </summary>
+        public uint CacheStoreId { get; set; }
     }
 }

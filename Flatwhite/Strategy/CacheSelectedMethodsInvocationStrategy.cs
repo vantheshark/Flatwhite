@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Runtime.Caching;
+using Flatwhite.Provider;
 
 
 namespace Flatwhite.Strategy
@@ -45,7 +46,7 @@ namespace Flatwhite.Strategy
 
         internal CacheSelectedMethodsInvocationStrategy() : base(Global.AttributeProvider, new ExpressionBaseCacheAttributeProvider<T, TCacheAttribute>())
         {
-            CacheKeyProvider = new DefaultCacheKeyProvider(_cacheAttributeProvider);
+            CacheKeyProvider = new DefaultCacheKeyProvider(_cacheAttributeProvider, Global.HashCodeGeneratorProvider);
         }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="changeMonitorFactory"></param>
         /// <returns></returns>
-        public IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> changeMonitorFactory)
+        public IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, string, IEnumerable<ChangeMonitor>> changeMonitorFactory)
         {
             _currentExpression.ChangeMonitorFactory = changeMonitorFactory;
             return this;
@@ -120,15 +121,16 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
+        /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public override IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public override IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext, string cacheKey)
         {
             foreach (var e in Expressions)
             {
                 var m = ExpressionHelper.ToMethodInfo(e.Expression);
                 if (m == invocation.Method)
                 {
-                    return e.ChangeMonitorFactory(invocation, invocationContext);
+                    return e.ChangeMonitorFactory(invocation, invocationContext, cacheKey);
                 }
             }
             return new ChangeMonitor[0];

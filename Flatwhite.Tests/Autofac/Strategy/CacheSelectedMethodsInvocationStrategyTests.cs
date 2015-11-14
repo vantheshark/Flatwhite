@@ -12,6 +12,12 @@ namespace Flatwhite.Tests.Autofac.Strategy
     [TestFixture]
     public class CacheSelectedMethodsInvocationStrategyTests
     {
+        [SetUp]
+        public void ShowSomeTrace()
+        {
+            Global.Cache = new MethodInfoCache();
+        }
+
         [Test]
         public void Test_cache_on_selected_method()
         {
@@ -31,7 +37,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
                         .VaryByParam("postId")
                 );
 
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
             var container = builder.Build();
 
             var cachedService = container.Resolve<IBlogService>();
@@ -61,14 +67,14 @@ namespace Flatwhite.Tests.Autofac.Strategy
                         .ForMember(x => x.GetById(Argument.Any<Guid>()))
                         .Duration(50000)
                         .VaryByParam("postId")
-                        .WithChangeMonitors((i, context) =>
+                        .WithChangeMonitors((i, context, cacheKey) =>
                         {
-                            mon = new UnitTestCacheChangeMonitor();
+                            mon = new UnitTestCacheChangeMonitor(cacheKey);
                             return new[] {mon};
                         })
                 );
 
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
             var container = builder.Build();
 
             var cachedService = container.Resolve<IBlogService>();
@@ -81,7 +87,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
 
             dynamic blogSvc = cachedService;
             Assert.AreEqual(1, blogSvc.__target.InvokeCount);
-
+            
             mon.FireChangeEvent(null);
             for (var i = 0; i < 1000; i++)
             {

@@ -9,6 +9,11 @@ namespace Flatwhite.Tests
     [TestFixture]
     public class CacheInterceptorTests
     {
+        [SetUp]
+        public void ShowSomeTrace()
+        {
+            Global.Cache = new MethodInfoCache();
+        }
         [Test]
         public async Task Test_intercept_async_method()
         {
@@ -20,7 +25,7 @@ namespace Flatwhite.Tests
                 .RegisterType<BlogService>()
                 .As<IBlogService>()
                 .CacheWithAttribute();
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
 
             var container = builder.Build();
 

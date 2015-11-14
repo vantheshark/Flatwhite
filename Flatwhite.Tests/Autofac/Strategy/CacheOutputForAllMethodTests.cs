@@ -11,6 +11,11 @@ namespace Flatwhite.Tests.Autofac.Strategy
     [TestFixture]
     public class CacheOutputForAllMethodTests
     {
+        [SetUp]
+        public void ShowSomeTrace()
+        {
+            Global.Cache = new MethodInfoCache();
+        }
         [Test]
         public void Test_cache_on_method_decorated_with_output_cache_attribute()
         {
@@ -26,7 +31,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
                 .RegisterInstance(svc)
                 .As<IUserService>()
                 .CacheWithAttribute();
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
 
             var container = builder.Build();
 
@@ -56,7 +61,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
                 .RegisterInstance(svc)
                 .As<IUserService>()
                 .CacheWithStrategy(CacheStrategies.AllMethods().Duration(5000).VaryByParam("userId"));
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
 
             var container = builder.Build();
 
@@ -80,7 +85,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
                 .RegisterType<BlogService>()
                 .As<IBlogService>()
                 .CacheWithStrategy(CacheStrategies.AllMethods().Duration(5000).VaryByParam("postId"));
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
 
             var container = builder.Build();
 
@@ -106,7 +111,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
             builder
                 .RegisterType<BlogService>()
                 .CacheWithStrategy(CacheStrategies.AllMethods().Duration(5000).VaryByParam("postId"));
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
 
             var container = builder.Build();
 
@@ -134,7 +139,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
                 .RegisterInstance(svc)
                 .As<IUserService>()
                 .CacheWithStrategy(CacheStrategies.AllMethods().Duration(5000).VaryByParam("email"));
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
             var container = builder.Build();
 
             var cachedService = container.Resolve<IUserService>();

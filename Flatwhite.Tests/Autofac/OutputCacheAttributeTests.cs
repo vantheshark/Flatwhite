@@ -10,6 +10,11 @@ namespace Flatwhite.Tests.Autofac
     [TestFixture]
     public class OutputCacheAttributeTests
     {
+        [SetUp]
+        public void ShowSomeTrace()
+        {
+            Global.Cache = new MethodInfoCache();
+        }
         [Test]
         public void Test_vary_by_param()
         {
@@ -25,7 +30,7 @@ namespace Flatwhite.Tests.Autofac
                 .AsImplementedInterfaces()
                 .EnableInterfaceInterceptors()
                 .InterceptedBy(typeof(CacheInterceptorAdaptor));
-            builder.RegisterType<UnitTestCacheProvider>().As<ICacheProvider>();
+            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
             var container = builder.Build();
 
             var cachedService = container.Resolve<IUserService>();

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Web.Http.Controllers;
+#pragma warning disable 1591
 
 namespace Flatwhite.WebApi
 {

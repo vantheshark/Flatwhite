@@ -11,6 +11,7 @@ namespace Flatwhite.WebApi.Tests
             //config.SuppressDefaultHostAuthentication();
             //config.Filters.Add(new HostAuthenticationFilter(OAuthDefaults.AuthenticationType));
 
+            
             // Web API routes
             config.MapHttpAttributeRoutes();
 
@@ -19,6 +20,8 @@ namespace Flatwhite.WebApi.Tests
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+
+            config.EnsureInitialized();
         }
     }
 }
