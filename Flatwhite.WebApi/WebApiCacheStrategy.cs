@@ -1,18 +1,87 @@
-﻿using Flatwhite.Provider;
-using Flatwhite.Strategy;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.Caching;
+using Flatwhite.Provider;
 
 namespace Flatwhite.WebApi
 {
-    internal class WebApiCacheStrategy : DefaultCacheStrategy
+    /// <summary>
+    /// A <see cref="ICacheStrategy"/> implementation for web api
+    /// </summary>
+    public class WebApiCacheStrategy : ICacheStrategy
     {
-        internal WebApiCacheStrategy() : base(Global.AttributeProvider, new WebApiCacheAttributeProvider())
+        internal WebApiCacheStrategy() : this(new WebApiCacheAttributeProvider())
         {
-            CacheKeyProvider = new DefaultCacheKeyProvider(_cacheAttributeProvider, Global.HashCodeGeneratorProvider);
         }
-        
+
         /// <summary>
-        /// Cache key provider
+        /// The cache attribute provider
         /// </summary>
-        public override ICacheKeyProvider CacheKeyProvider { get; }
+        // ReSharper disable once InconsistentNaming
+        protected readonly ICacheAttributeProvider _cacheAttributeProvider;
+
+        /// <summary>
+        /// Initializes default cache strategy with a <see cref="ICacheAttributeProvider"/>
+        /// </summary>
+        /// <param name="cacheAttributeProvider"></param>
+        public WebApiCacheStrategy(ICacheAttributeProvider cacheAttributeProvider)
+        {
+            _cacheAttributeProvider = cacheAttributeProvider;
+            CacheKeyProvider = new DefaultCacheKeyProvider(cacheAttributeProvider, Global.HashCodeGeneratorProvider);
+        }
+
+        /// <summary>
+        /// Should always return true as it doesn't need to check the method info
+        /// </summary>
+        /// <param name="invocation"></param>
+        /// <param name="invocationContext"></param>
+        /// <returns></returns>
+        public bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Get cache time from <see cref="OutputCacheAttribute"/>
+        /// </summary>
+        /// <param name="invocation"></param>
+        /// <param name="invocationContext"></param>
+        /// <returns></returns>
+        public virtual int GetCacheTime(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        {
+            var att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
+            return att?.Duration ?? 0;
+        }
+
+        /// <summary>
+        /// Get cache store id for current invocation and context
+        /// </summary>
+        /// <param name="invocation"></param>
+        /// <param name="invocationContext"></param>
+        /// <returns></returns>
+        public uint GetCacheStoreId(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        {
+            var att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
+            return att?.CacheStoreId ?? 0;
+        }
+
+        /// <summary>
+        /// Get empty list change monitor
+        /// </summary>
+        /// <param name="invocation"></param>
+        /// <param name="invocationContext"></param>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
+        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext, string cacheKey)
+        {
+            yield break;
+        }
+
+        /// <summary>
+        /// Default cache key provider
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public virtual ICacheKeyProvider CacheKeyProvider { get; }
+
     }
 }

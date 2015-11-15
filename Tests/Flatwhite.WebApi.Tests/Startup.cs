@@ -16,13 +16,13 @@ namespace Flatwhite.WebApi.Tests
         public void Configuration(IAppBuilder app)
         {
             var config = new HttpConfiguration();
-            //var container = BuildAutofacContainer(config);
+            var container = BuildAutofacContainer(config);
             
             WebApiConfig.Register(config);
 
             app.UseWebApi(config)
                .UseFlatwhiteCache<Startup>(config)
-               //.UseAutofacMiddleware(container) // Comment this line if you don't use autofac
+               .UseAutofacMiddleware(container)
                ;
 
         }
@@ -33,6 +33,9 @@ namespace Flatwhite.WebApi.Tests
 
             // This will also be set to Global.CacheStrategyProvider in UseFlatwhiteCache method
             builder.RegisterType<WebApiCacheStrategyProvider>().As<ICacheStrategyProvider>().SingleInstance();
+
+            // This will also be set to Global.CacheAttributeProvider in UseFlatwhiteCache method
+            builder.RegisterType<WebApiCacheAttributeProvider>().As<ICacheAttributeProvider>().SingleInstance();
 
             // This is required by EtagHeaderHandler
             builder.RegisterType<CacheResponseBuilder>().As<ICacheResponseBuilder>().SingleInstance();

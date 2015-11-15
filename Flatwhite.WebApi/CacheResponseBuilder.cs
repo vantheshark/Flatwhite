@@ -44,7 +44,7 @@ namespace Flatwhite.WebApi
                 response.Headers.Add("Warning", $"110 - \"Response is Stale\"");
             }
 
-            response.StatusCode = HttpStatusCode.NotModified;
+            response.StatusCode = request.Properties.ContainsKey(WebApiExtensions.__webApi_etag_matched) ? HttpStatusCode.NotModified : HttpStatusCode.OK;
             response.Headers.Age = TimeSpan.FromSeconds(age);
             response.Headers.CacheControl = responseCacheControl;
             return response;

@@ -29,6 +29,19 @@
             <param name="invocationContext"></param>
             <returns></returns>
         </member>
+        <member name="T:Flatwhite.Provider.DefaultCacheAttributeProvider">
+            <summary>
+            Default implementation of <see cref="T:Flatwhite.Provider.ICacheAttributeProvider"/> to get first <see cref="T:Flatwhite.OutputCacheAttribute"/>
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Provider.DefaultCacheAttributeProvider.GetCacheAttribute(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get 1 cache attribute from methodInfo
+            </summary>
+            <param name="methodInfo"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
         <member name="T:Flatwhite.Provider.DefaultCacheKeyProvider">
             <summary>
             Default cache key provider

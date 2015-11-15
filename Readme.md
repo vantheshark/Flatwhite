@@ -101,14 +101,14 @@ Note that you don't have to call EnableFlatwhiteCache() on the builder like the 
 
 ## TODO:
 
-Test with WebApi and MVC controllers
-
 Better documents
 
 Support other IOC library
 
-Complex type param
 
+## WIKI:
+
+https://github.com/vanthoainguyen/Flatwhite/wiki
 
 
 ## LICENCE

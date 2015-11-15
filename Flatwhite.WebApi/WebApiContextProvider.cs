@@ -28,7 +28,7 @@ namespace Flatwhite.WebApi
         {
             var result = new Dictionary<string, object>
             {
-                {"__webApi", true},
+                {WebApiExtensions.__webApi, true},
                 {"headers", _httpActionContext.Request.Headers},
                 {"method", _httpActionContext.Request.Method},
                 {"requestUri", _httpActionContext.Request.RequestUri}

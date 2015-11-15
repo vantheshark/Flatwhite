@@ -180,9 +180,71 @@
             The id of the <see cref="T:Flatwhite.ICacheStore" /> where the cache item will be stored
             </summary>
         </member>
+        <member name="T:Flatwhite.WebApi.WebApiCacheAttributeProvider">
+            <summary>
+            Implementation of <see cref="T:Flatwhite.Provider.ICacheAttributeProvider"/> for WebApi
+            </summary>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiCacheAttributeProvider.GetCacheAttribute(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Copy settings from <see cref="T:Flatwhite.WebApi.OutputCacheAttribute"/> attribute to <see cref="T:Flatwhite.OutputCacheAttribute"/>
+            </summary>
+            <param name="methodInfo"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.WebApi.WebApiCacheStrategy">
+            <summary>
+            A <see cref="T:Flatwhite.ICacheStrategy"/> implementation for web api
+            </summary>
+        </member>
+        <member name="F:Flatwhite.WebApi.WebApiCacheStrategy._cacheAttributeProvider">
+            <summary>
+            The cache attribute provider
+            </summary>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.#ctor(Flatwhite.Provider.ICacheAttributeProvider)">
+            <summary>
+            Initializes default cache strategy with a <see cref="T:Flatwhite.Provider.ICacheAttributeProvider"/>
+            </summary>
+            <param name="cacheAttributeProvider"></param>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.CanIntercept(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Should always return true as it doesn't need to check the method info
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetCacheTime(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get cache time from <see cref="T:Flatwhite.WebApi.OutputCacheAttribute"/>
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetCacheStoreId(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get cache store id for current invocation and context
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String)">
+            <summary>
+            Get empty list change monitor
+            </summary>
+            <param name="invocation"></param>
+            <param name="invocationContext"></param>
+            <param name="cacheKey"></param>
+            <returns></returns>
+        </member>
         <member name="P:Flatwhite.WebApi.WebApiCacheStrategy.CacheKeyProvider">
             <summary>
-            Cache key provider
+            Default cache key provider
             </summary>
         </member>
         <member name="T:Flatwhite.WebApi.WebApiCacheStrategyProvider">
@@ -200,9 +262,7 @@
         </member>
         <member name="T:Flatwhite.WebApi.OutputCacheAttribute">
             <summary>
-            https://www.mnot.net/blog/2007/12/12/stale
-            https://tools.ietf.org/html/rfc5861
-            https://devcenter.heroku.com/articles/increasing-application-performance-with-http-cache-headers
+            Represents an attribute that is used to mark an WebApi action method whose output will be cached.
             </summary>
         </member>
         <member name="P:Flatwhite.WebApi.OutputCacheAttribute.CacheStrategyType">

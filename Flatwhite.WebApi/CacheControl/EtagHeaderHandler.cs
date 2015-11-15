@@ -74,6 +74,7 @@ namespace Flatwhite.WebApi.CacheControl
 
                             if (cacheItem != null)
                             {
+                                request.Properties[WebApiExtensions.__webApi_etag_matched] = true;
                                 return _builder.GetResponse(cacheControl, cacheItem, request);
                             }
                             if (cacheControl != null && cacheControl.OnlyIfCached)

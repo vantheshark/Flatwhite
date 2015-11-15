@@ -16,11 +16,14 @@ using Flatwhite.Provider;
 
 namespace Flatwhite.WebApi
 {
+    //https://www.mnot.net/blog/2007/12/12/stale
+    //https://tools.ietf.org/html/rfc5861
+    //https://devcenter.heroku.com/articles/increasing-application-performance-with-http-cache-headers
+
     /// <summary>
-    /// https://www.mnot.net/blog/2007/12/12/stale
-    /// https://tools.ietf.org/html/rfc5861
-    /// https://devcenter.heroku.com/articles/increasing-application-performance-with-http-cache-headers
+    /// Represents an attribute that is used to mark an WebApi action method whose output will be cached.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class OutputCacheAttribute : ActionFilterAttribute
     {
         #region -- Cache params --
@@ -216,7 +219,7 @@ namespace Flatwhite.WebApi
                     {
                         response.Content = new ByteArrayContent(cacheItem.Content);
                         response.Headers.ETag = new EntityTagHeaderValue($"\"{hashKey}\"");
-
+                        response.StatusCode = HttpStatusCode.OK;
                         actionContext.Response = response;
                     }
                 }

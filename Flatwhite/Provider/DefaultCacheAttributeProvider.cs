@@ -4,10 +4,18 @@ using System.Reflection;
 
 namespace Flatwhite.Provider
 {
-    internal class DefaultCacheAttributeProvider : DefaulAttributeProvider, ICacheAttributeProvider
+    /// <summary>
+    /// Default implementation of <see cref="ICacheAttributeProvider"/> to get first <see cref="OutputCacheAttribute"/>
+    /// </summary>
+    public class DefaultCacheAttributeProvider : DefaulAttributeProvider, ICacheAttributeProvider
     {
-
-        public OutputCacheAttribute GetCacheAttribute(MethodInfo methodInfo, IDictionary<string, object> invocationContext)
+        /// <summary>
+        /// Get 1 cache attribute from methodInfo
+        /// </summary>
+        /// <param name="methodInfo"></param>
+        /// <param name="invocationContext"></param>
+        /// <returns></returns>
+        public virtual OutputCacheAttribute GetCacheAttribute(MethodInfo methodInfo, IDictionary<string, object> invocationContext)
         {
             if (!Global.Cache.OutputCacheAttributeCache.ContainsKey(methodInfo))
             {

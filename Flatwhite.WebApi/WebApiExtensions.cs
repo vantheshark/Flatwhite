@@ -11,6 +11,11 @@ namespace Flatwhite.WebApi
     /// </summary>
     public static class WebApiExtensions
     {
+        // ReSharper disable InconsistentNaming
+        internal static readonly string __webApi = "__webApi";
+        internal static readonly string __webApi_etag_matched = "__flatwhite_webApi_etag_matched";
+        // ReSharper restore InconsistentNaming
+
         /// <summary>
         /// Create required components to use Flatwhite cache
         /// </summary>
@@ -20,7 +25,8 @@ namespace Flatwhite.WebApi
         public static IAppBuilder UseFlatwhiteCache<T>(this IAppBuilder app, HttpConfiguration config)
         {
             Global.CacheStrategyProvider = new WebApiCacheStrategyProvider();
-            
+            Global.CacheAttributeProvider = new WebApiCacheAttributeProvider();
+
             var allHandlers = config.DependencyResolver
                 .GetServices(typeof (ICachControlHeaderHandler))
                 .OfType<ICachControlHeaderHandler>()

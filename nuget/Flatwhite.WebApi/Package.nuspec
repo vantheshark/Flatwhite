@@ -2,11 +2,11 @@
 <package>
   <metadata>
     <id>Flatwhite.WebApi</id>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <authors>Van Thoai Nguyen</authors>
     <owners>Van Thoai Nguyen</owners>
     <licenseUrl>http://sam.zoy.org/wtfpl/COPYING</licenseUrl>
-	<projectUrl>https://github.com/vanthoainguyen/Flatwhite</projectUrl>	    	
+	<projectUrl>https://github.com/vanthoainguyen/Flatwhite/wiki/Flatwhite.WebApi</projectUrl>	    	
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<summary>Flatwhite.WebApi support WebApi output cache with most of Cache-Control directives</summary>    
 	<description>Flatwhite.WebApi is an output cache library for WebApi with VaryByParam (on action method) and VaryByHeader support, facilitate usages of cache control and HTTP Cache-Control Extensions for Stale Content</description>
@@ -14,7 +14,7 @@
     <copyright>Copyright 2015</copyright>
     <tags>Flatwhite WebApi Autofac Intercept DynamicProxy Caching Cache OutputCache CacheControl VaryByParam VaryByHeader</tags>
     <dependencies>
-		<dependency id="Flatwhite" version="1.0.2" />	
+		<dependency id="Flatwhite" version="1.0.3" />	
     </dependencies>
   </metadata>
 </package>

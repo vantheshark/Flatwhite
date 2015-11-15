@@ -17,8 +17,8 @@ namespace Flatwhite.WebApi
         /// <returns></returns>
         public ICacheStrategy GetStrategy(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            return invocationContext.ContainsKey("__webApi") 
-                ? new WebApiCacheStrategy() 
+            return invocationContext.ContainsKey(WebApiExtensions.__webApi) 
+                ? (ICacheStrategy)new WebApiCacheStrategy() 
                 : new DefaultCacheStrategy(Global.AttributeProvider, Global.CacheAttributeProvider);
         }
     }
