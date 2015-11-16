@@ -10,14 +10,12 @@ namespace Flatwhite.Tests
         [OutputCache(Duration = 1000, VaryByParam = "userId")]
         object GetById(Guid userId);
 
-        
-
-
         [NoCache]
         object GetByEmail(string email);
 
         IEnumerable<object> GetRoles(Guid userId);
 
-        
+        [Revalidate]
+        void DisableUser(Guid userId);
     }
 }

@@ -784,6 +784,11 @@
             Use this attribute to decorate on a method where we don't want to intercept by Caslte dynamic proxy
             </summary>
         </member>
+        <member name="T:Flatwhite.RevalidateAttribute">
+            <summary>
+            Use this attribute to decorate on a method where you want to revalidate a specific cache entry after a method is invoked
+            </summary>
+        </member>
         <member name="T:Flatwhite.OutputCacheAttribute">
             <summary>
             Use this attribute to decorate on a method which has return type and you want the library to cache the result

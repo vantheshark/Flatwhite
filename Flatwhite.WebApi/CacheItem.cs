@@ -35,7 +35,13 @@ namespace Flatwhite.WebApi
             StaleIfError = cacheAttribute.StaleIfError;
             MaxAge = cacheAttribute.MaxAge;
             StoreId = cacheAttribute.CacheStoreId;
+            IgnoreRevalidationRequest = cacheAttribute.IgnoreRevalidationRequest;
         }
+
+        /// <summary>
+        /// Cache key
+        /// </summary>
+        public string Key { get; set; }
 
         /// <summary>
         /// The response data
@@ -63,5 +69,18 @@ namespace Flatwhite.WebApi
         /// The id of the <see cref="ICacheStore" /> where the cache item will be stored
         /// </summary>
         public uint StoreId { get; set; }
+
+        /// <summary>
+        /// A cache MAY be configured to return stale responses without validation
+        /// <para>If set to TRUE, the server will return cache item as soon as the cache item is available and ignore all cache control directives sent from client
+        /// such as no-cache, no-store or max-age, max-stale. Warning 110 (Response is stale) will be included in the response header</para>
+        /// <para>This may be helpful to guarantee that the endpoint will not revalidate the cache all the time by some one sending request with no-cache header</para>
+        /// </summary>
+        public bool IgnoreRevalidationRequest { get; set; }
+
+        /// <summary>
+        /// Return the age of the CacheItem
+        /// </summary>
+        public uint Age => (uint)Math.Round(DateTime.UtcNow.Subtract(CreatedTime).TotalSeconds);
     }
 }

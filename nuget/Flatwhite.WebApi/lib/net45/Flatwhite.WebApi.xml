@@ -150,6 +150,11 @@
             </summary>
             <param name="cacheAttribute"></param>
         </member>
+        <member name="P:Flatwhite.WebApi.CacheItem.Key">
+            <summary>
+            Cache key
+            </summary>
+        </member>
         <member name="P:Flatwhite.WebApi.CacheItem.Content">
             <summary>
             The response data
@@ -178,6 +183,19 @@
         <member name="P:Flatwhite.WebApi.CacheItem.StoreId">
             <summary>
             The id of the <see cref="T:Flatwhite.ICacheStore" /> where the cache item will be stored
+            </summary>
+        </member>
+        <member name="P:Flatwhite.WebApi.CacheItem.IgnoreRevalidationRequest">
+            <summary>
+            A cache MAY be configured to return stale responses without validation
+            <para>If set to TRUE, the server will return cache item as soon as the cache item is available and ignore all cache control directives sent from client
+            such as no-cache, no-store or max-age, max-stale. Warning 110 (Response is stale) will be included in the response header</para>
+            <para>This may be helpful to guarantee that the endpoint will not revalidate the cache all the time by some one sending request with no-cache header</para>
+            </summary>
+        </member>
+        <member name="P:Flatwhite.WebApi.CacheItem.Age">
+            <summary>
+            Return the age of the CacheItem
             </summary>
         </member>
         <member name="T:Flatwhite.WebApi.WebApiCacheAttributeProvider">
@@ -286,6 +304,11 @@
             <para>Also set Cache-Control: max-age=*seconds* to the message response header.</para>
             </summary>
         </member>
+        <member name="P:Flatwhite.WebApi.OutputCacheAttribute.SMaxAge">
+            <summary>
+            Set Cache-Control: s-maxage=*seconds* to the message response header.
+            </summary>
+        </member>
         <member name="P:Flatwhite.WebApi.OutputCacheAttribute.VaryByParam">
             <summary>
             A semicolon-separated list of strings that correspond to to parameter values
@@ -366,6 +389,14 @@
             https://tools.ietf.org/html/rfc5861#4.1
             </summary>
         </member>
+        <member name="P:Flatwhite.WebApi.OutputCacheAttribute.IgnoreRevalidationRequest">
+            <summary>
+            A cache MAY be configured to return stale responses without validation
+            <para>If set to TRUE, the server will return cache item as soon as the cache item is available and ignore all cache control directives sent from client
+            such as no-cache, no-store or max-age, max-stale. Warning 110 (Response is stale) will be included in the response header</para>
+            <para>This may be helpful to guarantee that the endpoint will not revalidate the cache all the time by some one sending request with no-cache header</para>
+            </summary>
+        </member>
         <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetAsyncCacheStore(System.Web.Http.Dependencies.IDependencyScope)">
             <summary>
             Get <see cref="T:Flatwhite.IAsyncCacheStore" /> from <see cref="T:System.Web.Http.Dependencies.IDependencyScope" />
@@ -396,6 +427,14 @@
             <param name="actionContext"></param>
             <param name="cancellationToken"></param>
         </member>
+        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.ShouldIgnoreCache(System.Net.Http.Headers.CacheControlHeaderValue,System.Net.Http.HttpRequestMessage)">
+            <summary>
+            Determine whether or not should ignore all the cache settings base on the 
+            </summary>
+            <param name="cacheControl"></param>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
         <member name="M:Flatwhite.WebApi.OutputCacheAttribute.OnActionExecutedAsync(System.Web.Http.Filters.HttpActionExecutedContext,System.Threading.CancellationToken)">
             <summary>
             Store the response to cache store, add CacheControl and Etag to response
@@ -404,18 +443,32 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.ApplyCacheHeaders(System.Net.Http.HttpResponseMessage,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.ApplyCacheHeaders(System.Net.Http.HttpResponseMessage,System.Net.Http.HttpRequestMessage)">
             <summary>
             Apply the CacheControl header to response
             </summary>
             <param name="response"></param>
-            <param name="requestProperties"></param>
+            <param name="request"></param>
         </member>
         <member name="M:Flatwhite.WebApi.OutputCacheAttribute.HashCacheKey(System.String)">
             <summary>
             Make a hash string of the original senstivive cacheKey
             </summary>
             <param name="originalCacheKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetInvocation(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Get <see cref="T:Flatwhite._IInvocation" /> from <see cref="T:System.Web.Http.Controllers.HttpActionContext" />
+            </summary>
+            <param name="actionContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetContext(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Get context data from <see cref="T:System.Web.Http.Controllers.HttpActionContext" />
+            </summary>
+            <param name="actionContext"></param>
             <returns></returns>
         </member>
         <member name="T:Flatwhite.WebApi.WebApiContextProvider">

@@ -20,7 +20,7 @@ namespace Flatwhite.WebApi.Tests.Controllers
 
         [HttpGet]
         [Route("api/vary-by-param/{packageId}")]
-        [OutputCache(MaxAge = 10, StaleWhileRevalidate = 5, VaryByParam = "packageId", Private = true)]
+        [OutputCache(MaxAge = 10, StaleWhileRevalidate = 5, VaryByParam = "packageId", Private = true, IgnoreRevalidationRequest = true)]
         public virtual async Task<HttpResponseMessage> VaryByParam(string packageId)
         {
             var sw = Stopwatch.StartNew();

@@ -36,7 +36,7 @@ namespace Flatwhite.WebApi
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             return true;
         }
@@ -59,7 +59,7 @@ namespace Flatwhite.WebApi
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public uint GetCacheStoreId(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual uint GetCacheStoreId(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             var att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
             return att?.CacheStoreId ?? 0;
