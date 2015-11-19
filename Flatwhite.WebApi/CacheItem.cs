@@ -34,7 +34,6 @@ namespace Flatwhite.WebApi
             StaleWhileRevalidate = cacheAttribute.StaleWhileRevalidate;
             StaleIfError = cacheAttribute.StaleIfError;
             MaxAge = cacheAttribute.MaxAge;
-            StoreId = cacheAttribute.CacheStoreId;
             IgnoreRevalidationRequest = cacheAttribute.IgnoreRevalidationRequest;
         }
 

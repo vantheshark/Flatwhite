@@ -198,6 +198,29 @@
             Return the age of the CacheItem
             </summary>
         </member>
+        <member name="T:Flatwhite.WebApi.RevalidateAttribute">
+            <summary>
+            Use this attribute to decorate on a method where you want to revalidate a specific cache entry after a method is invoked
+            </summary>
+        </member>
+        <member name="P:Flatwhite.WebApi.RevalidateAttribute.Keys">
+            <summary>
+            List of keys
+            </summary>
+        </member>
+        <member name="M:Flatwhite.WebApi.RevalidateAttribute.#ctor(System.String[])">
+            <summary>
+            Initializes a <see cref="T:Flatwhite.WebApi.RevalidateAttribute" /> with a list of revalidation keys
+            </summary>
+            <param name="keys"></param>
+        </member>
+        <member name="M:Flatwhite.WebApi.RevalidateAttribute.OnActionExecuted(System.Web.Http.Filters.HttpActionExecutedContext)">
+            <summary>
+            Revalidate caches after call method
+            </summary>
+            <param name="actionExecutedContext"></param>
+            <returns></returns>
+        </member>
         <member name="T:Flatwhite.WebApi.WebApiCacheAttributeProvider">
             <summary>
             Implementation of <see cref="T:Flatwhite.Provider.ICacheAttributeProvider"/> for WebApi
@@ -251,13 +274,12 @@
             <param name="invocationContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String)">
+        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get empty list change monitor
             </summary>
             <param name="invocation"></param>
             <param name="invocationContext"></param>
-            <param name="cacheKey"></param>
             <returns></returns>
         </member>
         <member name="P:Flatwhite.WebApi.WebApiCacheStrategy.CacheKeyProvider">
@@ -395,6 +417,11 @@
             <para>If set to TRUE, the server will return cache item as soon as the cache item is available and ignore all cache control directives sent from client
             such as no-cache, no-store or max-age, max-stale. Warning 110 (Response is stale) will be included in the response header</para>
             <para>This may be helpful to guarantee that the endpoint will not revalidate the cache all the time by some one sending request with no-cache header</para>
+            </summary>
+        </member>
+        <member name="P:Flatwhite.WebApi.OutputCacheAttribute.RevalidationKey">
+            <summary>
+            A key to used to delete the cache when an method with relevant <see cref="T:Flatwhite.WebApi.RevalidateAttribute" /> is invoked
             </summary>
         </member>
         <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetAsyncCacheStore(System.Web.Http.Dependencies.IDependencyScope)">

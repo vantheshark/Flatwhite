@@ -5,11 +5,9 @@ namespace Flatwhite.Tests
 {
     public class UnitTestCacheChangeMonitor : ChangeMonitor
     {
-        private readonly string _cacheKey;
 
-        public UnitTestCacheChangeMonitor(string cacheKey)
+        public UnitTestCacheChangeMonitor()
         {
-            _cacheKey = cacheKey;
             UniqueId = Guid.NewGuid().ToString();
             InitializationComplete();
         }
@@ -23,10 +21,9 @@ namespace Flatwhite.Tests
         /// <summary>
         /// Raise the event when a change dependency changes.
         /// </summary>
-        /// <param name="state"></param>
-        public void FireChangeEvent(object state)
+        public void FireChangeEvent()
         {
-            OnChanged(_cacheKey);
+            OnChanged(null);
         }
     }
 }

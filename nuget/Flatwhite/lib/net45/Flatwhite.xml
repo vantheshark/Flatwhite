@@ -16,6 +16,61 @@
             <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
+        <member name="T:Flatwhite.FlatwhiteCacheEntryChangeMonitor">
+            <summary>
+            An ChangeMonitor that response to GlobalRevalidateEvent and call OnChanged to reset the cache
+            </summary>
+        </member>
+        <member name="M:Flatwhite.FlatwhiteCacheEntryChangeMonitor.#ctor(System.String)">
+            <summary>
+            Initializes an instance of FlatwhiteCacheEntryChangeMonitor with revalidationKey
+            </summary>
+            <param name="revalidationKey"></param>
+        </member>
+        <member name="M:Flatwhite.FlatwhiteCacheEntryChangeMonitor.Dispose(System.Boolean)">
+            <summary>
+            When dispose, unregistered from Global.RevalidateEvent
+            </summary>
+            <param name="disposing"></param>
+        </member>
+        <member name="P:Flatwhite.FlatwhiteCacheEntryChangeMonitor.UniqueId">
+            <summary>
+            Gets a value that represents the <see cref="T:System.Runtime.Caching.ChangeMonitor"/> class instance.
+            </summary>
+            <returns>
+            The identifier for a change-monitor instance.
+            </returns>
+        </member>
+        <member name="P:Flatwhite.FlatwhiteCacheEntryChangeMonitor.CacheKeys">
+            <summary>
+            Gets a collection of cache keys that are monitored for changes. 
+            </summary>
+            <returns>
+            A collection of cache keys.
+            </returns>
+        </member>
+        <member name="P:Flatwhite.FlatwhiteCacheEntryChangeMonitor.LastModified">
+            <summary>
+            Gets a value that indicates the latest time (in UTC time) that the monitored cache entry was changed.
+            </summary>
+            <returns>
+            The elapsed time.
+            </returns>
+        </member>
+        <member name="P:Flatwhite.FlatwhiteCacheEntryChangeMonitor.RegionName">
+            <summary>
+            Gets the name of a region of the cache.
+            </summary>
+            <returns>
+            The name of a region in the cache. 
+            </returns>
+        </member>
+        <member name="M:Flatwhite.MethodInfoCache.#ctor">
+            <summary>
+            Use <see cref="T:Flatwhite.ToStringHashCodeGenerator" /> for all primitive types
+            Use <see cref="T:Flatwhite.DefaultHashCodeGenerator" /> for unregistered types
+            </summary>
+        </member>
         <member name="T:Flatwhite.Provider.DefaulAttributeProvider">
             <summary>
             Default attribute provider
@@ -132,12 +187,6 @@
         <member name="T:Flatwhite.Provider.DefaultHashCodeGeneratorProvider">
             <summary>
             Provide default implementation of <see cref="T:Flatwhite.Provider.IHashCodeGeneratorProvider" />
-            </summary>
-        </member>
-        <member name="M:Flatwhite.Provider.DefaultHashCodeGeneratorProvider.#ctor">
-            <summary>
-            Use <see cref="T:Flatwhite.ToStringHashCodeGenerator" /> for all primitive types
-            Use <see cref="T:Flatwhite.DefaultHashCodeGenerator" /> for unregistered types
             </summary>
         </member>
         <member name="M:Flatwhite.Provider.DefaultHashCodeGeneratorProvider.GetForType(System.Type)">
@@ -428,6 +477,22 @@
             <param name="value"></param>
             <returns></returns>
         </member>
+        <member name="T:Flatwhite.RevalidateAttribute">
+            <summary>
+            Use this attribute to decorate on a method where you want to revalidate a specific cache entry after a method is invoked
+            </summary>
+        </member>
+        <member name="P:Flatwhite.RevalidateAttribute.Keys">
+            <summary>
+            List of keys
+            </summary>
+        </member>
+        <member name="M:Flatwhite.RevalidateAttribute.#ctor(System.String[])">
+            <summary>
+            Initializes a <see cref="T:Flatwhite.RevalidateAttribute" /> with a list of revalidation keys
+            </summary>
+            <param name="keys"></param>
+        </member>
         <member name="T:Flatwhite.Strategy.CacheStrategies">
             <summary>
             A factory class to provide default <see cref="T:Flatwhite.ICacheStrategy"/>
@@ -517,7 +582,21 @@
             <param name="custom"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.WithChangeMonitors(System.Func{Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String,System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.WithCacheStore(System.UInt32)">
+            <summary>
+            Set cache store id
+            </summary>
+            <param name="cacheStoreId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.WithRevalidationKey(System.String)">
+            <summary>
+            Set revalidation key
+            </summary>
+            <param name="revalidationKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.WithChangeMonitors(System.Func{Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
             <summary>
             Set the change monitors factory that will create the new change monitors when new cache entry is created
             </summary>
@@ -529,13 +608,12 @@
             Cache key provider
             </summary>
         </member>
-        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String)">
+        <member name="M:Flatwhite.Strategy.CacheSelectedMethodsInvocationStrategy`2.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get change monitors
             </summary>
             <param name="invocation"></param>
             <param name="invocationContext"></param>
-            <param name="cacheKey"></param>
             <returns></returns>
         </member>
         <member name="T:Flatwhite.Strategy.DefaultCacheStrategy">
@@ -577,15 +655,14 @@
             </summary>
             <param name="invocation"></param>
             <param name="invocationContext"></param>
-            <returns></returns>
+            <returns>The id (number) of the cache store which is going to store the cache item</returns>
         </member>
-        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String)">
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get empty list change monitor
             </summary>
             <param name="invocation"></param>
             <param name="invocationContext"></param>
-            <param name="cacheKey"></param>
             <returns></returns>
         </member>
         <member name="P:Flatwhite.Strategy.DefaultCacheStrategy.CacheKeyProvider">
@@ -620,7 +697,21 @@
             <param name="custom"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.WithChangeMonitors(System.Func{Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String,System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
+        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.WithCacheStore(System.UInt32)">
+            <summary>
+            Set cache store id
+            </summary>
+            <param name="cacheStoreId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.WithRevalidationKey(System.String)">
+            <summary>
+            Set revalidation key
+            </summary>
+            <param name="revalidationKey"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.IMethodCacheRuleBuilder`1.WithChangeMonitors(System.Func{Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.Collections.Generic.IEnumerable{System.Runtime.Caching.ChangeMonitor}})">
             <summary>
             Set the change monitors factory that will create the new change monitors when new cache entry is created
             https://msdn.microsoft.com/en-us/library/system.runtime.caching.changemonitor(v=vs.110).aspx
@@ -651,6 +742,17 @@
             <summary>
             Global config
             </summary>
+        </member>
+        <member name="E:Flatwhite.Global.RevalidateEvent">
+            <summary>
+            Global router for revalidation event
+            </summary>
+        </member>
+        <member name="M:Flatwhite.Global.RevalidateCaches(System.Collections.Generic.List{System.String})">
+            <summary>
+            Revalidate the caches with provided revalidateKeys
+            </summary>
+            <param name="revalidateKeys"></param>
         </member>
         <member name="P:Flatwhite.Global.ContextProvider">
             <summary>
@@ -760,13 +862,12 @@
             <param name="invocationContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.ICacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object},System.String)">
+        <member name="M:Flatwhite.ICacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get the change monitor by invocation and context
             </summary>
             <param name="invocation"></param>
             <param name="invocationContext"></param>
-            <param name="cacheKey"></param>
             <returns></returns>
         </member>
         <member name="P:Flatwhite.ICacheStrategy.CacheKeyProvider">
@@ -782,11 +883,6 @@
         <member name="T:Flatwhite.NoInterceptAttribute">
             <summary>
             Use this attribute to decorate on a method where we don't want to intercept by Caslte dynamic proxy
-            </summary>
-        </member>
-        <member name="T:Flatwhite.RevalidateAttribute">
-            <summary>
-            Use this attribute to decorate on a method where you want to revalidate a specific cache entry after a method is invoked
             </summary>
         </member>
         <member name="T:Flatwhite.OutputCacheAttribute">
@@ -822,14 +918,19 @@
             Gets or sets the vary-by-custom value which could be used to make the cache key
             </summary>
         </member>
-        <member name="P:Flatwhite.OutputCacheAttribute.CacheStoreType">
-            <summary>
-            The custom cache store type, if provided, the cache store will be resolved by the 
-            </summary>
-        </member>
         <member name="P:Flatwhite.OutputCacheAttribute.CacheStoreId">
             <summary>
+            The custom cache store type, if provided, the cache store will be resolved by the 
+            NOTE: Not support for now
+            </summary>
+            public Type CacheStoreType { get; set; }
+            <summary>
             The store id that we want to keep the cache (mem/redis, etc)
+            </summary>
+        </member>
+        <member name="P:Flatwhite.OutputCacheAttribute.RevalidationKey">
+            <summary>
+            A key to used to delete the cache when an method with relevant <see cref="T:Flatwhite.RevalidateAttribute" /> is invoked
             </summary>
         </member>
         <member name="T:Flatwhite.ExpressionSetting`2">

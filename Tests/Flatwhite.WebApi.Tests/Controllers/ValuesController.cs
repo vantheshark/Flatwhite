@@ -20,7 +20,12 @@ namespace Flatwhite.WebApi.Tests.Controllers
 
         [HttpGet]
         [Route("api/vary-by-param/{packageId}")]
-        [OutputCache(MaxAge = 10, StaleWhileRevalidate = 5, VaryByParam = "packageId", Private = true, IgnoreRevalidationRequest = true)]
+        [OutputCache(
+            MaxAge = 10, 
+            StaleWhileRevalidate = 5, 
+            VaryByParam = "packageId", 
+            RevalidationKey = "VaryByParamMethod",
+            IgnoreRevalidationRequest = true)]
         public virtual async Task<HttpResponseMessage> VaryByParam(string packageId)
         {
             var sw = Stopwatch.StartNew();
@@ -42,6 +47,15 @@ namespace Flatwhite.WebApi.Tests.Controllers
             {
                 Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} Milliseconds", Encoding.UTF8, "text/html")
             };
+        }
+
+
+        [HttpGet]
+        [Route("api/reset")]
+        [Revalidate("VaryByParamMethod")]
+        public virtual HttpResponseMessage ResetCache()
+        {
+            return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 }

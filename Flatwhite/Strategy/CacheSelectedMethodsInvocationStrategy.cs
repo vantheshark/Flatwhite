@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Caching;
 using Flatwhite.Provider;
@@ -100,11 +101,34 @@ namespace Flatwhite.Strategy
         }
 
         /// <summary>
+        /// Set cache store id
+        /// </summary>
+        /// <param name="cacheStoreId"></param>
+        /// <returns></returns>
+        public IMethodCacheStrategy<T> WithCacheStore(uint cacheStoreId)
+        {
+            _currentExpression.CacheAttribute.CacheStoreId = cacheStoreId;
+            return this;
+        }
+
+
+        /// <summary>
+        /// Set revalidation key
+        /// </summary>
+        /// <param name="revalidationKey"></param>
+        /// <returns></returns>
+        public IMethodCacheStrategy<T> WithRevalidationKey(string revalidationKey)
+        {
+            _currentExpression.CacheAttribute.RevalidationKey = revalidationKey;
+            return this;
+        }
+
+        /// <summary>
         /// Set the change monitors factory that will create the new change monitors when new cache entry is created
         /// </summary>
         /// <param name="changeMonitorFactory"></param>
         /// <returns></returns>
-        public IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, string, IEnumerable<ChangeMonitor>> changeMonitorFactory)
+        public IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> changeMonitorFactory)
         {
             _currentExpression.ChangeMonitorFactory = changeMonitorFactory;
             return this;
@@ -121,19 +145,21 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
-        /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public override IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext, string cacheKey)
+        public override IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
+            List<ChangeMonitor> monitors = base.GetChangeMonitors(invocation, invocationContext).ToList();
+
             foreach (var e in Expressions)
             {
                 var m = ExpressionHelper.ToMethodInfo(e.Expression);
                 if (m == invocation.Method)
                 {
-                    return e.ChangeMonitorFactory(invocation, invocationContext, cacheKey);
+                    monitors.AddRange(e.ChangeMonitorFactory(invocation, invocationContext));
+                    break;
                 }
             }
-            return new ChangeMonitor[0];
+            return monitors;
         }
     }
 }

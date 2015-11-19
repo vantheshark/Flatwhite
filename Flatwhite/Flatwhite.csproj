@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Argument.cs" />
     <Compile Include="CacheStoreAdaptor.cs" />
+    <Compile Include="FlatwhiteCacheEntryChangeMonitor.cs" />
     <Compile Include="MethodInfoCache.cs" />
     <Compile Include="Provider\DefaulAttributeProvider.cs" />
     <Compile Include="Provider\DefaultCacheAttributeProvider.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="IInvocation.cs" />
     <Compile Include="IHashCodeGenerator.cs" />
     <Compile Include="Provider\IHashCodeGeneratorProvider.cs" />
+    <Compile Include="RevalidateAttribute.cs" />
     <Compile Include="Strategy\CacheStrategies.cs" />
     <Compile Include="Strategy\CacheOutputForAllMethod.cs" />
     <Compile Include="Strategy\CacheSelectedMethodsInvocationStrategy.cs" />

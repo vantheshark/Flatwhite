@@ -40,12 +40,18 @@ namespace Flatwhite
 
         /// <summary>
         /// The custom cache store type, if provided, the cache store will be resolved by the 
+        /// NOTE: Not support for now
         /// </summary>
-        public Type CacheStoreType { get; set; }
+        /// public Type CacheStoreType { get; set; }
 
         /// <summary>
         /// The store id that we want to keep the cache (mem/redis, etc)
         /// </summary>
-        public uint CacheStoreId { get; set; }
+        public uint? CacheStoreId { get; set; }
+
+        /// <summary>
+        /// A key to used to delete the cache when an method with relevant <see cref="RevalidateAttribute" /> is invoked
+        /// </summary>
+        public string RevalidationKey { get; set; }
     }
 }

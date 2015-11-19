@@ -67,9 +67,9 @@ namespace Flatwhite.Tests.Autofac.Strategy
                         .ForMember(x => x.GetById(Argument.Any<Guid>()))
                         .Duration(50000)
                         .VaryByParam("postId")
-                        .WithChangeMonitors((i, context, cacheKey) =>
+                        .WithChangeMonitors((i, context) =>
                         {
-                            mon = new UnitTestCacheChangeMonitor(cacheKey);
+                            mon = new UnitTestCacheChangeMonitor();
                             return new[] {mon};
                         })
                 );
@@ -88,7 +88,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
             dynamic blogSvc = cachedService;
             Assert.AreEqual(1, blogSvc.__target.InvokeCount);
             
-            mon.FireChangeEvent(null);
+            mon.FireChangeEvent();
             for (var i = 0; i < 1000; i++)
             {
                 var b1 = cachedService.GetById(id1);

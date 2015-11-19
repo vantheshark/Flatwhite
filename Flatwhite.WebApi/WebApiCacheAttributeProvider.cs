@@ -32,6 +32,9 @@ namespace Flatwhite.WebApi
                 Duration = (int) attribute.MaxAge * 1000,
                 VaryByCustom = $"{attribute.VaryByCustom},{varyByHeader}",
                 VaryByParam = attribute.VaryByParam,
+                RevalidationKey = attribute.RevalidationKey,
+                CacheStoreId = attribute.CacheStoreId,
+                //CacheStoreType = attribute.CacheStoreType
             };
         }
     }

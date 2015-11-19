@@ -40,9 +40,8 @@ namespace Flatwhite
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
-        /// <param name="cacheKey"></param>
         /// <returns></returns>
-        IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext, string cacheKey);
+        IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext);
 
         /// <summary>
         /// Cache key provider

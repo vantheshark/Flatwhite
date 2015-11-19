@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Caching;
 using Flatwhite.Provider;
 
@@ -72,7 +71,7 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
-        /// <returns></returns>
+        /// <returns>The id (number) of the cache store which is going to store the cache item</returns>
         public uint GetCacheStoreId(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             OutputCacheAttribute att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
@@ -84,11 +83,15 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
-        /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext, string cacheKey)
+        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            yield break;
+            OutputCacheAttribute att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
+            if (string.IsNullOrWhiteSpace(att?.RevalidationKey))
+            {
+                yield break;
+            }
+            yield return new FlatwhiteCacheEntryChangeMonitor(att.RevalidationKey);
         }
 
         /// <summary>

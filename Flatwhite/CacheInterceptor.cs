@@ -66,7 +66,7 @@ namespace Flatwhite
                 {
                     invocation.Proceed();
                     var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(cacheTime)};
-                    var changeMonitors = strategy.GetChangeMonitors(invocation, context, key);
+                    var changeMonitors = strategy.GetChangeMonitors(invocation, context);
                     foreach(var mon in changeMonitors)
                     {
                         policy.ChangeMonitors.Add(mon);

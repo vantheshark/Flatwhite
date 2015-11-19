@@ -39,7 +39,7 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// The unique number id of the cache store when registered against the <see cref="ICacheStoreProvider" />
         /// </summary>
-        public uint CacheStoreId { get; set; }
+        public uint? CacheStoreId { get; set; }
 
         /// <summary>
         /// Gets or sets the cache duration, in seconds.
@@ -141,6 +141,11 @@ namespace Flatwhite.WebApi
         /// </summary>
         public bool IgnoreRevalidationRequest { get; set; }
 
+        /// <summary>
+        /// A key to used to delete the cache when an method with relevant <see cref="RevalidateAttribute" /> is invoked
+        /// </summary>
+        public string RevalidationKey { get; set; }
+
         #endregion 
 
         /// <summary>
@@ -150,14 +155,23 @@ namespace Flatwhite.WebApi
         /// <returns></returns>
         protected virtual IAsyncCacheStore GetAsyncCacheStore(IDependencyScope scope)
         {
-            if (CacheStoreId > 0)
+            if (CacheStoreId.HasValue && CacheStoreId > 0)
             {
-                return Global.CacheStoreProvider.GetAsyncCacheStore(CacheStoreId);
+                return Global.CacheStoreProvider.GetAsyncCacheStore(CacheStoreId.Value);
             }
             
-            if (CacheStoreType != null)
+            if (CacheStoreType != null && typeof(IAsyncCacheStore).IsAssignableFrom(CacheStoreType))
             {
                 return scope.GetService(CacheStoreType) as IAsyncCacheStore ?? Global.CacheStoreProvider.GetAsyncCacheStore();
+            }
+
+            if (CacheStoreType != null && typeof(ICacheStore).IsAssignableFrom(CacheStoreType))
+            {
+                var cacheStore = scope.GetService(CacheStoreType) as ICacheStore;
+                if (cacheStore != null)
+                {
+                    return new CacheStoreAdaptor(cacheStore);
+                }
             }
 
             return Global.CacheStoreProvider.GetAsyncCacheStore();
@@ -318,14 +332,14 @@ namespace Flatwhite.WebApi
                 var policy = new CacheItemPolicy { AbsoluteExpiration = DateTime.UtcNow.AddSeconds(MaxAge + Math.Max(StaleWhileRevalidate, StaleIfError))};
                 //TODO: Refresh cache when it starts to be stale
 
-                var changeMonitors = strategy.GetChangeMonitors(invocation, context, storedKey);
+                var changeMonitors = strategy.GetChangeMonitors(invocation, context);
                 foreach (var mon in changeMonitors)
                 {
                     policy.ChangeMonitors.Add(mon);
                 }
 
                 actionExecutedContext.Response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}\"");
-                
+                cacheItem.StoreId = cacheStore.StoreId;
                 await cacheStore.SetAsync(cacheItem.Key, cacheItem, policy).ConfigureAwait(false);
             }
         }

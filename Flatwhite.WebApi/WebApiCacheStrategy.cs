@@ -70,11 +70,16 @@ namespace Flatwhite.WebApi
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
-        /// <param name="cacheKey"></param>
         /// <returns></returns>
-        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext, string cacheKey)
+        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            yield break;
+            var att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
+            if (string.IsNullOrWhiteSpace(att?.RevalidationKey))
+            {
+                yield break;
+            }
+            yield return new FlatwhiteCacheEntryChangeMonitor(att.RevalidationKey);
+            //TODO: Don't remove if there is stale while validation settings
         }
 
         /// <summary>

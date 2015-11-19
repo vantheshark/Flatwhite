@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Flatwhite.Provider
 {
@@ -8,45 +7,6 @@ namespace Flatwhite.Provider
     /// </summary>
     public class DefaultHashCodeGeneratorProvider : IHashCodeGeneratorProvider
     {
-        private static readonly ToStringHashCodeGenerator _toStringGenerator = new ToStringHashCodeGenerator();
-        /// <summary>
-        /// Use <see cref="ToStringHashCodeGenerator" /> for all primitive types
-        /// Use <see cref="DefaultHashCodeGenerator" /> for unregistered types
-        /// </summary>
-        public DefaultHashCodeGeneratorProvider()
-        {
-            var primitiveTypes = new List<Type>
-            {
-                typeof (short),
-                typeof (ushort),
-                typeof (int),
-                typeof (uint),
-                typeof (long),
-                typeof (ulong),
-
-                typeof (char),
-                typeof (byte),
-                typeof (string),
-
-                typeof (decimal),
-                typeof (float),
-                typeof (double),
-
-                typeof (DateTime),
-                typeof (Guid),
-
-            };
-            var nullable = typeof (Nullable<>);
-            primitiveTypes.ForEach(t =>
-            {
-                Global.Cache.HashCodeGeneratorCache[t] = _toStringGenerator;
-                if (t != typeof (string))
-                {
-                    Global.Cache.HashCodeGeneratorCache[nullable.MakeGenericType(t)] = _toStringGenerator;
-                }
-            });
-        }
-
         /// <summary>
         /// Return <see cref="IHashCodeGenerator" /> for type.
         /// <para>if Type implemented ToString(), the type will be registered and <see cref="ToStringHashCodeGenerator" /> will be used </para>
@@ -61,8 +21,8 @@ namespace Flatwhite.Provider
 
             if (type.IsEnum || type.GetMethod("ToString").DeclaringType != typeof(object))
             {
-                Global.Cache.HashCodeGeneratorCache[type] = _toStringGenerator;
-                return _toStringGenerator;
+                Global.Cache.HashCodeGeneratorCache[type] = MethodInfoCache.ToStringGenerator;
+                return MethodInfoCache.ToStringGenerator;
             }
 
             return new DefaultHashCodeGenerator();

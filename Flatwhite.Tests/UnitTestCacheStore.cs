@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Runtime.Caching;
 
 namespace Flatwhite.Tests
@@ -19,9 +16,9 @@ namespace Flatwhite.Tests
             foreach (var mon in policy.ChangeMonitors)
             {
                 // https://msdn.microsoft.com/en-us/library/system.runtime.caching.onchangedcallback(v=vs.110).aspx
-                mon.NotifyOnChanged(cacheKey =>
+                mon.NotifyOnChanged(state =>
                 {
-                    Remove(cacheKey as string);
+                    Remove(key);
                 });
             }
         }
@@ -48,26 +45,5 @@ namespace Flatwhite.Tests
         }
 
         public uint StoreId => 0;
-    }
-
-    public class FlatwhiteCacheEntryChangeMonitor : CacheEntryChangeMonitor
-    {
-        public FlatwhiteCacheEntryChangeMonitor(IEnumerable<string> keys)
-        {
-            CacheKeys = new ReadOnlyCollection<string>(keys.ToList());
-            UniqueId = Guid.NewGuid().ToString("N");
-            LastModified = DateTimeOffset.UtcNow;
-            RegionName = "";
-            InitializationComplete();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-        }
-
-        public override string UniqueId { get; }
-        public override ReadOnlyCollection<string> CacheKeys { get; }
-        public override DateTimeOffset LastModified { get; }
-        public override string RegionName { get; }
     }
 }

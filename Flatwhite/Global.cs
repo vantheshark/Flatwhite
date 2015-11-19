@@ -1,4 +1,8 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using Flatwhite.Provider;
 
 namespace Flatwhite
@@ -8,6 +12,31 @@ namespace Flatwhite
     /// </summary>
     public class Global
     {
+        /// <summary>
+        /// Global router for revalidation event
+        /// </summary>
+        public static event Action<string> RevalidateEvent;
+
+        /// <summary>
+        /// Revalidate the caches with provided revalidateKeys
+        /// </summary>
+        /// <param name="revalidateKeys"></param>
+        public static void RevalidateCaches(List<string> revalidateKeys)
+        {
+            if (RevalidateEvent != null)
+            {
+                revalidateKeys.ToList().ForEach(k => RevalidateEvent.BeginInvoke(k, ExecAsyncCallback, null));
+            }
+        }
+        private static void ExecAsyncCallback(IAsyncResult result)
+        {
+            var asyncResult = result as AsyncResult;
+            if (asyncResult == null) return;
+
+            var d = asyncResult.AsyncDelegate as Action<string>;
+            d?.EndInvoke(result);
+        }
+
         static Global()
         {
             Cache = new MethodInfoCache();

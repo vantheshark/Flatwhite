@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
-
 namespace Flatwhite.Strategy
 {
     /// <summary>
@@ -31,11 +30,25 @@ namespace Flatwhite.Strategy
         IMethodCacheStrategy<T> VaryByCustom(string custom);
 
         /// <summary>
+        /// Set cache store id
+        /// </summary>
+        /// <param name="cacheStoreId"></param>
+        /// <returns></returns>
+        IMethodCacheStrategy<T> WithCacheStore(uint cacheStoreId);
+
+        /// <summary>
+        /// Set revalidation key
+        /// </summary>
+        /// <param name="revalidationKey"></param>
+        /// <returns></returns>
+        IMethodCacheStrategy<T> WithRevalidationKey(string revalidationKey);
+
+        /// <summary>
         /// Set the change monitors factory that will create the new change monitors when new cache entry is created
         /// https://msdn.microsoft.com/en-us/library/system.runtime.caching.changemonitor(v=vs.110).aspx
         /// </summary>
         /// <param name="changeMonitorFactory"></param>
         /// <returns></returns>
-        IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, string, IEnumerable<ChangeMonitor>> changeMonitorFactory);
+        IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> changeMonitorFactory);
     }
 }

@@ -20,7 +20,7 @@ namespace Flatwhite
         /// </summary>
         public ExpressionSetting()
         {
-            ChangeMonitorFactory = (i, context, key) => new ChangeMonitor[0];
+            ChangeMonitorFactory = (i, context) => new ChangeMonitor[0];
             CacheAttribute = new TCacheAttribute();
         }
         /// <summary>
@@ -37,6 +37,6 @@ namespace Flatwhite
         /// The change monitors factory configured for current expression
         /// <para>These change monitors instances will be created and assign to the cache policy for the new cache</para>
         /// </summary>
-        public Func<_IInvocation, IDictionary<string, object>, string, IEnumerable<ChangeMonitor>> ChangeMonitorFactory { get; set; }
+        public Func<_IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> ChangeMonitorFactory { get; set; }
     }
 }
