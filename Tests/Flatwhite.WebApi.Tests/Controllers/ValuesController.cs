@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Flatwhite.Provider;
 
 namespace Flatwhite.WebApi.Tests.Controllers
 {
@@ -19,6 +20,24 @@ namespace Flatwhite.WebApi.Tests.Controllers
         }
 
         [HttpGet]
+        [Route("api/vary-by-param-async/{packageId}")]
+        [OutputCache(
+            MaxAge = 10,
+            StaleWhileRevalidate = 5,
+            VaryByParam = "packageId",
+            RevalidationKey = "VaryByParamMethod",
+            IgnoreRevalidationRequest = true)]
+        public async Task<HttpResponseMessage> VaryByParamAsync(string packageId)
+        {
+            var sw = Stopwatch.StartNew();
+            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"https://www.nuget.org/packages/" + packageId));
+            return new HttpResponseMessage()
+            {
+                Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} Milliseconds", Encoding.UTF8, "text/html")
+            };
+        }
+
+        [HttpGet]
         [Route("api/vary-by-param/{packageId}")]
         [OutputCache(
             MaxAge = 10, 
@@ -26,14 +45,26 @@ namespace Flatwhite.WebApi.Tests.Controllers
             VaryByParam = "packageId", 
             RevalidationKey = "VaryByParamMethod",
             IgnoreRevalidationRequest = true)]
-        public virtual async Task<HttpResponseMessage> VaryByParam(string packageId)
+        public HttpResponseMessage VaryByParam(string packageId)
         {
             var sw = Stopwatch.StartNew();
-            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"https://www.nuget.org/packages/" + packageId));
+            var content = new WebClient().DownloadString(new Uri($"https://www.nuget.org/packages/" + packageId));
             return new HttpResponseMessage()
             {
                 Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} Milliseconds", Encoding.UTF8,"text/html")
             };
+        }
+
+        [HttpGet]
+        [Route("api/string/{packageId}")]
+        [OutputCache(
+            MaxAge = 5,
+            StaleWhileRevalidate = 5,
+            VaryByParam = "packageId",
+            IgnoreRevalidationRequest = true)]
+        public string String(string packageId)
+        {
+            return packageId;
         }
 
         [HttpGet]

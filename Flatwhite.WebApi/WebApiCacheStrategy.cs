@@ -1,92 +1,53 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.Caching;
-using Flatwhite.Provider;
+using System.Linq;
+using Flatwhite.Strategy;
 
 namespace Flatwhite.WebApi
 {
     /// <summary>
     /// A <see cref="ICacheStrategy"/> implementation for web api
     /// </summary>
-    public class WebApiCacheStrategy : ICacheStrategy
+    public class WebApiCacheStrategy : DefaultCacheStrategy
     {
-        internal WebApiCacheStrategy() : this(new WebApiCacheAttributeProvider())
+        /// <summary>
+        /// Create an instance of WebApiCacheStrategy with ServiceActivator
+        /// </summary>
+        /// <param name="activator"></param>
+        public WebApiCacheStrategy(IServiceActivator activator = null) : base(activator)
         {
         }
-
-        /// <summary>
-        /// The cache attribute provider
-        /// </summary>
-        // ReSharper disable once InconsistentNaming
-        protected readonly ICacheAttributeProvider _cacheAttributeProvider;
-
-        /// <summary>
-        /// Initializes default cache strategy with a <see cref="ICacheAttributeProvider"/>
-        /// </summary>
-        /// <param name="cacheAttributeProvider"></param>
-        public WebApiCacheStrategy(ICacheAttributeProvider cacheAttributeProvider)
-        {
-            _cacheAttributeProvider = cacheAttributeProvider;
-            CacheKeyProvider = new DefaultCacheKeyProvider(cacheAttributeProvider, Global.HashCodeGeneratorProvider);
-        }
-
         /// <summary>
         /// Should always return true as it doesn't need to check the method info
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public virtual bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public override bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            return true;
-        }
-
-        /// <summary>
-        /// Get cache time from <see cref="OutputCacheAttribute"/>
-        /// </summary>
-        /// <param name="invocation"></param>
-        /// <param name="invocationContext"></param>
-        /// <returns></returns>
-        public virtual int GetCacheTime(_IInvocation invocation, IDictionary<string, object> invocationContext)
-        {
-            var att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
-            return att?.Duration ?? 0;
-        }
-
-        /// <summary>
-        /// Get cache store id for current invocation and context
-        /// </summary>
-        /// <param name="invocation"></param>
-        /// <param name="invocationContext"></param>
-        /// <returns></returns>
-        public virtual uint GetCacheStoreId(_IInvocation invocation, IDictionary<string, object> invocationContext)
-        {
-            var att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
-            return att?.CacheStoreId ?? 0;
-        }
-
-        /// <summary>
-        /// Get empty list change monitor
-        /// </summary>
-        /// <param name="invocation"></param>
-        /// <param name="invocationContext"></param>
-        /// <returns></returns>
-        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
-        {
-            var att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
-            if (string.IsNullOrWhiteSpace(att?.RevalidationKey))
+            if (!Global.Cache.InterceptableCache.ContainsKey(invocation.Method))
             {
-                yield break;
+                //https://msdn.microsoft.com/en-us/library/system.reflection.methodbase.isvirtual(v=vs.110).aspx
+                var possible = invocation.Method.ReturnType != typeof(void);
+                if (possible)
+                {
+                    var atts = Global.AttributeProvider.GetAttributes(invocation.Method, invocationContext);
+                    possible = !atts.Any(a => a is NoInterceptAttribute);
+                }
+                Global.Cache.InterceptableCache[invocation.Method] = possible;
             }
-            yield return new FlatwhiteCacheEntryChangeMonitor(att.RevalidationKey);
-            //TODO: Don't remove if there is stale while validation settings
+
+            return Global.Cache.InterceptableCache[invocation.Method];
         }
 
         /// <summary>
-        /// Default cache key provider
+        /// Get <see cref="ICacheStore" /> for current invocation and context
         /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public virtual ICacheKeyProvider CacheKeyProvider { get; }
-
+        /// <param name="invocation"></param>
+        /// <param name="invocationContext"></param>
+        /// <returns></returns>
+        public override ICacheStore GetCacheStore(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        {
+            throw new System.NotSupportedException();
+        }
     }
 }

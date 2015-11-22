@@ -2,6 +2,7 @@
 using Autofac;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Strategy;
+using Flatwhite.Tests.Stubs;
 using NSubstitute;
 using NUnit.Framework;
 // ReSharper disable InconsistentNaming
@@ -15,6 +16,8 @@ namespace Flatwhite.Tests.Autofac.Strategy
         public void ShowSomeTrace()
         {
             Global.Cache = new MethodInfoCache();
+            Global.CacheStoreProvider.RegisterStore(new NoneExpireCacheStore());
+
         }
         [Test]
         public void Test_cache_on_method_decorated_with_output_cache_attribute()
@@ -25,13 +28,12 @@ namespace Flatwhite.Tests.Autofac.Strategy
             svc.GetById(id1).Returns(new { Name = "Van", Email = "van@gmail.com", Id = id1 });
             svc.GetById(id2).Returns(new { Name = "Billy", Email = "billy@gmail.com", Id = id2 });
 
-            var builder = new ContainerBuilder().EnableFlatwhiteCache();
+            var builder = new ContainerBuilder().EnableFlatwhite();
             
             builder
                 .RegisterInstance(svc)
                 .As<IUserService>()
-                .CacheWithAttribute();
-            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
+                .EnableInterceptors();
 
             var container = builder.Build();
 
@@ -56,12 +58,11 @@ namespace Flatwhite.Tests.Autofac.Strategy
             svc.GetById(id1).Returns(new { Name = "Van", Email = "van@gmail.com", Id = id1 });
             svc.GetById(id2).Returns(new { Name = "Billy", Email = "billy@gmail.com", Id = id2 });
 
-            var builder = new ContainerBuilder().EnableFlatwhiteCache();
+            var builder = new ContainerBuilder().EnableFlatwhite();
             builder
                 .RegisterInstance(svc)
                 .As<IUserService>()
-                .CacheWithStrategy(CacheStrategies.AllMethods().Duration(5000).VaryByParam("userId"));
-            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
+                .CacheWithStrategy(CacheStrategies.AllMethods().VaryByParam("userId"));
 
             var container = builder.Build();
 
@@ -80,12 +81,11 @@ namespace Flatwhite.Tests.Autofac.Strategy
         [Test]
         public void Test_cache_all_method_strategy_on_registered_interface_type_service()
         {
-            var builder = new ContainerBuilder().EnableFlatwhiteCache();
+            var builder = new ContainerBuilder().EnableFlatwhite();
             builder
                 .RegisterType<BlogService>()
                 .As<IBlogService>()
-                .CacheWithStrategy(CacheStrategies.AllMethods().Duration(5000).VaryByParam("postId"));
-            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
+                .CacheWithStrategy(CacheStrategies.AllMethods().VaryByParam("postId"));
 
             var container = builder.Build();
 
@@ -106,12 +106,11 @@ namespace Flatwhite.Tests.Autofac.Strategy
         [Test]
         public void Test_cache_all_method_strategy_on_registered_class_type_service()
         {
-            var builder = new ContainerBuilder().EnableFlatwhiteCache();
+            var builder = new ContainerBuilder().EnableFlatwhite();
 
             builder
                 .RegisterType<BlogService>()
-                .CacheWithStrategy(CacheStrategies.AllMethods().Duration(5000).VaryByParam("postId"));
-            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
+                .CacheWithStrategy(CacheStrategies.AllMethods().VaryByParam("postId"));
 
             var container = builder.Build();
 
@@ -134,12 +133,11 @@ namespace Flatwhite.Tests.Autofac.Strategy
             string email = "van@gmail.com";
             svc.GetByEmail(email).Returns(new {Name = "Van", Email = email, Id = "1"});
          
-            var builder = new ContainerBuilder().EnableFlatwhiteCache();
+            var builder = new ContainerBuilder().EnableFlatwhite();
             builder
                 .RegisterInstance(svc)
                 .As<IUserService>()
-                .CacheWithStrategy(CacheStrategies.AllMethods().Duration(5000).VaryByParam("email"));
-            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
+                .CacheWithStrategy(CacheStrategies.AllMethods().VaryByParam("email"));
             var container = builder.Build();
 
             var cachedService = container.Resolve<IUserService>();

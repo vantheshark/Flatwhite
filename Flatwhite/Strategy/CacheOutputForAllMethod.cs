@@ -1,17 +1,18 @@
-using Flatwhite.Provider;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Flatwhite.Strategy
 {
     /// <summary>
     /// A cache strategy to cache for all methods
     /// </summary>
-    public class CacheOutputForAllMethod : DefaultCacheStrategy
+    public class CacheOutputForAllMethod : DefaultCacheStrategy, IDynamicCacheStrategy
     {
-        private OutputCacheAttribute CacheAttribute => ((SingleCacheAttributeProvider) _cacheAttributeProvider).Attribute;
+        private readonly OutputCacheAttribute _cacheAttribute;
 
-        internal CacheOutputForAllMethod(int defaultDuration) : base(Global.AttributeProvider, new SingleCacheAttributeProvider(new OutputCacheAttribute { Duration = defaultDuration }))
+        internal CacheOutputForAllMethod(int defaultDuration)
         {
-            CacheKeyProvider = new DefaultCacheKeyProvider(_cacheAttributeProvider, Global.HashCodeGeneratorProvider);
+            _cacheAttribute = new OutputCacheAttribute(this) {Duration = defaultDuration};
         }
 
         /// <summary>
@@ -21,7 +22,7 @@ namespace Flatwhite.Strategy
         /// <returns></returns>
         public CacheOutputForAllMethod VaryByParam(string @params)
         {
-            CacheAttribute.VaryByParam = @params;
+            _cacheAttribute.VaryByParam = @params;
             return this;
         }
 
@@ -32,7 +33,7 @@ namespace Flatwhite.Strategy
         /// <returns></returns>
         public CacheOutputForAllMethod VaryByCustom(string customParams)
         {
-            CacheAttribute.VaryByCustom = customParams;
+            _cacheAttribute.VaryByCustom = customParams;
             return this;
         }
 
@@ -43,13 +44,17 @@ namespace Flatwhite.Strategy
         /// <returns></returns>
         public CacheOutputForAllMethod Duration(int durationMiliseconds)
         {
-            CacheAttribute.Duration = durationMiliseconds;
+            _cacheAttribute.Duration = durationMiliseconds;
             return this;
         }
 
         /// <summary>
-        /// Cache key provider
+        /// Get all attributes
         /// </summary>
-        public override ICacheKeyProvider CacheKeyProvider { get; }
+        /// <returns></returns>
+        IEnumerable<KeyValuePair<MethodInfo, OutputCacheAttribute>> IDynamicCacheStrategy.GetCacheAttributes()
+        {
+            yield return new KeyValuePair<MethodInfo, OutputCacheAttribute>(null, _cacheAttribute);
+        }
     }
 }

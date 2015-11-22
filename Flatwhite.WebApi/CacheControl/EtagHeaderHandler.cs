@@ -41,31 +41,18 @@ namespace Flatwhite.WebApi.CacheControl
             {
                 // Etag format: fw-StoreId-Guid
                 var requestEtags = request.Headers.IfNoneMatch.Where(t => t.Tag != null && t.Tag.StartsWith("\"fw-")).ToList();
-                //request.Headers.CacheControl.
                 if (requestEtags.Count > 0)
                 {
                     foreach (var etag in requestEtags)
                     {
                         var hashedKey = etag.Tag.Trim('"');
                         var index = hashedKey.IndexOf("-", 4, StringComparison.Ordinal);
-                        var storeIdString = index > 0 ? hashedKey.Substring(3, index - 4) : "0";
-                        uint storeId;
+                        var storeIdString = index > 0 ? hashedKey.Substring(3, index - 3) : "0";
+                        int storeId;
                         IAsyncCacheStore cacheStore = null;
-                        if (uint.TryParse(storeIdString, out storeId))
+                        if (int.TryParse(storeIdString, out storeId))
                         {
-                            try
-                            {
-                                cacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(storeId);
-                            }
-                            catch (Exception)
-                            {
-                                // ignored
-                            }
-                        }
-
-                        if (cacheStore == null)
-                        {
-                            cacheStore = Global.CacheStoreProvider.GetAsyncCacheStore();
+                            cacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(storeId) ?? Global.CacheStoreProvider.GetAsyncCacheStore();
                         }
                         
                         if (cacheStore != null)

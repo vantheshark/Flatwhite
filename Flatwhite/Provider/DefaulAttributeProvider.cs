@@ -31,6 +31,5 @@ namespace Flatwhite.Provider
 
             return Global.Cache.AttributeCache[methodInfo];
         }
-        
     }
 }

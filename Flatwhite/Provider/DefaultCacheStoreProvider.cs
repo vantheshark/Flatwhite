@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-
 namespace Flatwhite.Provider
 {
     /// <summary>
@@ -9,21 +8,55 @@ namespace Flatwhite.Provider
     /// </summary>
     public class DefaultCacheStoreProvider : ICacheStoreProvider, IDisposable
     {
-        private readonly IDictionary<uint, ICacheStore> _cacheStore = new Dictionary<uint, ICacheStore>();
-        private readonly IDictionary<uint, IAsyncCacheStore> _asyncCacheStore = new Dictionary<uint, IAsyncCacheStore>();
+        private readonly IDictionary<int, ICacheStore> _cacheStore = new Dictionary<int, ICacheStore>();
+        private readonly IDictionary<int, IAsyncCacheStore> _asyncCacheStore = new Dictionary<int, IAsyncCacheStore>();
+        private readonly IDictionary<Type, ICacheStore> _cacheStoreTypes = new Dictionary<Type, ICacheStore>();
+        private readonly IDictionary<Type, IAsyncCacheStore> _asyncCacheStoreTypes = new Dictionary<Type, IAsyncCacheStore>();
 
+        /// <summary>
+        /// Initializes a DefaultCacheStoreProvider with default <see cref="ICacheStore" /> and <see cref="IAsyncCacheStore" />
+        /// </summary>
+        public DefaultCacheStoreProvider()
+        {
+            var objectStore = new ObjectCacheStore();
+            _cacheStore[0] = objectStore;
+            _cacheStoreTypes[typeof(ICacheStore)] = objectStore;
+            _cacheStoreTypes[typeof(ObjectCacheStore)] = objectStore;
+
+            var adaptor = new CacheStoreAdaptor(objectStore);
+            _asyncCacheStore[0] = adaptor;
+            _cacheStoreTypes[typeof(IAsyncCacheStore)] = adaptor;
+        }
         /// <summary>
         /// Get the <see cref="ICacheStore" />
         /// </summary>
         /// <param name="storeId"></param>
         /// <returns></returns>
-        public ICacheStore GetCacheStore(uint storeId)
+        public ICacheStore GetCacheStore(int storeId)
         {
+            if (storeId < 0)
+            {
+                return null;
+            }
             if (_cacheStore.ContainsKey(storeId))
             {
                 return _cacheStore[storeId];
             }
-            throw new KeyNotFoundException($"Cachestore with {storeId} not found");
+            return null;
+        }
+
+        /// <summary>
+        /// Get the <see cref="ICacheStore" />
+        /// </summary>
+        /// <param name="cacheStoreType"></param>
+        /// <returns></returns>
+        public ICacheStore GetCacheStore(Type cacheStoreType)
+        {
+            if (_cacheStoreTypes.ContainsKey(cacheStoreType))
+            {
+                return _cacheStoreTypes[cacheStoreType];
+            }
+            throw new KeyNotFoundException($"CacheStore {cacheStoreType.Name} not found");
         }
 
         /// <summary>
@@ -31,8 +64,12 @@ namespace Flatwhite.Provider
         /// </summary>
         /// <param name="storeId"></param>
         /// <returns></returns>
-        public IAsyncCacheStore GetAsyncCacheStore(uint storeId)
+        public IAsyncCacheStore GetAsyncCacheStore(int storeId)
         {
+            if (storeId < 0)
+            {
+                return null;
+            }
             if (_asyncCacheStore.ContainsKey(storeId))
             {
                 return _asyncCacheStore[storeId];
@@ -41,39 +78,59 @@ namespace Flatwhite.Provider
             {
                 return new CacheStoreAdaptor(_cacheStore[storeId]);
             }
-            throw new KeyNotFoundException($"Acync Cachestore with {storeId} not found");
+            return null;
         }
 
+        /// <summary>
+        /// Get the <see cref="IAsyncCacheStore" />
+        /// </summary>
+        /// <param name="asyncCacheStoreType"></param>
+        /// <returns></returns>
+        public IAsyncCacheStore GetAsyncCacheStore(Type asyncCacheStoreType)
+        {
+            if (_asyncCacheStoreTypes.ContainsKey(asyncCacheStoreType))
+            {
+                return _asyncCacheStoreTypes[asyncCacheStoreType];
+            }
+            throw new KeyNotFoundException($"CacheStore {asyncCacheStoreType.Name} not found");
+        }
 
         /// <summary>
         /// Register the <see cref="ICacheStore" />
         /// </summary>
         /// <param name="store"></param>
-        /// <param name="storeId"></param>
         /// <returns></returns>
-        public void RegisterStore(ICacheStore store, uint storeId)
+        public void RegisterStore(ICacheStore store)
         {
             if (store == null)
             {
                 throw new ArgumentNullException(nameof(store));
             }
-          
-            _cacheStore[storeId] = store;
+            if (store.StoreId > 0 && _asyncCacheStore.ContainsKey(store.StoreId))
+            {
+                throw new InvalidOperationException($"There is a registered IAsyncCacheStore with id {store.StoreId}: {_asyncCacheStore[store.StoreId].GetType().Name}");
+            }
+
+            _cacheStore[store.StoreId] = store;
+            _cacheStoreTypes[store.GetType()] = store;
         }
 
         /// <summary>
         /// Register the <see cref="IAsyncCacheStore" />
         /// </summary>
         /// <param name="store"></param>
-        /// <param name="storeId"></param>
         /// <returns></returns>
-        public void RegisterAsyncStore(IAsyncCacheStore store, uint storeId)
+        public void RegisterAsyncStore(IAsyncCacheStore store)
         {
             if (store == null)
             {
                 throw new ArgumentNullException(nameof(store));
             }
-            _asyncCacheStore[storeId] = store;
+            if (store.StoreId > 0 && _cacheStore.ContainsKey(store.StoreId))
+            {
+                throw new InvalidOperationException($"There is a registered ICacheStore with id {store.StoreId}: {_cacheStore[store.StoreId].GetType().Name}");
+            }
+            _asyncCacheStore[store.StoreId] = store;
         }
 
         /// <summary>
@@ -82,7 +139,9 @@ namespace Flatwhite.Provider
         public void Dispose()
         {
             _cacheStore.Clear();
+            _cacheStoreTypes.Clear();
             _asyncCacheStore.Clear();
+            _asyncCacheStoreTypes.Clear();
         }
     }
 }

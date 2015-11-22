@@ -4,19 +4,19 @@
         <name>Flatwhite.Autofac</name>
     </assembly>
     <members>
-        <member name="T:Flatwhite.AutofacIntergration.CacheInterceptorAdaptor">
+        <member name="T:Flatwhite.AutofacIntergration.MethodInterceptorAdaptor">
             <summary>
-            An adaptor of <see cref="T:Flatwhite._IInterceptor"/>
+            An adaptor of <see cref="T:Castle.DynamicProxy.IInterceptor"/>
             </summary>
         </member>
-        <member name="M:Flatwhite.AutofacIntergration.CacheInterceptorAdaptor.#ctor(Flatwhite.Provider.IContextProvider,Flatwhite.ICacheStrategy)">
+        <member name="M:Flatwhite.AutofacIntergration.MethodInterceptorAdaptor.#ctor(Flatwhite.Provider.IAttributeProvider,Flatwhite.Provider.IContextProvider)">
             <summary>
-            Initializes an instance of <see cref="T:Flatwhite.AutofacIntergration.CacheInterceptorAdaptor"/>
+            Initializes an instance of <see cref="T:Flatwhite.AutofacIntergration.MethodInterceptorAdaptor"/>
             </summary>
             <param name="contextProvider"></param>
-            <param name="cacheStrategy"></param>
+            <param name="attributeProvider"></param>
         </member>
-        <member name="M:Flatwhite.AutofacIntergration.CacheInterceptorAdaptor.Intercept(Castle.DynamicProxy.IInvocation)">
+        <member name="M:Flatwhite.AutofacIntergration.MethodInterceptorAdaptor.Intercept(Castle.DynamicProxy.IInvocation)">
             <summary>
             Intercept the dynamic proxy invocation by calling Flatwhite Intercept method
             </summary>
@@ -24,7 +24,7 @@
         </member>
         <member name="T:Flatwhite.AutofacIntergration.FlatwhiteBuilderInterceptModule">
             <summary>
-            Scan types that were decorated or have members decorated with <see cref="T:Flatwhite.OutputCacheAttribute"/> and enable default cache Interceptor (<see cref="T:Flatwhite.CacheInterceptor"/>) on them
+            Scan types that were decorated or have members decorated with attributes implemented <see cref="T:Flatwhite.MethodFilterAttribute"/> or <see cref="T:Flatwhite.ExceptionFilterAttribute"/> and enable interceptors (<see cref="T:Flatwhite.AutofacIntergration.MethodInterceptorAdaptor"/>) on them
             </summary>
         </member>
         <member name="M:Flatwhite.AutofacIntergration.FlatwhiteBuilderInterceptModule.Load(Autofac.ContainerBuilder)">
@@ -34,15 +34,20 @@
             </summary>
             <param name="builder"></param>
         </member>
+        <member name="T:Flatwhite.AutofacIntergration.InvocationAdaptor">
+            <summary>
+            Adapt from Castle Dynamic proxy IInvocation to Flatwhite _IInvocation
+            </summary>
+        </member>
         <member name="T:Flatwhite.AutofacIntergration.CacheRegistrationExtensions">
             <summary>
             Adds registration syntax to the <see cref="T:Autofac.ContainerBuilder"/> type to support Flatwhite output cache
             </summary>
         </member>
-        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.CacheWithStrategy``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},Flatwhite.ICacheStrategy)">
+        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.CacheWithStrategy``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},Flatwhite.Strategy.IDynamicCacheStrategy)">
             <summary>
             Cache with a custom <see cref="T:Flatwhite.ICacheStrategy"/>
-            <para>NOTE: Call method <see cref="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableFlatwhiteCache(Autofac.ContainerBuilder)"/> once on the <see cref="T:Autofac.ContainerBuilder"/> after created to enable Flatwhite caching</para>
+            <para>NOTE: Call method <see cref="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableFlatwhite(Autofac.ContainerBuilder)"/> once on the <see cref="T:Autofac.ContainerBuilder"/> after created to enable Flatwhite caching</para>
             </summary>
             <typeparam name="TLimit">Registration limit type.</typeparam>
             <typeparam name="TActivatorData">Activator data type.</typeparam>
@@ -52,10 +57,36 @@
             <returns>Registration builder allowing the registration to be configured.</returns>
             <exception cref="T:System.ArgumentNullException">builder or interceptorServices</exception>
         </member>
-        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.CacheWithAttribute``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2})">
+        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.FilterWith``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},System.Attribute[])">
             <summary>
-            Cache rule will be based on the decorated <see cref="T:Flatwhite.OutputCacheAttribute"/> on type or public members
-            <para>NOTE: Call method <see cref="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableFlatwhiteCache(Autofac.ContainerBuilder)"/> once on the <see cref="T:Autofac.ContainerBuilder"/> after created to enable Flatwhite caching</para>
+            Dynamically create a method interceptor that will use provided filter attributes during interception
+            </summary>
+            <typeparam name="TLimit"></typeparam>
+            <typeparam name="TActivatorData"></typeparam>
+            <typeparam name="TStyle"></typeparam>
+            <param name="builder"></param>
+            <param name="filterAttributes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.FilterWithAttributes``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2},System.Tuple{System.Reflection.MethodInfo,System.Attribute}[])">
+            <summary>
+            Dynamically create a method interceptor that will use provided filter attributes during interception
+            </summary>
+            <typeparam name="TLimit"></typeparam>
+            <typeparam name="TActivatorData"></typeparam>
+            <typeparam name="TStyle"></typeparam>
+            <param name="builder"></param>
+            <param name="filterAttributes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableInterceptors``3(Autofac.Builder.IRegistrationBuilder{``0,``1,``2})">
+            <summary>
+            This is a shortcut of calling following methods on a registration builder
+            <para/>         .EnableClassInterceptors()
+                            .EnableInterfaceInterceptors()
+                            .InterceptedBy(typeof(MethodInterceptorAdaptor))
+            
+            <para>NOTE: Call method <see cref="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableFlatwhite(Autofac.ContainerBuilder)"/> once on the <see cref="T:Autofac.ContainerBuilder"/> after created to enable Flatwhite interceptors</para>
             </summary>
             <typeparam name="TLimit"></typeparam>
             <typeparam name="TActivatorData"></typeparam>
@@ -63,9 +94,9 @@
             <param name="builder"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableFlatwhiteCache(Autofac.ContainerBuilder)">
+        <member name="M:Flatwhite.AutofacIntergration.CacheRegistrationExtensions.EnableFlatwhite(Autofac.ContainerBuilder)">
             <summary>
-            Call this method once after you create <see cref="T:Autofac.ContainerBuilder"/> to enable Flatwhite caching
+            Call this method once after you create <see cref="T:Autofac.ContainerBuilder"/> to enable Flatwhite method interceptors
             </summary>
             <param name="builder"></param>
             <returns></returns>

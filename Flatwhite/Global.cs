@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Threading.Tasks;
 using Flatwhite.Provider;
 
 namespace Flatwhite
@@ -12,6 +12,12 @@ namespace Flatwhite
     /// </summary>
     public class Global
     {
+        internal static readonly string __flatwhite_outputcache_attribute = "__flatwhite_outputcache_attribute";
+        internal static readonly string __flatwhite_outputcache_strategy = "__flatwhite_outputcache_strategy";
+        internal static readonly string __flatwhite_outputcache_store = "__flatwhite_outputcache_store";
+        internal static readonly string __flatwhite_outputcache_key = "__flatwhite_outputcache_key";
+        internal static readonly string __flatwhite_outputcache_restored = "__flatwhite_outputcache_restored";
+
         /// <summary>
         /// Global router for revalidation event
         /// </summary>
@@ -25,16 +31,24 @@ namespace Flatwhite
         {
             if (RevalidateEvent != null)
             {
-                revalidateKeys.ToList().ForEach(k => RevalidateEvent.BeginInvoke(k, ExecAsyncCallback, null));
+                revalidateKeys.ToList().ForEach(k => RevalidateEvent(k));
             }
         }
-        private static void ExecAsyncCallback(IAsyncResult result)
-        {
-            var asyncResult = result as AsyncResult;
-            if (asyncResult == null) return;
 
-            var d = asyncResult.AsyncDelegate as Action<string>;
-            d?.EndInvoke(result);
+        /// <summary>
+        /// Async notify revalidation events
+        /// </summary>
+        /// <param name="revalidateKeys"></param>
+        /// <returns></returns>
+        public static Task RevalidateCachesAsync(List<string> revalidateKeys)
+        {
+            if (RevalidateEvent != null)
+            {
+                return Task.WhenAll(
+                    revalidateKeys.Select(k => Task.Run(() => { RevalidateEvent(k); }))
+                );
+            }
+            return TaskHelpers.DefaultCompleted;
         }
 
         static Global()
@@ -44,15 +58,11 @@ namespace Flatwhite
             ContextProvider = new EmptyContextProvider();
             CacheStrategyProvider = new DefaultCacheStrategyProvider();
             AttributeProvider = new DefaulAttributeProvider();
-            CacheAttributeProvider = new DefaultCacheAttributeProvider();
-            
             HashCodeGeneratorProvider = new DefaultHashCodeGeneratorProvider();
-            HashCodeGeneratorProvider.Register<object>(new DefaultHashCodeGenerator());
-
-            CacheKeyProvider = new DefaultCacheKeyProvider(CacheAttributeProvider, HashCodeGeneratorProvider);
-
+            CacheKeyProvider = new DefaultCacheKeyProvider(HashCodeGeneratorProvider);
             CacheStoreProvider = new DefaultCacheStoreProvider();
-            CacheStoreProvider.RegisterStore(new ObjectCacheStore());
+            ServiceActivator = new ServiceActivator();
+            Logger = new ConsoleLog();
         }
 
         /// <summary>
@@ -67,10 +77,7 @@ namespace Flatwhite
         /// Cache strategy provider
         /// </summary>
         public static ICacheStrategyProvider CacheStrategyProvider { get; set; }
-        /// <summary>
-        /// OutputCache attribute provider
-        /// </summary>
-        public static ICacheAttributeProvider CacheAttributeProvider { get; set; }
+        
         /// <summary>
         /// Attribute provider
         /// </summary>
@@ -86,8 +93,18 @@ namespace Flatwhite
         public static ICacheStoreProvider CacheStoreProvider { get; set; }
 
         /// <summary>
+        /// The service activator to create instance of service when needed to invoke the MethodInfo for cache refreshing
+        /// </summary>
+        public static IServiceActivator ServiceActivator { get; set; }
+
+        /// <summary>
         /// Internal cache for Flatwhite objects
         /// </summary>
         internal static MethodInfoCache Cache { get; set; }
+
+        /// <summary>
+        /// Logger
+        /// </summary>
+        public static ILogger Logger { get; set; }
     }
 }

@@ -12,32 +12,21 @@ namespace Flatwhite.Provider
     public class DefaultCacheKeyProvider : ICacheKeyProvider
     {
         /// <summary>
-        /// Cache attribute provider
-        /// </summary>
-        protected readonly ICacheAttributeProvider _cacheAttributeProvider;
-        /// <summary>
         /// Hashcode generator provider
         /// </summary>
         protected readonly IHashCodeGeneratorProvider _hashCodeGeneratorProvider;
 
         /// <summary>
-        /// Initialize a default cache key provider using <see cref="ICacheAttributeProvider"/>
+        /// Initialize a default cache key provider using <see cref="IHashCodeGeneratorProvider"/>
         /// </summary>
-        /// <param name="cacheAttributeProvider"></param>
         /// <param name="hashCodeGeneratorProvider"></param>
-        public DefaultCacheKeyProvider(ICacheAttributeProvider cacheAttributeProvider, IHashCodeGeneratorProvider hashCodeGeneratorProvider)
+        public DefaultCacheKeyProvider(IHashCodeGeneratorProvider hashCodeGeneratorProvider)
         {
-            if (cacheAttributeProvider == null)
-            {
-                throw new ArgumentNullException(nameof(cacheAttributeProvider));
-            }
             if (hashCodeGeneratorProvider == null)
             {
                 throw new ArgumentNullException(nameof(hashCodeGeneratorProvider));
             }
-          
 
-            _cacheAttributeProvider = cacheAttributeProvider;
             _hashCodeGeneratorProvider = hashCodeGeneratorProvider;
         }
 
@@ -49,19 +38,17 @@ namespace Flatwhite.Provider
         /// <returns></returns>
         public virtual string GetCacheKey(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
+            var info = invocationContext[Global.__flatwhite_outputcache_attribute] as ICacheSettings;
+            if (info == null)
+            {
+                throw new InvalidOperationException($"{nameof(ICacheSettings)} object not found in {nameof(invocationContext)}");
+            }
+
             // The cache key must be different for different instance of same type
             var key = new StringBuilder($"Flatwhite::{(invocation.Method.DeclaringType ?? invocation.TargetType).FullName}.{invocation.Method.Name}(");
-
-            if (!Global.Cache.VaryParamsCache.ContainsKey(invocation.Method))
-            {
-                var cacheAttribute = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
-                var a = (cacheAttribute.VaryByParam ?? "").Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                var b = (cacheAttribute.VaryByCustom ?? "").Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                Global.Cache.VaryParamsCache[invocation.Method] = new Tuple<string[], string[]>(a, b);
-            }
             
-            var varyByParams = Global.Cache.VaryParamsCache[invocation.Method].Item1;
-            var varyByCustoms = Global.Cache.VaryParamsCache[invocation.Method].Item2;
+            var varyByParams = (info.VaryByParam ?? "").Split(new [] {',',' '}, StringSplitOptions.RemoveEmptyEntries);
+            var varyByCustoms = (info.VaryByCustom ?? "").Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             var parameters = invocation.Method.GetParameters();
             if (parameters.Length > 0)

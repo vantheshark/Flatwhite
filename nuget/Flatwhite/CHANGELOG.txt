@@ -1,3 +1,6 @@
+* 1.0.4
+- A lot of improvements, support auto refresh for stale content so the method call will never wait for response.
+
 * 1.0.3
 - Fix bug on Flatwhite.Api
 

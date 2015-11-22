@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Caching;
+﻿using System.Runtime.Caching;
 
 namespace Flatwhite
 {
     /// <summary>
-    /// Cache provider
+    /// Provide methods to save/retrieve cache data
     /// </summary>
     public interface ICacheStore
     {
@@ -40,6 +39,6 @@ namespace Flatwhite
         /// <summary>
         /// The unique number represent the <see cref="ICacheStore" />
         /// </summary>
-        uint StoreId { get; }
+        int StoreId { get; }
     }
 }

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.Caching;
-using Flatwhite.Provider;
-
+using System.Reflection;
 
 namespace Flatwhite.Strategy
 {
@@ -33,23 +30,20 @@ namespace Flatwhite.Strategy
     /// <typeparam name="TCacheAttribute"></typeparam>
     public class CacheSelectedMethodsInvocationStrategy<T, TCacheAttribute> : DefaultCacheStrategy, IMethodCacheStrategy<T>
         where T : class 
-        where TCacheAttribute : OutputCacheAttribute, new()
+        where TCacheAttribute : OutputCacheAttribute
     {
-        
-        private ExpressionSetting<T, TCacheAttribute> _currentExpression;
+        private static readonly ConstructorInfo _ctor = typeof(OutputCacheAttribute).GetConstructor(new[] { typeof(ICacheStrategy) });
 
-        private List<ExpressionSetting<T, TCacheAttribute>> Expressions => ((ExpressionBaseCacheAttributeProvider<T, TCacheAttribute>) _cacheAttributeProvider).Expressions;
+        private ExpressionSetting<T, TCacheAttribute> _currentExpression;
+        private readonly List<ExpressionSetting<T, TCacheAttribute>> _expressions;
 
         /// <summary>
         /// The setting for a specific invocation
         /// </summary>
-
-
-        internal CacheSelectedMethodsInvocationStrategy() : base(Global.AttributeProvider, new ExpressionBaseCacheAttributeProvider<T, TCacheAttribute>())
+        internal CacheSelectedMethodsInvocationStrategy()
         {
-            CacheKeyProvider = new DefaultCacheKeyProvider(_cacheAttributeProvider, Global.HashCodeGeneratorProvider);
+            _expressions = new List<ExpressionSetting<T, TCacheAttribute>>();
         }
-
         /// <summary>
         /// Specify the member for the output cache
         /// </summary>
@@ -57,12 +51,12 @@ namespace Flatwhite.Strategy
         /// <returns></returns>
         public IMethodCacheRuleBuilder<T> ForMember(Expression<Func<T, object>> functionExpression)
         {
-            var expression = new ExpressionSetting<T, TCacheAttribute>
+            var expression = new ExpressionSetting<T, TCacheAttribute>((TCacheAttribute)_ctor.Invoke(new object[] { this }))
             {
                 Expression = functionExpression,
-                CacheAttribute = new TCacheAttribute()
             };
-            Expressions.Add(expression);
+
+            _expressions.Add(expression);
             _currentExpression = expression;
             return this;
         }
@@ -75,6 +69,17 @@ namespace Flatwhite.Strategy
         public IMethodCacheStrategy<T> Duration(int duration)
         {
             _currentExpression.CacheAttribute.Duration = duration;
+            return this;
+        }
+
+        /// <summary>
+        /// Set StaleWhileRevalidate
+        /// </summary>
+        /// <param name="staleWhileRevalidate"></param>
+        /// <returns></returns>
+        public IMethodCacheStrategy<T> StaleWhileRevalidate(int staleWhileRevalidate)
+        {
+            _currentExpression.CacheAttribute.StaleWhileRevalidate = staleWhileRevalidate;
             return this;
         }
 
@@ -107,7 +112,18 @@ namespace Flatwhite.Strategy
         /// <returns></returns>
         public IMethodCacheStrategy<T> WithCacheStore(uint cacheStoreId)
         {
-            _currentExpression.CacheAttribute.CacheStoreId = cacheStoreId;
+            _currentExpression.CacheAttribute.CacheStoreId = (int)cacheStoreId;
+            return this;
+        }
+
+        /// <summary>
+        /// Set the cache store _type
+        /// </summary>
+        /// <param name="cacheStoreType"></param>
+        /// <returns></returns>
+        public IMethodCacheStrategy<T> WithCacheStoreType(Type cacheStoreType)
+        {
+            _currentExpression.CacheAttribute.CacheStoreType = cacheStoreType;
             return this;
         }
 
@@ -128,17 +144,24 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="changeMonitorFactory"></param>
         /// <returns></returns>
-        public IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> changeMonitorFactory)
+        public IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<IChangeMonitor>> changeMonitorFactory)
         {
             _currentExpression.ChangeMonitorFactory = changeMonitorFactory;
             return this;
         }
 
         /// <summary>
-        /// Cache key provider
+        /// Get all attributes
         /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public override ICacheKeyProvider CacheKeyProvider { get; }
+        /// <returns></returns>
+        public IEnumerable<KeyValuePair<MethodInfo, OutputCacheAttribute>> GetCacheAttributes()
+        {
+            foreach (var e in _expressions)
+            {
+                var m = ExpressionHelper.ToMethodInfo(e.Expression);
+                yield return new KeyValuePair<MethodInfo, OutputCacheAttribute>(m, e.CacheAttribute);
+            }
+        }
 
         /// <summary>
         /// Get change monitors
@@ -146,11 +169,11 @@ namespace Flatwhite.Strategy
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public override IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public override IEnumerable<IChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            List<ChangeMonitor> monitors = base.GetChangeMonitors(invocation, invocationContext).ToList();
+            var monitors = base.GetChangeMonitors(invocation, invocationContext).ToList();
 
-            foreach (var e in Expressions)
+            foreach (var e in _expressions)
             {
                 var m = ExpressionHelper.ToMethodInfo(e.Expression);
                 if (m == invocation.Method)

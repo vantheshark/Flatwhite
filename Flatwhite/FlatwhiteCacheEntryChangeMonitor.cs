@@ -1,76 +1,72 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Runtime.Caching;
+﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace Flatwhite
 {
     /// <summary>
     /// An ChangeMonitor that response to GlobalRevalidateEvent and call OnChanged to reset the cache
     /// </summary>
-    public class FlatwhiteCacheEntryChangeMonitor : CacheEntryChangeMonitor
+    public class FlatwhiteCacheEntryChangeMonitor : IChangeMonitor
     {
+        private bool _disposing;
         /// <summary>
         /// Initializes an instance of FlatwhiteCacheEntryChangeMonitor with revalidationKey
         /// </summary>
         /// <param name="revalidationKey"></param>
-        public FlatwhiteCacheEntryChangeMonitor(string revalidationKey)
+        public FlatwhiteCacheEntryChangeMonitor(string revalidationKey = null)
         {
-            CacheKeys = new ReadOnlyCollection<string>(new [] { revalidationKey });
-            UniqueId = Guid.NewGuid().ToString("N");
-            LastModified = DateTimeOffset.UtcNow;
-            RegionName = "";
+            if (!string.IsNullOrWhiteSpace(revalidationKey))
+            {
+                CacheKeys = new ReadOnlyCollection<string>(new[] {revalidationKey});
+            }
 
             Global.RevalidateEvent += GlobalRevalidateEvent;
-            InitializationComplete();
+            
         }
 
         private void GlobalRevalidateEvent(string revalidationKey)
         {
-            if (CacheKeys.Contains(revalidationKey))
+            if (CacheKeys != null && CacheKeys.Contains(revalidationKey) && !_disposing)
             {
-                this.OnChanged(revalidationKey);
+                OnChanged(revalidationKey);
             }
         }
 
         /// <summary>
         /// When dispose, unregistered from Global.RevalidateEvent
         /// </summary>
-        /// <param name="disposing"></param>
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
-            Global.RevalidateEvent -= GlobalRevalidateEvent;
+            if (!_disposing)
+            {
+                Global.RevalidateEvent -= GlobalRevalidateEvent;
+            }
+            _disposing = true;
         }
-
-        /// <summary>
-        /// Gets a value that represents the <see cref="T:System.Runtime.Caching.ChangeMonitor"/> class instance.
-        /// </summary>
-        /// <returns>
-        /// The identifier for a change-monitor instance.
-        /// </returns>
-        public override string UniqueId { get; }
-
+       
         /// <summary>
         /// Gets a collection of cache keys that are monitored for changes. 
         /// </summary>
         /// <returns>
         /// A collection of cache keys.
         /// </returns>
-        public override ReadOnlyCollection<string> CacheKeys { get; }
+        public ReadOnlyCollection<string> CacheKeys { get; }
 
         /// <summary>
-        /// Gets a value that indicates the latest time (in UTC time) that the monitored cache entry was changed.
+        /// Cache monitor change event
         /// </summary>
-        /// <returns>
-        /// The elapsed time.
-        /// </returns>
-        public override DateTimeOffset LastModified { get; }
+        public event CacheMonitorChangeEvent CacheMonitorChanged;
 
         /// <summary>
-        /// Gets the name of a region of the cache.
+        /// Call this method when you want to notify the cache store there is changes regarding the relevant cache item
         /// </summary>
-        /// <returns>
-        /// The name of a region in the cache. 
-        /// </returns>
-        public override string RegionName { get; }
+        /// <param name="state"></param>
+        public void OnChanged(object state)
+        {
+            if (CacheMonitorChanged != null && !_disposing)
+            {
+                CacheMonitorChanged(state);
+            }
+        }
     }
 }

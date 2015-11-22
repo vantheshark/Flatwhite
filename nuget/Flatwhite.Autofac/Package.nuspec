@@ -2,19 +2,19 @@
 <package>
   <metadata>
     <id>Flatwhite.Autofac</id>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <authors>Van Thoai Nguyen</authors>
     <owners>Van Thoai Nguyen</owners>
     <licenseUrl>http://sam.zoy.org/wtfpl/COPYING</licenseUrl>
 	<projectUrl>https://github.com/vanthoainguyen/Flatwhite</projectUrl>	    	
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<summary>Flatwhite.Autofac support Flatwhite cache using Autofac</summary>    
-	<description>Flatwhite.Autofac is an output cache library using Castle dynamic proxy and Autofac as IOC</description>
+	<description>Flatwhite.Autofac is a Autofac support package for Flatwhite AOP</description>
     <releaseNotes>https://github.com/vanthoainguyen/Flatwhite/blob/master/nuget/Flatwhite/CHANGELOG.txt</releaseNotes>
     <copyright>Copyright 2015</copyright>
-    <tags>Flatwhite Autofac Intercept DynamicProxy Caching Cache OutputCache</tags>
+    <tags>Flatwhite Autofac Intercept DynamicProxy Caching Cache OutputCache ActionFilter MethodFilter AOP</tags>
     <dependencies>
-		<dependency id="Flatwhite" version="1.0.3" />
+		<dependency id="Flatwhite" version="1.0.4" />
 		<dependency id="Autofac" version="3.5.2" />		
 		<dependency id="Castle.Core" version="3.3.3" />		
     </dependencies>

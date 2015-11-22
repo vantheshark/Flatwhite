@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Core;
@@ -8,7 +7,7 @@ using Autofac.Core.Registration;
 namespace Flatwhite.AutofacIntergration
 {
     /// <summary>
-    /// Scan types that were decorated or have members decorated with <see cref="OutputCacheAttribute"/> and enable default cache Interceptor (<see cref="CacheInterceptor"/>) on them
+    /// Scan types that were decorated or have members decorated with attributes implemented <see cref="MethodFilterAttribute"/> or <see cref="ExceptionFilterAttribute"/> and enable interceptors (<see cref="MethodInterceptorAdaptor"/>) on them
     /// </summary>
     public class FlatwhiteBuilderInterceptModule : Module
     {
@@ -40,8 +39,10 @@ namespace Flatwhite.AutofacIntergration
                         .Select(s => s.ServiceType).ToList();
 
                     var typesWithAttributes =
-                           types.Where(type => type.GetCustomAttributes(typeof(OutputCacheAttribute), true).Any() ||
-                                               type.GetMethods().SelectMany(p => p.GetCustomAttributes(typeof(OutputCacheAttribute), true)).Any()).ToList();
+                           types.Where(type => type.GetCustomAttributes(typeof(MethodFilterAttribute), true).Any() ||
+                                               type.GetCustomAttributes(typeof(ExceptionFilterAttribute), true).Any() ||
+                                               type.GetMethods().SelectMany(p => p.GetCustomAttributes(typeof(MethodFilterAttribute), true)).Any() ||
+                                               type.GetMethods().SelectMany(p => p.GetCustomAttributes(typeof(ExceptionFilterAttribute), true)).Any()).ToList();
 
                     if (typesWithAttributes.Count == 0) continue;
 
@@ -63,14 +64,14 @@ namespace Flatwhite.AutofacIntergration
                     if (typesWithAttributes.Any(t => t.IsClass))
                     {
                         rb = RegistrationBuilder.ForType(typesWithAttributes.First(type => type.IsClass));
-                        rb.EnableClassInterceptors().InterceptedBy(typeof (CacheInterceptorAdaptor));
+                        rb.EnableClassInterceptors().InterceptedBy(typeof (MethodInterceptorAdaptor));
                         ((ComponentRegistration)r).Activator = rb.ActivatorData.Activator;
                         // NOTE: Find where to set it to rb.ActivatorData.ImplementationType;
                     }
                     else
                     {
                         rb = RegistrationBuilder.ForType(typesWithAttributes.First(type => type.IsInterface));
-                        rb.EnableInterfaceInterceptors().InterceptedBy(typeof(CacheInterceptorAdaptor));
+                        rb.EnableInterfaceInterceptors().InterceptedBy(typeof(MethodInterceptorAdaptor));
                     }
 
                     foreach (var pair in rb.RegistrationData.Metadata)

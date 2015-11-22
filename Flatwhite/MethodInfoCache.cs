@@ -51,5 +51,6 @@ namespace Flatwhite
         public readonly IDictionary<MethodInfo, Tuple<string[], string[]>> VaryParamsCache = new Dictionary<MethodInfo, Tuple<string[], string[]>>();
         public readonly IDictionary<MethodInfo, bool> InterceptableCache = new Dictionary<MethodInfo, bool>();
         public readonly IDictionary<Type, IHashCodeGenerator> HashCodeGeneratorCache = new Dictionary<Type, IHashCodeGenerator>();
+        public readonly Dictionary<string, Phoenix> Phoenix = new Dictionary<string, Phoenix>();
     }
 }

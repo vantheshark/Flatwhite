@@ -25,6 +25,6 @@ namespace Flatwhite
             return _cache.Contains(key);
         }
 
-        public uint StoreId => 0;
+        public int StoreId => 0;
     }
 }

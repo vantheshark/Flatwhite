@@ -11,6 +11,7 @@ namespace Flatwhite.WebApi
     /// </summary>
     public class CacheResponseBuilder : ICacheResponseBuilder
     {
+        /// TODO: Unit test?
         /// <summary>
         /// Provide a single method to try to build a <see cref="HttpResponseHeaders" /> from <see cref="CacheControlHeaderValue" />  and <see cref="HttpRequestMessage" />
         /// </summary>
@@ -83,6 +84,10 @@ namespace Flatwhite.WebApi
             {
                 response.StatusCode = HttpStatusCode.OK;
                 response.Content = new ByteArrayContent(cacheItem.Content);
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue(cacheItem.ResponseMediaType)
+                {
+                    CharSet = cacheItem.ResponseCharSet
+                };
                 response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}\"");
             }
             return response;

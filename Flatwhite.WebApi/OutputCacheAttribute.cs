@@ -12,6 +12,7 @@ using System.Web.Http.Controllers;
 using System.Web.Http.Dependencies;
 using System.Web.Http.Filters;
 using Flatwhite.Provider;
+using Newtonsoft.Json;
 
 namespace Flatwhite.WebApi
 {
@@ -23,7 +24,7 @@ namespace Flatwhite.WebApi
     /// Represents an attribute that is used to mark an WebApi action method whose output will be cached.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-    public class OutputCacheAttribute : ActionFilterAttribute
+    public class OutputCacheAttribute : ActionFilterAttribute, ICacheSettings
     {
         #region -- Cache params --
         /// <summary>
@@ -39,7 +40,7 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// The unique number id of the cache store when registered against the <see cref="ICacheStoreProvider" />
         /// </summary>
-        public uint? CacheStoreId { get; set; }
+        public int CacheStoreId { get; set; }
 
         /// <summary>
         /// Gets or sets the cache duration, in seconds.
@@ -130,7 +131,7 @@ namespace Flatwhite.WebApi
         /// <para>This should be used with <see cref="MaxAge" /> to indicates that caches may be used if an error is encountered after becoming stale for an additional indicated number of seconds</para>
         /// https://tools.ietf.org/html/rfc5861#4.1
         /// </summary>
-        public uint StaleIfError { get; set; } //TODO: may be check on executed if error but cache is stale, return the stale
+        public uint StaleIfError { get; set; }
 
 
         /// <summary>
@@ -146,36 +147,7 @@ namespace Flatwhite.WebApi
         /// </summary>
         public string RevalidationKey { get; set; }
 
-        #endregion 
-
-        /// <summary>
-        /// Get <see cref="IAsyncCacheStore" /> from <see cref="IDependencyScope" />
-        /// </summary>
-        /// <param name="scope"></param>
-        /// <returns></returns>
-        protected virtual IAsyncCacheStore GetAsyncCacheStore(IDependencyScope scope)
-        {
-            if (CacheStoreId.HasValue && CacheStoreId > 0)
-            {
-                return Global.CacheStoreProvider.GetAsyncCacheStore(CacheStoreId.Value);
-            }
-            
-            if (CacheStoreType != null && typeof(IAsyncCacheStore).IsAssignableFrom(CacheStoreType))
-            {
-                return scope.GetService(CacheStoreType) as IAsyncCacheStore ?? Global.CacheStoreProvider.GetAsyncCacheStore();
-            }
-
-            if (CacheStoreType != null && typeof(ICacheStore).IsAssignableFrom(CacheStoreType))
-            {
-                var cacheStore = scope.GetService(CacheStoreType) as ICacheStore;
-                if (cacheStore != null)
-                {
-                    return new CacheStoreAdaptor(cacheStore);
-                }
-            }
-
-            return Global.CacheStoreProvider.GetAsyncCacheStore();
-        }
+        #endregion
 
         /// <summary>
         /// Get <see cref="ICacheStrategy" /> from <see cref="IDependencyScope" />
@@ -192,7 +164,7 @@ namespace Flatwhite.WebApi
                 var strategyProvider = scope.GetService(typeof (ICacheStrategyProvider)) as ICacheStrategyProvider ?? Global.CacheStrategyProvider;
                 strategy = strategyProvider.GetStrategy(invocation, invocationContext);
             }
-            if (strategy == null) throw new Exception("Cannot find caching strategy for this requiest");
+            if (strategy == null) throw new Exception("Cannot find caching strategy for this request");
             return strategy;
         }
 
@@ -233,22 +205,25 @@ namespace Flatwhite.WebApi
             }
             
             var invocation = GetInvocation(actionContext);
-            var context = GetContext(actionContext);
+            var context = GetInvocationContext(actionContext);
             var scope = actionContext.Request.GetDependencyScope();
-
             var strategy = GetCacheStrategy(scope, invocation, context);
-            if (strategy.CanIntercept(invocation, context) || strategy.GetCacheTime(invocation, context) <= 0)
-            {
-                var cacheKey = strategy.CacheKeyProvider.GetCacheKey(invocation, context);
-                var hashedKey = HashCacheKey(cacheKey);
-                var cacheStore = GetAsyncCacheStore(scope);
-                var storedKey = $"fw-{cacheStore.StoreId}-{hashedKey}";
+            
+            var cacheKey = strategy.CacheKeyProvider.GetCacheKey(invocation, context);
+            var hashedKey = HashCacheKey(cacheKey);
+            var cacheStore = strategy.GetAsyncCacheStore(invocation, context);
+            var storedKey = $"fw-{cacheStore.StoreId}-{hashedKey}";
+            var builder = GetCacheResponseBuilder(scope);
 
-                var cacheItem = await cacheStore.GetAsync(storedKey).ConfigureAwait(false) as CacheItem;
-                var builder = GetCacheResponseBuilder(scope);
-                var response = builder?.GetResponse(cacheControl, cacheItem, actionContext.Request);
-                actionContext.Response = response;
-            }
+            actionContext.Request.Properties[Global.__flatwhite_outputcache_store] = cacheStore;
+            actionContext.Request.Properties[Global.__flatwhite_outputcache_key] = storedKey;
+            actionContext.Request.Properties[Global.__flatwhite_outputcache_strategy] = strategy;
+            actionContext.Request.Properties[WebApiExtensions.__webApi_outputcache_response_builder] = builder;
+
+            var cacheItem = await cacheStore.GetAsync(storedKey).ConfigureAwait(false) as CacheItem;
+            var response = builder.GetResponse(cacheControl, cacheItem, actionContext.Request);
+
+            actionContext.Response = response;
         }
 
         /// <summary>
@@ -264,7 +239,7 @@ namespace Flatwhite.WebApi
                                   cacheControl.NoStore ||
                                   cacheControl.MaxAge?.TotalSeconds == 0) && !IgnoreRevalidationRequest 
                                || 
-                request.Properties.Any(prop => prop.Key.StartsWith(CacheItem.DONT_CACHE_PREFIX));
+                request.Properties.Any(prop => prop.Key.StartsWith(WebApiExtensions.__flatwhite_dont_cache_));
         }
 
         /// <summary>
@@ -288,27 +263,17 @@ namespace Flatwhite.WebApi
             ApplyCacheHeaders(actionExecutedContext.ActionContext.Response, actionExecutedContext.Request);
 
             var invocation = GetInvocation(actionExecutedContext.ActionContext);
-            var context = GetContext(actionExecutedContext.ActionContext);
-            var scope = actionExecutedContext.ActionContext.Request.GetDependencyScope();
-
-            var strategy = GetCacheStrategy(scope, invocation, context);
-            if (!strategy.CanIntercept(invocation, context) || strategy.GetCacheTime(invocation, context) <= 0)
-            {
-                return;
-            }
-
-            var cacheKey = strategy.CacheKeyProvider.GetCacheKey(invocation, context);
-            var hashedKey = HashCacheKey(cacheKey);
-            var cacheStore = GetAsyncCacheStore(scope);
-            var storedKey = $"fw-{cacheStore.StoreId}-{hashedKey}";
-            var cacheItem = await cacheStore.GetAsync(storedKey).ConfigureAwait(false) as CacheItem;
+            var context = GetInvocationContext(actionExecutedContext.ActionContext);
+            var cacheStore = (IAsyncCacheStore)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_store];
+            var storedKey = (string)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_key];
 
             if (actionExecutedContext.ActionContext.Response == null || !actionExecutedContext.ActionContext.Response.IsSuccessStatusCode)
             {
+                var cacheItem = await cacheStore.GetAsync(storedKey).ConfigureAwait(false) as CacheItem;
                 if (cacheItem != null && StaleIfError > 0)
                 {
-                    var builder = GetCacheResponseBuilder(scope);
-                    var response = builder?.GetResponse(actionExecutedContext.Request.Headers.CacheControl, cacheItem, actionExecutedContext.Request);
+                    var builder = (ICacheResponseBuilder)actionExecutedContext.Request.Properties[WebApiExtensions.__webApi_outputcache_response_builder];
+                    var response = builder.GetResponse(actionExecutedContext.Request.Headers.CacheControl, cacheItem, actionExecutedContext.Request);
 
                     if (response != null)
                     {
@@ -323,19 +288,25 @@ namespace Flatwhite.WebApi
 
             if (responseContent != null)
             {
-                cacheItem = new CacheItem(this)
+                var cacheItem = new CacheItem(this)
                 {
                     Key = storedKey,
-                    Content = await responseContent.ReadAsByteArrayAsync().ConfigureAwait(false)
+                    Content = await responseContent.ReadAsByteArrayAsync().ConfigureAwait(false),
+                    ResponseMediaType = responseContent.Headers.ContentType.MediaType,
+                    ResponseCharSet = responseContent.Headers.ContentType.CharSet
                 };
-                
-                var policy = new CacheItemPolicy { AbsoluteExpiration = DateTime.UtcNow.AddSeconds(MaxAge + Math.Max(StaleWhileRevalidate, StaleIfError))};
-                //TODO: Refresh cache when it starts to be stale
 
+                var phoenix = CreatePhoenix(invocation, cacheStore.StoreId, storedKey);
+                var strategy = (ICacheStrategy)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_strategy];
+                var policy = new CacheItemPolicy { AbsoluteExpiration = DateTime.UtcNow.AddSeconds(MaxAge + Math.Max(StaleWhileRevalidate, StaleIfError))};
                 var changeMonitors = strategy.GetChangeMonitors(invocation, context);
+
                 foreach (var mon in changeMonitors)
                 {
-                    policy.ChangeMonitors.Add(mon);
+                    mon.CacheMonitorChanged += x =>
+                    {
+                        phoenix.RebornOrDieForever();
+                    };
                 }
 
                 actionExecutedContext.Response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}\"");
@@ -382,16 +353,6 @@ namespace Flatwhite.WebApi
             {
                 response.Headers.Add("Pragma", "no-cache");
             }
-
-            foreach (var prop in requestProperties)
-            {
-                if (prop.Key.StartsWith(CacheItem.FLATWHITE_PREFIX))
-                {
-                    response.Headers.Add("X-Flatwhite-" + prop.Key.Replace(CacheItem.DONT_CACHE_PREFIX, "")
-                                                                  .Replace(CacheItem.FLATWHITE_PREFIX, ""), 
-                                        prop.Value.ToString());
-                }
-            }
         }
 
         /// <summary>
@@ -422,12 +383,25 @@ namespace Flatwhite.WebApi
         /// </summary>
         /// <param name="actionContext"></param>
         /// <returns></returns>
-        protected virtual IDictionary<string, object> GetContext(HttpActionContext actionContext)
+        protected virtual IDictionary<string, object> GetInvocationContext(HttpActionContext actionContext)
         {
             var provider = new WebApiContextProvider(actionContext);
             var context = provider.GetContext();
-            context[typeof(OutputCacheAttribute).Name] = this;
+            context[Global.__flatwhite_outputcache_attribute] = this;
+            context[WebApiExtensions.__webApi_dependency_scope] = actionContext.Request.GetDependencyScope(); ;
             return context;
+        }
+
+        /// <summary>
+        /// Create the phoenix object which can refresh the cache itself if StaleWhileRevalidate > 0
+        /// </summary>
+        /// <param name="invocation"></param>
+        /// <param name="cacheStoreId"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected virtual Phoenix CreatePhoenix(_IInvocation invocation, int cacheStoreId, string key)
+        {
+            return new WebApiPhoenix(invocation, cacheStoreId, key, (int)MaxAge * 1000, (int)StaleWhileRevalidate * 1000, this);
         }
     }
 }

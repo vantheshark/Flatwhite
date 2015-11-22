@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Runtime.Caching;
 using Autofac;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Strategy;
-using NSubstitute;
+using Flatwhite.Tests.Stubs;
 using NUnit.Framework;
 // ReSharper disable InconsistentNaming
 
@@ -16,12 +15,13 @@ namespace Flatwhite.Tests.Autofac.Strategy
         public void ShowSomeTrace()
         {
             Global.Cache = new MethodInfoCache();
+            Global.CacheStoreProvider.RegisterStore(new NoneExpireCacheStore());
         }
 
         [Test]
         public void Test_cache_on_selected_method()
         {
-            var builder = new ContainerBuilder().EnableFlatwhiteCache();
+            var builder = new ContainerBuilder().EnableFlatwhite();
             builder
                 .RegisterType<BlogService>()
                 .As<IBlogService>()
@@ -37,7 +37,6 @@ namespace Flatwhite.Tests.Autofac.Strategy
                         .VaryByParam("postId")
                 );
 
-            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
             var container = builder.Build();
 
             var cachedService = container.Resolve<IBlogService>();
@@ -57,41 +56,41 @@ namespace Flatwhite.Tests.Autofac.Strategy
         [Test]
         public void Test_cache_on_selected_method_with_change_monitor()
         {
-            UnitTestCacheChangeMonitor mon = null;
-            var builder = new ContainerBuilder().EnableFlatwhiteCache();
+            FlatwhiteCacheEntryChangeMonitor mon = null;
+            var builder = new ContainerBuilder().EnableFlatwhite();
             builder
                 .RegisterType<BlogService>()
                 .As<IBlogService>()
                 .CacheWithStrategy(
                     CacheStrategies.ForService<IBlogService>()
                         .ForMember(x => x.GetById(Argument.Any<Guid>()))
-                        .Duration(50000)
+                        .Duration(5000)
                         .VaryByParam("postId")
                         .WithChangeMonitors((i, context) =>
                         {
-                            mon = new UnitTestCacheChangeMonitor();
+                            mon = new FlatwhiteCacheEntryChangeMonitor("");
                             return new[] {mon};
                         })
                 );
 
-            Global.CacheStoreProvider.RegisterStore(new UnitTestCacheStore());
             var container = builder.Build();
 
             var cachedService = container.Resolve<IBlogService>();
 
-            var id1 = Guid.NewGuid();
+            var id = Guid.NewGuid();
             for (var i = 0; i < 1000; i++)
             {
-                var b1 = cachedService.GetById(id1);
+                var result = cachedService.GetById(id);
             }
 
             dynamic blogSvc = cachedService;
             Assert.AreEqual(1, blogSvc.__target.InvokeCount);
             
-            mon.FireChangeEvent();
+            mon.OnChanged(null);
+            //NOTE: After this, the cache item should be removed
             for (var i = 0; i < 1000; i++)
             {
-                var b1 = cachedService.GetById(id1);
+                var result = cachedService.GetById(id);
             }
             Assert.AreEqual(2, blogSvc.__target.InvokeCount);
         }

@@ -41,6 +41,6 @@ namespace Flatwhite
         /// <summary>
         /// The unique number represent the <see cref="IAsyncCacheStore" />
         /// </summary>
-        uint StoreId { get; }
+        int StoreId { get; }
     }
 }

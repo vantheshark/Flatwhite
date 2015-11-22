@@ -64,12 +64,11 @@
     <Compile Include="Autofac\OutputCacheAttributeTests.cs" />
     <Compile Include="Autofac\Strategy\CacheOutputForAllMethodTests.cs" />
     <Compile Include="Autofac\Strategy\CacheSelectedMethodsInvocationStrategyTests.cs" />
-    <Compile Include="CacheInterceptorTests.cs" />
+    <Compile Include="MethodInterceptorTests.cs" />
     <Compile Include="IBlogService.cs" />
     <Compile Include="IUserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnitTestCacheChangeMonitor.cs" />
-    <Compile Include="UnitTestCacheStore.cs" />
+    <Compile Include="Stubs\NoneExpireCacheStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Flatwhite.Autofac\Flatwhite.Autofac.csproj">

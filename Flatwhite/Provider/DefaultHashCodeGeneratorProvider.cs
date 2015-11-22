@@ -8,6 +8,13 @@ namespace Flatwhite.Provider
     public class DefaultHashCodeGeneratorProvider : IHashCodeGeneratorProvider
     {
         /// <summary>
+        /// Initializes DefaultHashCodeGeneratorProvider with default <see cref="IHashCodeGenerator" /> for all objects
+        /// </summary>
+        public DefaultHashCodeGeneratorProvider()
+        {
+            Register<object>(new DefaultHashCodeGenerator());
+        }
+        /// <summary>
         /// Return <see cref="IHashCodeGenerator" /> for type.
         /// <para>if Type implemented ToString(), the type will be registered and <see cref="ToStringHashCodeGenerator" /> will be used </para>
         /// </summary>

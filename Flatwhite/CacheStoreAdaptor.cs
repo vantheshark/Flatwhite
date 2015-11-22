@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Caching;
+﻿using System.Runtime.Caching;
 using System.Threading.Tasks;
 
 namespace Flatwhite
@@ -33,7 +32,7 @@ namespace Flatwhite
             return _syncCacheStore.Contains(key);
         }
 
-        public uint StoreId => _syncCacheStore.StoreId;
+        public int StoreId => _syncCacheStore.StoreId;
 
         public Task SetAsync(string key, object value, CacheItemPolicy policy)
         {

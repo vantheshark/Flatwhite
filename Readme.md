@@ -1,5 +1,5 @@
-﻿# Flatwhite (1.0.0) (Nov 08 2015) 
-** Method output cache using Dynamic proxy.
+﻿# Flatwhite (1.0.4) (Nov 25 2015) 
+** Method filter & output cache using Dynamic proxy with MVC and WebAPI action filter attribute style
 
 ** Required packages:
 
@@ -76,8 +76,8 @@ builder.RegisterType<BlogService>()
 							  .VaryByParam("postId")
 							  .WithChangeMonitors((i, context) => 
 							  {									
-									return new[] {new YouCustomCacheChangeMonitor()};
 							  })
+									return new[] {new YouCustomCacheChangeMonitor()};
        );
 ```
 
@@ -98,6 +98,16 @@ builder.RegisterModule<FlatwhiteBuilderInterceptModule>();
 var container = builder.Build();
 ```
 Note that you don't have to call EnableFlatwhiteCache() on the builder like the other methods.
+
+6/ Flatwhite can auto refresh the stale content if you set **StaleWhileRevalidate** with a value greater than 0
+
+```C#
+public interface IUserService
+{
+    [OutputCache(Duration = 2000, StaleWhileRevalidate = 2000)]
+    object GetById(Guid userId);    
+}
+```
 
 ## TODO:
 

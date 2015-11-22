@@ -53,9 +53,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheInterceptorAdaptor.cs" />
+    <Compile Include="AutofacServiceActivator.cs" />
+    <Compile Include="MethodInterceptorAdaptor.cs" />
     <Compile Include="FlatwhiteBuilderInterceptModule.cs" />
     <Compile Include="FlatwhiteCoreModule.cs" />
+    <Compile Include="InvocationAdaptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CacheRegistrationExtensions.cs" />
     <Compile Include="RegistrationExtensions.cs" />

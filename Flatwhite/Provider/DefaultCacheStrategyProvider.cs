@@ -7,7 +7,7 @@ namespace Flatwhite.Provider
     {
         public ICacheStrategy GetStrategy(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            return new DefaultCacheStrategy(Global.AttributeProvider, Global.CacheAttributeProvider);
+            return new DefaultCacheStrategy();
         }
     }
 }

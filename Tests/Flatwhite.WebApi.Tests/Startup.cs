@@ -1,9 +1,11 @@
-﻿using System.Web.Http;
+﻿using System.Reflection;
+using System.Web.Http;
 using Autofac;
 using Autofac.Integration.WebApi;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
 using Flatwhite.WebApi.CacheControl;
+using Flatwhite.WebApi.Tests.Controllers;
 using Microsoft.Owin;
 using Owin;
 
@@ -24,18 +26,14 @@ namespace Flatwhite.WebApi.Tests
                .UseFlatwhiteCache<Startup>(config)
                .UseAutofacMiddleware(container)
                ;
-
         }
 
         private IContainer BuildAutofacContainer(HttpConfiguration config)
         {
-            var builder = new ContainerBuilder().EnableFlatwhiteCache();
+            var builder = new ContainerBuilder().EnableFlatwhite();
 
             // This will also be set to Global.CacheStrategyProvider in UseFlatwhiteCache method
             builder.RegisterType<WebApiCacheStrategyProvider>().As<ICacheStrategyProvider>().SingleInstance();
-
-            // This will also be set to Global.CacheAttributeProvider in UseFlatwhiteCache method
-            builder.RegisterType<WebApiCacheAttributeProvider>().As<ICacheAttributeProvider>().SingleInstance();
 
             // This is required by EtagHeaderHandler
             builder.RegisterType<CacheResponseBuilder>().As<ICacheResponseBuilder>().SingleInstance();
@@ -43,6 +41,12 @@ namespace Flatwhite.WebApi.Tests
             // This is required by CachControlHeaderHandlerProvider
             builder.RegisterType<EtagHeaderHandler>().As<ICachControlHeaderHandler>().SingleInstance();
             //NOTE: Register more instance of ICachControlHeaderHandler here
+            
+
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+            // OPTIONAL: Register the Autofac filter provider.
+            builder.RegisterWebApiFilterProvider(config);
+            
 
             var container = builder.Build();
             config.DependencyResolver = new AutofacWebApiDependencyResolver(container);

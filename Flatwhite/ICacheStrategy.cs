@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.Caching;
 using Flatwhite.Provider;
-
 
 namespace Flatwhite
 {
@@ -20,20 +18,20 @@ namespace Flatwhite
         bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext);
 
         /// <summary>
-        /// Get cache time by invocation and context
+        /// Get <see cref="ICacheStore" /> for current invocation and context
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        int GetCacheTime(_IInvocation invocation, IDictionary<string, object> invocationContext);
+        ICacheStore GetCacheStore(_IInvocation invocation, IDictionary<string, object> invocationContext);
 
         /// <summary>
-        /// Get cache store id for current invocation and context
+        /// Get <see cref="IAsyncCacheStore" /> for current invocation and context
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        uint GetCacheStoreId(_IInvocation invocation, IDictionary<string, object> invocationContext);
+        IAsyncCacheStore GetAsyncCacheStore(_IInvocation invocation, IDictionary<string, object> invocationContext);
 
         /// <summary>
         /// Get the change monitor by invocation and context
@@ -41,7 +39,7 @@ namespace Flatwhite
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext);
+        IEnumerable<IChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext);
 
         /// <summary>
         /// Cache key provider

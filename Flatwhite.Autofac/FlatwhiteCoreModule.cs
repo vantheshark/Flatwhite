@@ -13,14 +13,31 @@ namespace Flatwhite.AutofacIntergration
             builder.Register(c => Global.ContextProvider);
             builder.Register(c => Global.CacheStrategyProvider);
             builder.Register(c => Global.AttributeProvider);
-            builder.Register(c => Global.CacheAttributeProvider);
             builder.Register(c => Global.HashCodeGeneratorProvider);
 
             builder.RegisterType<DefaultCacheStrategy>().As<ICacheStrategy>();
-            builder.RegisterType<CacheInterceptorAdaptor>()
-                   .Keyed<IInterceptor>(typeof(CacheInterceptor))
-                   .Named<IInterceptor>(typeof(CacheInterceptor).Name)
+            builder.RegisterType<MethodInterceptorAdaptor>()
+                   .Keyed<IInterceptor>(typeof(MethodInterceptorAdaptor))
+                   .Named<IInterceptor>(typeof(MethodInterceptorAdaptor).Name)
                    .AsSelf();
+
+            builder.RegisterType<FlatwhiteStart>().AsImplementedInterfaces();
+            builder.RegisterType<AutofacServiceActivator>().AsImplementedInterfaces().SingleInstance();
+        }
+    }
+
+    internal class FlatwhiteStart : IStartable
+    {
+        private readonly IComponentContext _containerContext;
+
+        public FlatwhiteStart(IComponentContext containerContext)
+        {
+            _containerContext = containerContext;
+        }
+
+        public void Start()
+        {
+            Global.ServiceActivator = new AutofacServiceActivator(_containerContext);
         }
     }
 }

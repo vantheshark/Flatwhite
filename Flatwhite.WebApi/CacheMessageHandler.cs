@@ -11,18 +11,19 @@ namespace Flatwhite.WebApi
     /// <summary>
     /// This is a custom WebApi message handler which try to build the response if cache data is available
     /// This should create a response asap if there is the cache without waiting for the <see cref="OutputCacheAttribute" /> to do that which is quite late
+    /// and quite heavy "if your controller has too many dependencies". People should try to not having heavy Controller anyway. 
     /// </summary>
     public class CacheMessageHandler : DelegatingHandler
     {
         private readonly ICachControlHeaderHandlerProvider _handlerProvider;
-        private readonly ILogger _logger;
+        private readonly Microsoft.Owin.Logging.ILogger _logger;
 
         /// <summary>
         /// Initializes an instance of <see cref="CacheMessageHandler" /> from a provided <see cref="ICachControlHeaderHandlerProvider" />
         /// </summary>
         /// <param name="handlerProvider"></param>
         /// <param name="logger"></param>
-        public CacheMessageHandler(ICachControlHeaderHandlerProvider handlerProvider, ILogger logger)
+        public CacheMessageHandler(ICachControlHeaderHandlerProvider handlerProvider, Microsoft.Owin.Logging.ILogger logger)
         {
             if (handlerProvider == null)
             {
@@ -45,7 +46,7 @@ namespace Flatwhite.WebApi
         /// <returns></returns>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            // TODO: Ignore static files
+            // TODO: Ignore static files if WebAPI hosted with MVC web app. Probably keep it like this for now as everything will be changed once vNext release
 
             var handlers = _handlerProvider.Get(request);
             foreach (var handler in handlers)

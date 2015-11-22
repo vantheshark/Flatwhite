@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Web.Http.Dependencies;
 using Flatwhite.Provider;
 using Flatwhite.Strategy;
 
 namespace Flatwhite.WebApi
 {
     /// <summary>
-    /// A provider to return <see cref="DefaultCacheStrategy" /> with different <see cref="ICacheAttributeProvider" /> if the context is webapi request
+    /// A provider to return <see cref="WebApiCacheStrategy" /> for WebApi request
     /// </summary>
     public class WebApiCacheStrategyProvider : ICacheStrategyProvider
     {
@@ -18,8 +19,8 @@ namespace Flatwhite.WebApi
         public ICacheStrategy GetStrategy(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             return invocationContext.ContainsKey(WebApiExtensions.__webApi) 
-                ? (ICacheStrategy)new WebApiCacheStrategy() 
-                : new DefaultCacheStrategy(Global.AttributeProvider, Global.CacheAttributeProvider);
+                ? new WebApiCacheStrategy(new WebApiDependencyResolverActivator(() => invocationContext[WebApiExtensions.__webApi_dependency_scope] as IDependencyScope)) 
+                : new DefaultCacheStrategy();
         }
     }
 }

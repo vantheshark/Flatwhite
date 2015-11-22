@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Caching;
 
 namespace Flatwhite.Strategy
 {
@@ -16,6 +15,14 @@ namespace Flatwhite.Strategy
         /// <param name="duration"></param>
         /// <returns></returns>
         IMethodCacheStrategy<T> Duration(int duration);
+
+        /// <summary>
+        /// Set StaleWhileRevalidate
+        /// </summary>
+        /// <param name="staleWhileRevalidate"></param>
+        /// <returns></returns>
+        IMethodCacheStrategy<T> StaleWhileRevalidate(int staleWhileRevalidate);
+
         /// <summary>
         /// Set vảy by param
         /// </summary>
@@ -37,6 +44,13 @@ namespace Flatwhite.Strategy
         IMethodCacheStrategy<T> WithCacheStore(uint cacheStoreId);
 
         /// <summary>
+        /// Set the cache store type
+        /// </summary>
+        /// <param name="cacheStoreType"></param>
+        /// <returns></returns>
+        IMethodCacheStrategy<T> WithCacheStoreType(Type cacheStoreType);
+
+        /// <summary>
         /// Set revalidation key
         /// </summary>
         /// <param name="revalidationKey"></param>
@@ -49,6 +63,6 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="changeMonitorFactory"></param>
         /// <returns></returns>
-        IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<ChangeMonitor>> changeMonitorFactory);
+        IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<IChangeMonitor>> changeMonitorFactory);
     }
 }

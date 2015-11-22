@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.Caching;
 using Flatwhite.Provider;
-
 
 namespace Flatwhite.Strategy
 {
@@ -12,23 +10,15 @@ namespace Flatwhite.Strategy
     /// </summary>
     public class DefaultCacheStrategy : ICacheStrategy
     {
-        private readonly IAttributeProvider _attributeProvider;
+        private readonly IServiceActivator _activator;
 
         /// <summary>
-        /// The cache attribute provider
+        /// Initialize CacheStrategy with service activator
         /// </summary>
-        // ReSharper disable once InconsistentNaming
-        protected readonly ICacheAttributeProvider _cacheAttributeProvider;
-
-        /// <summary>
-        /// Initialize default cache strategy with a <see cref="ICacheAttributeProvider"/>
-        /// </summary>
-        /// <param name="attributeProvider"></param>
-        /// <param name="cacheAttributeProvider"></param>
-        public DefaultCacheStrategy(IAttributeProvider attributeProvider, ICacheAttributeProvider cacheAttributeProvider)
+        /// <param name="activator"></param>
+        public DefaultCacheStrategy(IServiceActivator activator = null)
         {
-            _attributeProvider = attributeProvider;
-            _cacheAttributeProvider = cacheAttributeProvider;
+            _activator = activator ?? Global.ServiceActivator;
         }
 
         /// <summary>
@@ -37,7 +27,7 @@ namespace Flatwhite.Strategy
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             if (!Global.Cache.InterceptableCache.ContainsKey(invocation.Method))
             {
@@ -45,7 +35,7 @@ namespace Flatwhite.Strategy
                 var possible = invocation.Method.ReturnType != typeof (void) && invocation.Method.IsVirtual && !invocation.Method.IsFinal;
                 if (possible)
                 {
-                    var atts = _attributeProvider.GetAttributes(invocation.Method, invocationContext);
+                    var atts = Global.AttributeProvider.GetAttributes(invocation.Method, invocationContext);
                     possible = !atts.Any(a => a is NoInterceptAttribute);
                 }
                 Global.Cache.InterceptableCache[invocation.Method] = possible;
@@ -55,27 +45,72 @@ namespace Flatwhite.Strategy
         }
 
         /// <summary>
-        /// Get cache time from <see cref="OutputCacheAttribute"/>
+        /// Get <see cref="ICacheStore" /> for current invocation and context
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public virtual int GetCacheTime(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual ICacheStore GetCacheStore(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            OutputCacheAttribute att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
-            return att?.Duration ?? 0;
+            var att = invocationContext[Global.__flatwhite_outputcache_attribute] as ICacheSettings ?? OutputCacheAttribute.Default;
+            ICacheStore cacheStore = null;
+            try
+            {
+                if (att.CacheStoreId > 0)
+                {
+                    cacheStore = Global.CacheStoreProvider.GetCacheStore(att.CacheStoreId);
+                }
+
+                if (cacheStore == null && att.CacheStoreType != null && typeof (ICacheStore).IsAssignableFrom(att.CacheStoreType))
+                {
+                    cacheStore = Global.CacheStoreProvider.GetCacheStore(att.CacheStoreType);
+                }
+            }
+            catch (KeyNotFoundException)
+            {
+            }
+            return cacheStore ?? Global.CacheStoreProvider.GetCacheStore();
         }
 
         /// <summary>
-        /// Get cache store id for current invocation and context
+        /// Get <see cref="IAsyncCacheStore" /> for current invocation and context
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
-        /// <returns>The id (number) of the cache store which is going to store the cache item</returns>
-        public uint GetCacheStoreId(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        /// <returns></returns>
+        public IAsyncCacheStore GetAsyncCacheStore(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            OutputCacheAttribute att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
-            return att?.CacheStoreId ?? 0;
+            var att = invocationContext[Global.__flatwhite_outputcache_attribute] as ICacheSettings ?? OutputCacheAttribute.Default;
+            if (att.CacheStoreId > 0)
+            {
+
+                var asyncCacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(att.CacheStoreId);
+                if (asyncCacheStore != null) return asyncCacheStore;
+            }
+
+            if (att.CacheStoreType != null && typeof(IAsyncCacheStore).IsAssignableFrom(att.CacheStoreType))
+            {
+                try
+                {
+                    return _activator.CreateInstance(att.CacheStoreType) as IAsyncCacheStore ?? Global.CacheStoreProvider.GetAsyncCacheStore(att.CacheStoreType);
+                }
+                catch (KeyNotFoundException)
+                {
+                }
+            }
+
+            if (att.CacheStoreType != null && typeof(ICacheStore).IsAssignableFrom(att.CacheStoreType))
+            {
+                try
+                {
+                    var syncCacheStore = _activator.CreateInstance(att.CacheStoreType) as ICacheStore ?? Global.CacheStoreProvider.GetCacheStore(att.CacheStoreType);
+                    if (syncCacheStore != null) return new CacheStoreAdaptor(syncCacheStore);
+                }
+                catch (KeyNotFoundException)
+                {
+                }
+            }
+            return Global.CacheStoreProvider.GetAsyncCacheStore();
         }
 
         /// <summary>
@@ -84,16 +119,16 @@ namespace Flatwhite.Strategy
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public virtual IEnumerable<ChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual IEnumerable<IChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            OutputCacheAttribute att = _cacheAttributeProvider.GetCacheAttribute(invocation.Method, invocationContext);
-            if (string.IsNullOrWhiteSpace(att?.RevalidationKey))
+            var info = invocationContext[Global.__flatwhite_outputcache_attribute] as ICacheSettings;
+            if (string.IsNullOrWhiteSpace(info?.RevalidationKey))
             {
                 yield break;
             }
-            yield return new FlatwhiteCacheEntryChangeMonitor(att.RevalidationKey);
+            yield return new FlatwhiteCacheEntryChangeMonitor(info.RevalidationKey);
         }
-
+        
         /// <summary>
         /// Default cache key provider
         /// </summary>

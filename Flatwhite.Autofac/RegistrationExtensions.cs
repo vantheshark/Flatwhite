@@ -49,7 +49,7 @@ namespace Flatwhite.AutofacIntergration
         /// <param name="options">Proxy generation options to apply.</param>
         /// <param name="additionalInterfaces">Additional interface types. Calls to their members will be proxied as well.</param>
         /// <returns>Registration builder allowing the registration to be configured.</returns>
-        public static IRegistrationBuilder<TLimit, TConcreteReflectionActivatorData, TRegistrationStyle> EnableClassInterceptors<TLimit, TConcreteReflectionActivatorData, TRegistrationStyle>(this IRegistrationBuilder<TLimit, TConcreteReflectionActivatorData, TRegistrationStyle> registration, ProxyGenerationOptions options, params Type[] additionalInterfaces)  
+        private static IRegistrationBuilder<TLimit, TConcreteReflectionActivatorData, TRegistrationStyle> EnableClassInterceptors<TLimit, TConcreteReflectionActivatorData, TRegistrationStyle>(this IRegistrationBuilder<TLimit, TConcreteReflectionActivatorData, TRegistrationStyle> registration, ProxyGenerationOptions options, params Type[] additionalInterfaces)  
             where TConcreteReflectionActivatorData : ConcreteReflectionActivatorData
         {
             if (registration == null)
@@ -113,7 +113,7 @@ namespace Flatwhite.AutofacIntergration
         /// <param name="registration">Registration to apply interception to.</param>
         /// <param name="options">Proxy generation options to apply.</param>
         /// <returns>Registration builder allowing the registration to be configured.</returns>
-        public static IRegistrationBuilder<TLimit, TActivatorData, TSingleRegistrationStyle>EnableInterfaceInterceptors<TLimit, TActivatorData, TSingleRegistrationStyle>(this IRegistrationBuilder<TLimit, TActivatorData, TSingleRegistrationStyle> registration, ProxyGenerationOptions options)
+        private static IRegistrationBuilder<TLimit, TActivatorData, TSingleRegistrationStyle>EnableInterfaceInterceptors<TLimit, TActivatorData, TSingleRegistrationStyle>(this IRegistrationBuilder<TLimit, TActivatorData, TSingleRegistrationStyle> registration, ProxyGenerationOptions options)
         {
             if (registration == null)
             {
@@ -145,7 +145,7 @@ namespace Flatwhite.AutofacIntergration
             return registration;
         }
 
-        static void EnsureInterfaceInterceptionApplies(IComponentRegistration componentRegistration)
+        private static void EnsureInterfaceInterceptionApplies(IComponentRegistration componentRegistration)
         {
             if (componentRegistration.Services
                 .OfType<IServiceWithType>()

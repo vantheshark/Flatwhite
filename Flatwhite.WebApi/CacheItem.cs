@@ -8,16 +8,6 @@ namespace Flatwhite.WebApi
     public class CacheItem
     {
         /// <summary>
-        /// __flatwhite_dont_cache_
-        /// </summary>
-        internal static string DONT_CACHE_PREFIX = "__flatwhite_dont_cache_";
-        /// <summary>
-        /// __flatwhite_
-        /// </summary>
-        internal static string FLATWHITE_PREFIX = "__flatwhite_";
-        
-
-        /// <summary>
         /// Initializes a cache item
         /// </summary>
         public CacheItem()
@@ -46,6 +36,17 @@ namespace Flatwhite.WebApi
         /// The response data
         /// </summary>
         public byte[] Content { get; set; }
+
+        /// <summary>
+        /// Media type
+        /// </summary>
+        public string ResponseMediaType { get; set; }
+
+        /// <summary>
+        /// Charset
+        /// </summary>
+        public string ResponseCharSet { get; set; }
+
         /// <summary>
         /// The time the cache data is generated
         /// </summary>
@@ -67,7 +68,7 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// The id of the <see cref="ICacheStore" /> where the cache item will be stored
         /// </summary>
-        public uint StoreId { get; set; }
+        public int StoreId { get; set; }
 
         /// <summary>
         /// A cache MAY be configured to return stale responses without validation

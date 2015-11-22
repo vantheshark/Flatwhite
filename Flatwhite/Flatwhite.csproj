@@ -35,6 +35,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -53,17 +54,26 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IChangeMonitor.cs" />
+    <Compile Include="ILogger.cs" />
+    <Compile Include="IServiceActivator.cs" />
+    <Compile Include="ICacheSettings.cs" />
+    <Compile Include="Phoenix.cs" />
+    <Compile Include="Strategy\IDynamicCacheStrategy.cs" />
+    <Compile Include="InvocationAttribute.cs" />
+    <Compile Include="ExceptionFilterAttribute.cs" />
+    <Compile Include="MethodFilterAttribute.cs" />
     <Compile Include="Argument.cs" />
     <Compile Include="CacheStoreAdaptor.cs" />
     <Compile Include="FlatwhiteCacheEntryChangeMonitor.cs" />
     <Compile Include="MethodInfoCache.cs" />
+    <Compile Include="MethodInterceptor.cs" />
+    <Compile Include="Provider\DynamicAttributeProvider.cs" />
     <Compile Include="Provider\DefaulAttributeProvider.cs" />
-    <Compile Include="Provider\DefaultCacheAttributeProvider.cs" />
     <Compile Include="Provider\DefaultCacheKeyProvider.cs" />
     <Compile Include="Provider\DefaultCacheStoreProvider.cs" />
     <Compile Include="Provider\DefaultCacheStrategyProvider.cs" />
     <Compile Include="ExpressionHelper.cs" />
-    <Compile Include="CacheInterceptor.cs" />
     <Compile Include="Provider\DefaultHashCodeGeneratorProvider.cs" />
     <Compile Include="Provider\IAttributeProvider.cs" />
     <Compile Include="IAsyncCacheStore.cs" />
@@ -71,13 +81,15 @@
     <Compile Include="IInvocation.cs" />
     <Compile Include="IHashCodeGenerator.cs" />
     <Compile Include="Provider\IHashCodeGeneratorProvider.cs" />
+    <Compile Include="MethodExceptionContext.cs" />
+    <Compile Include="MethodExecutedContext.cs" />
+    <Compile Include="MethodExecutingContext.cs" />
     <Compile Include="RevalidateAttribute.cs" />
     <Compile Include="Strategy\CacheStrategies.cs" />
     <Compile Include="Strategy\CacheOutputForAllMethod.cs" />
     <Compile Include="Strategy\CacheSelectedMethodsInvocationStrategy.cs" />
     <Compile Include="Strategy\DefaultCacheStrategy.cs" />
     <Compile Include="Global.cs" />
-    <Compile Include="Provider\ICacheAttributeProvider.cs" />
     <Compile Include="Provider\ICacheKeyProvider.cs" />
     <Compile Include="ICacheStore.cs" />
     <Compile Include="ICacheStrategy.cs" />
@@ -87,12 +99,12 @@
     <Compile Include="ObjectCacheStore.cs" />
     <Compile Include="OutputCacheAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Provider\SingleCacheAttributeProvider.cs" />
-    <Compile Include="Provider\ExpressionBaseCacheAttributeProvider.cs" />
     <Compile Include="ExpressionSetting.cs" />
     <Compile Include="Strategy\IMethodCacheRuleBuilder.cs" />
     <Compile Include="Strategy\IMethodCacheStrategy.cs" />
     <Compile Include="Strategy\ITypeCacheRuleBuilder.cs" />
+    <Compile Include="TaskHelpers.cs" />
+    <Compile Include="TimerWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

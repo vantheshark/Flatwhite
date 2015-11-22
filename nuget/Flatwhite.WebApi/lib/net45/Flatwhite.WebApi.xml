@@ -79,6 +79,7 @@
             <summary>
             This is a custom WebApi message handler which try to build the response if cache data is available
             This should create a response asap if there is the cache without waiting for the <see cref="T:Flatwhite.WebApi.OutputCacheAttribute" /> to do that which is quite late
+            and quite heavy "if your controller has too many dependencies". People should try to not having heavy Controller anyway. 
             </summary>
         </member>
         <member name="M:Flatwhite.WebApi.CacheMessageHandler.#ctor(Flatwhite.WebApi.CacheControl.ICachControlHeaderHandlerProvider,Microsoft.Owin.Logging.ILogger)">
@@ -104,6 +105,7 @@
             </summary>
         </member>
         <member name="M:Flatwhite.WebApi.CacheResponseBuilder.GetResponse(System.Net.Http.Headers.CacheControlHeaderValue,Flatwhite.WebApi.CacheItem,System.Net.Http.HttpRequestMessage)">
+            TODO: Unit test?
             <summary>
             Provide a single method to try to build a <see cref="T:System.Net.Http.Headers.HttpResponseHeaders" /> from <see cref="T:System.Net.Http.Headers.CacheControlHeaderValue" />  and <see cref="T:System.Net.Http.HttpRequestMessage" />
             </summary>
@@ -129,16 +131,6 @@
             A cache item object that keeps some details about the data to be cached
             </summary>
         </member>
-        <member name="F:Flatwhite.WebApi.CacheItem.DONT_CACHE_PREFIX">
-            <summary>
-            __flatwhite_dont_cache_
-            </summary>
-        </member>
-        <member name="F:Flatwhite.WebApi.CacheItem.FLATWHITE_PREFIX">
-            <summary>
-            __flatwhite_
-            </summary>
-        </member>
         <member name="M:Flatwhite.WebApi.CacheItem.#ctor">
             <summary>
             Initializes a cache item
@@ -158,6 +150,16 @@
         <member name="P:Flatwhite.WebApi.CacheItem.Content">
             <summary>
             The response data
+            </summary>
+        </member>
+        <member name="P:Flatwhite.WebApi.CacheItem.ResponseMediaType">
+            <summary>
+            Media type
+            </summary>
+        </member>
+        <member name="P:Flatwhite.WebApi.CacheItem.ResponseCharSet">
+            <summary>
+            Charset
             </summary>
         </member>
         <member name="P:Flatwhite.WebApi.CacheItem.CreatedTime">
@@ -205,14 +207,14 @@
         </member>
         <member name="P:Flatwhite.WebApi.RevalidateAttribute.Keys">
             <summary>
-            List of keys
+            List of "revalidation keys" to notify the cache store. They are not neccessary the cache key
             </summary>
         </member>
         <member name="M:Flatwhite.WebApi.RevalidateAttribute.#ctor(System.String[])">
             <summary>
             Initializes a <see cref="T:Flatwhite.WebApi.RevalidateAttribute" /> with a list of revalidation keys
             </summary>
-            <param name="keys"></param>
+            <param name="keys">List of "revalidation keys" to notify the cache store. They are not neccessary the cache key</param>
         </member>
         <member name="M:Flatwhite.WebApi.RevalidateAttribute.OnActionExecuted(System.Web.Http.Filters.HttpActionExecutedContext)">
             <summary>
@@ -221,17 +223,12 @@
             <param name="actionExecutedContext"></param>
             <returns></returns>
         </member>
-        <member name="T:Flatwhite.WebApi.WebApiCacheAttributeProvider">
+        <member name="M:Flatwhite.WebApi.RevalidateAttribute.OnActionExecutedAsync(System.Web.Http.Filters.HttpActionExecutedContext,System.Threading.CancellationToken)">
             <summary>
-            Implementation of <see cref="T:Flatwhite.Provider.ICacheAttributeProvider"/> for WebApi
+            Revalidate caches after call method
             </summary>
-        </member>
-        <member name="M:Flatwhite.WebApi.WebApiCacheAttributeProvider.GetCacheAttribute(System.Reflection.MethodInfo,System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            Copy settings from <see cref="T:Flatwhite.WebApi.OutputCacheAttribute"/> attribute to <see cref="T:Flatwhite.OutputCacheAttribute"/>
-            </summary>
-            <param name="methodInfo"></param>
-            <param name="invocationContext"></param>
+            <param name="actionExecutedContext"></param>
+            <param name="cancellationToken"></param>
             <returns></returns>
         </member>
         <member name="T:Flatwhite.WebApi.WebApiCacheStrategy">
@@ -239,16 +236,11 @@
             A <see cref="T:Flatwhite.ICacheStrategy"/> implementation for web api
             </summary>
         </member>
-        <member name="F:Flatwhite.WebApi.WebApiCacheStrategy._cacheAttributeProvider">
+        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.#ctor(Flatwhite.IServiceActivator)">
             <summary>
-            The cache attribute provider
+            Create an instance of WebApiCacheStrategy with ServiceActivator
             </summary>
-        </member>
-        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.#ctor(Flatwhite.Provider.ICacheAttributeProvider)">
-            <summary>
-            Initializes default cache strategy with a <see cref="T:Flatwhite.Provider.ICacheAttributeProvider"/>
-            </summary>
-            <param name="cacheAttributeProvider"></param>
+            <param name="activator"></param>
         </member>
         <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.CanIntercept(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
@@ -258,38 +250,17 @@
             <param name="invocationContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetCacheTime(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetCacheStore(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
-            Get cache time from <see cref="T:Flatwhite.WebApi.OutputCacheAttribute"/>
+            Get <see cref="T:Flatwhite.ICacheStore" /> for current invocation and context
             </summary>
             <param name="invocation"></param>
             <param name="invocationContext"></param>
             <returns></returns>
-        </member>
-        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetCacheStoreId(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            Get cache store id for current invocation and context
-            </summary>
-            <param name="invocation"></param>
-            <param name="invocationContext"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetChangeMonitors(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            Get empty list change monitor
-            </summary>
-            <param name="invocation"></param>
-            <param name="invocationContext"></param>
-            <returns></returns>
-        </member>
-        <member name="P:Flatwhite.WebApi.WebApiCacheStrategy.CacheKeyProvider">
-            <summary>
-            Default cache key provider
-            </summary>
         </member>
         <member name="T:Flatwhite.WebApi.WebApiCacheStrategyProvider">
             <summary>
-            A provider to return <see cref="T:Flatwhite.Strategy.DefaultCacheStrategy" /> with different <see cref="T:Flatwhite.Provider.ICacheAttributeProvider" /> if the context is webapi request
+            A provider to return <see cref="T:Flatwhite.WebApi.WebApiCacheStrategy" /> for WebApi request
             </summary>
         </member>
         <member name="M:Flatwhite.WebApi.WebApiCacheStrategyProvider.GetStrategy(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
@@ -424,13 +395,6 @@
             A key to used to delete the cache when an method with relevant <see cref="T:Flatwhite.WebApi.RevalidateAttribute" /> is invoked
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetAsyncCacheStore(System.Web.Http.Dependencies.IDependencyScope)">
-            <summary>
-            Get <see cref="T:Flatwhite.IAsyncCacheStore" /> from <see cref="T:System.Web.Http.Dependencies.IDependencyScope" />
-            </summary>
-            <param name="scope"></param>
-            <returns></returns>
-        </member>
         <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetCacheStrategy(System.Web.Http.Dependencies.IDependencyScope,Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Get <see cref="T:Flatwhite.ICacheStrategy" /> from <see cref="T:System.Web.Http.Dependencies.IDependencyScope" />
@@ -491,11 +455,20 @@
             <param name="actionContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetContext(System.Web.Http.Controllers.HttpActionContext)">
+        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetInvocationContext(System.Web.Http.Controllers.HttpActionContext)">
             <summary>
             Get context data from <see cref="T:System.Web.Http.Controllers.HttpActionContext" />
             </summary>
             <param name="actionContext"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.CreatePhoenix(Flatwhite._IInvocation,System.Int32,System.String)">
+            <summary>
+            Create the phoenix object which can refresh the cache itself if StaleWhileRevalidate > 0
+            </summary>
+            <param name="invocation"></param>
+            <param name="cacheStoreId"></param>
+            <param name="key"></param>
             <returns></returns>
         </member>
         <member name="T:Flatwhite.WebApi.WebApiContextProvider">
@@ -520,6 +493,16 @@
             Provide extension methods to enable Flatwhite WebApi cache
             </summary>
         </member>
+        <member name="F:Flatwhite.WebApi.WebApiExtensions.__flatwhite_dont_cache_">
+            <summary>
+            __flatwhite_dont_cache_
+            </summary>
+        </member>
+        <member name="F:Flatwhite.WebApi.WebApiExtensions._dependencyResolverActivator">
+            <summary>
+            This will be used by Phoenix to create Controller instance on the fly when cache is refreshing
+            </summary>
+        </member>
         <member name="M:Flatwhite.WebApi.WebApiExtensions.UseFlatwhiteCache``1(Owin.IAppBuilder,System.Web.Http.HttpConfiguration)">
             <summary>
             Create required components to use Flatwhite cache
@@ -527,6 +510,48 @@
             <typeparam name="T"></typeparam>
             <param name="app"></param>
             <param name="config"></param>
+        </member>
+        <member name="T:Flatwhite.WebApi.WebApiPhoenix">
+            <summary>
+            A web api phoenix to support auto refresh for webApi
+            <para>
+            It will create instance of WebApi controller and invoke the ActionMethod with cached arguments.
+            It will not work if the controller required QueryString, Headers or anything outside these action method parameters
+            You can override the Phoenix MethodInfo, Arguments or method <see cref="M:Flatwhite.Phoenix.GetTargetInstance" />, <see cref="M:Flatwhite.Phoenix.GetMethodResult(System.Object,System.Object)" />, 
+            or completly change the way the Phoenix reborn by overriding method , <see cref="M:Flatwhite.Phoenix.Reborn(System.Object)" />,
+            
+            Idealy, keep Controller thin and use proper Model binding instead of dodgyly access the Request object.
+            </para>
+            </summary>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.#ctor(Flatwhite._IInvocation,System.Int32,System.String,System.Int32,System.Int32,System.Object)">
+            <summary>
+            Initializes a WebApiPhoenix
+            </summary>
+            <param name="invocation"></param>
+            <param name="cacheStoreId"></param>
+            <param name="cacheKey"></param>
+            <param name="cacheDuration"></param>
+            <param name="staleWhileRevalidate"></param>
+            <param name="state"></param>
+        </member>
+        <member name="P:Flatwhite.WebApi.WebApiPhoenix.Activator">
+            <summary>
+            This Activator mainly used to resolve the WebApi controller instance
+            </summary>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.GetMethodResult(System.Object,System.Object)">
+            <summary>
+            Invoke the MethodInfo against the Controller and try to get the action method result
+            </summary>
+            <param name="serviceInstance"></param>
+            <param name="state">The OutPutCache itself</param>
+            <returns></returns>
+        </member>
+        <member name="T:Flatwhite.WebApi.WebApiDependencyResolverActivator">
+            <summary>
+            This class will use WebApi DependencyResolver to resolve the controllers
+            </summary>
         </member>
     </members>
 </doc>

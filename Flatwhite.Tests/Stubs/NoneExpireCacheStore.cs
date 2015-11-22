@@ -1,14 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Caching;
 
-namespace Flatwhite.Tests
+namespace Flatwhite.Tests.Stubs
 {
     /// <summary>
     /// Register this to the IOC container to override the global <see cref="ObjectCacheStore"/> which used static ObjectCache that will break the unit tests
+    /// This is a none-expire cache store
     /// https://msdn.microsoft.com/en-us/library/system.runtime.caching.changemonitor(v=vs.110).aspx
     /// </summary>
-    public class UnitTestCacheStore : ICacheStore
+    public class NoneExpireCacheStore : ICacheStore
     {
+        public NoneExpireCacheStore(uint storeId = 0)
+        {
+            StoreId = (int)storeId;
+        }
         private readonly IDictionary<string, object> _cache = new Dictionary<string, object>();
         public void Set(string key, object value, CacheItemPolicy policy)
         {
@@ -44,6 +49,6 @@ namespace Flatwhite.Tests
             return _cache.ContainsKey(key);
         }
 
-        public uint StoreId => 0;
+        public int StoreId { get; }
     }
 }
