@@ -109,6 +109,24 @@ public interface IUserService
 }
 ```
 
+7/ You can use RevalidateAttribute to remove the cache item. Decorate it on another method and the cache item will be removed once the method is invoked.
+
+```C#
+public interface IUserService
+{
+    [OutputCache(Duration = 2000, StaleWhileRevalidate = 2000, VaryByParam = "userId", RevalidationKey = "User")]
+	object GetById(Guid userId);
+
+	[OutputCache(Duration = 2000, VaryByParam = "userId", RevalidationKey = "User")]
+	Task<object> GetByIdAsync(Guid userId);	
+
+	[Revalidate("User")]
+	void DisableUser(Guid userId);  
+}
+```
+
+This is not working for distributed services. That means the method is called on a server cannot notify the other service instance on remote server. However, it's technically doable to extend this filter.
+
 ## TODO:
 
 Better documents
