@@ -2,9 +2,10 @@
 <package>
   <metadata>
     <id>Flatwhite</id>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <authors>Van Thoai Nguyen</authors>
     <owners>Van Thoai Nguyen</owners>
+	<iconUrl>http://oi64.tinypic.com/23w19b4.jpg</iconUrl>
     <licenseUrl>http://sam.zoy.org/wtfpl/COPYING</licenseUrl>
 	<projectUrl>https://github.com/vanthoainguyen/Flatwhite</projectUrl>	    	
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

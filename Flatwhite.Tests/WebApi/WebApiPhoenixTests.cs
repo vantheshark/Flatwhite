@@ -1,0 +1,102 @@
+﻿using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.Http;
+using Flatwhite.WebApi;
+using NSubstitute;
+using NUnit.Framework;
+
+namespace Flatwhite.Tests.WebApi
+{
+    [TestFixture]
+    public class WebApiPhoenixTests
+    {
+        private readonly DummyController _controllerIntance = new DummyController();
+        private readonly Flatwhite.WebApi.OutputCacheAttribute _cacheAttribute = new Flatwhite.WebApi.OutputCacheAttribute();
+
+        [TestCase("HttpActionResult", 4)]
+        [TestCase("HttpResponseMessageAsync", 4)]
+        [TestCase("HttpResponseMessage", 4)]
+        [TestCase("Object", 36)]
+        [TestCase("String", 6)]
+        [TestCase("StringAsync", 6)]
+        [TestCase("Void", 6)]
+        public void The_method_GetMethodResult_should_execute_the_controller_method_and_return_CacheItem(string actionMethodName, int contentLength)
+        {
+            // Arrange
+            var invocation = Substitute.For<_IInvocation>();
+            invocation.Arguments.Returns(new object[0]);
+            invocation.Method.Returns(typeof(DummyController).GetMethod(actionMethodName, BindingFlags.Instance | BindingFlags.Public));
+
+            var phoenix = new WebApiPhoenix(invocation, 0, "cacheKey", 100000, 100000, _cacheAttribute, new JsonMediaTypeFormatter());
+
+            // Action
+            MethodInfo dynMethod = typeof(WebApiPhoenix).GetMethod("GetMethodResult", BindingFlags.NonPublic | BindingFlags.Instance);
+            var result = (CacheItem)dynMethod.Invoke(phoenix, new object[] { _controllerIntance, _cacheAttribute });
+
+            // Assert
+            if (result == null)
+            {
+                Assert.IsTrue(actionMethodName == "Void" || actionMethodName == "VoidAsync");
+            }
+            else
+            {
+                Assert.AreEqual(contentLength, result.Content.Length);
+            }
+        }
+    }
+
+    public class DummyController : ApiController
+    {
+        public void Void() { }
+
+        public Task VoidAsync() { return Task.Delay(0); }
+
+        public string String()
+        {
+            return "data";
+        }
+
+        public object Object()
+        {
+            return new
+            {
+                Name = "Van",
+                Project = "Flatwhite"
+            };
+        }
+
+        public Task<string> StringAsync()
+        {
+            return Task.FromResult("data");
+        }
+
+        public HttpResponseMessage HttpResponseMessage()
+        {
+            return new HttpResponseMessage
+            {
+                Content = new StringContent("data")
+            };
+        }
+
+        public Task<HttpResponseMessage> HttpResponseMessageAsync()
+        {
+            return Task.FromResult(new HttpResponseMessage { Content = new StringContent("data") });
+        }
+
+        public IHttpActionResult HttpActionResult()
+        {
+            return new CustomHttpActionResult();
+        }
+
+        private class CustomHttpActionResult : IHttpActionResult
+        {
+            public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+            {
+                return Task.FromResult(new HttpResponseMessage { Content = new StringContent("data") });
+            }
+        }
+    }
+}

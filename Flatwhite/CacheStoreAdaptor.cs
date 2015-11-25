@@ -1,4 +1,4 @@
-﻿using System.Runtime.Caching;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace Flatwhite
@@ -12,9 +12,9 @@ namespace Flatwhite
             _syncCacheStore = syncCacheStore;
         }
 
-        public void Set(string key, object value, CacheItemPolicy policy)
+        public void Set(string key, object value, DateTimeOffset absoluteExpiration)
         {
-            _syncCacheStore.Set(key, value, policy);
+            _syncCacheStore.Set(key, value, absoluteExpiration);
         }
 
         public object Remove(string key)
@@ -34,9 +34,9 @@ namespace Flatwhite
 
         public int StoreId => _syncCacheStore.StoreId;
 
-        public Task SetAsync(string key, object value, CacheItemPolicy policy)
+        public Task SetAsync(string key, object value, DateTimeOffset absoluteExpiration)
         {
-            _syncCacheStore.Set(key, value, policy);
+            _syncCacheStore.Set(key, value, absoluteExpiration);
             return Task.FromResult(key);
         }
 

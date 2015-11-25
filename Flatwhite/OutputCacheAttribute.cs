@@ -12,9 +12,8 @@ namespace Flatwhite
         /// <summary>
         /// Default OutputCacheAttribute
         /// </summary>
-        public static readonly OutputCacheAttribute Default = new OutputCacheAttribute();
-        private readonly ICacheStrategy _cacheStrategy;
-
+        internal static readonly OutputCacheAttribute Default = new OutputCacheAttribute();
+        private ICacheStrategy _cacheStrategy;
 
         /// <summary>
         /// Default constructor for OutputCacheAttribute
@@ -24,15 +23,6 @@ namespace Flatwhite
             CacheStoreId = -1;
         }
 
-        /// <summary>
-        /// Initializes an instance of OutputCacheAttribute with provided <see cref="ICacheStrategy" />
-        /// </summary>
-        /// <param name="cacheStrategy"></param>
-        public OutputCacheAttribute(ICacheStrategy cacheStrategy)
-        {
-            _cacheStrategy = cacheStrategy;
-        }
-        
         #region -- Cache params --
         /// <summary>
         /// Gets or sets the cache duration, in miliseconds.
@@ -76,13 +66,22 @@ namespace Flatwhite
         #endregion
 
         /// <summary>
+        /// Set the custom cache strategy <see cref="ICacheStrategy" />
+        /// </summary>
+        /// <param name="cacheStrategy"></param>
+        internal void SetCacheStrategy(ICacheStrategy cacheStrategy)
+        {
+            _cacheStrategy = cacheStrategy;
+        }
+
+        /// <summary>
         /// Check to see if the cache is available
         /// </summary>
         /// <param name="methodExecutingContext"></param>
         public override void OnMethodExecuting(MethodExecutingContext methodExecutingContext)
         {
             var strategy = _cacheStrategy ?? Global.CacheStrategyProvider.GetStrategy(methodExecutingContext.Invocation, methodExecutingContext.InvocationContext);
-            if (Duration <= 0 || strategy == null || !strategy.CanIntercept(methodExecutingContext.Invocation, methodExecutingContext.InvocationContext))
+            if (Duration <= 0 || strategy == null || !strategy.CanCache(methodExecutingContext.Invocation, methodExecutingContext.InvocationContext))
             {
                 return;
             }
@@ -122,16 +121,16 @@ namespace Flatwhite
                 var strategy = methodExecutedContext.TryGet<ICacheStrategy>(Global.__flatwhite_outputcache_strategy);
                 var phoenix = CreatePhoenix(methodExecutedContext.Invocation, cacheStore.StoreId, key);
 
-                var policy = new CacheItemPolicy { AbsoluteExpiration = DateTime.Now.AddMilliseconds(Duration + StaleWhileRevalidate) };
                 var changeMonitors = strategy.GetChangeMonitors(methodExecutedContext.Invocation, methodExecutedContext.InvocationContext);
                 foreach (var mon in changeMonitors)
                 {
                     mon.CacheMonitorChanged += x =>
                     {
-                        phoenix.RebornOrDieForever();
+                        phoenix.RebornOrDieForever(this);
                     };
                 }
-                cacheStore.Set(key, methodExecutedContext.Invocation.ReturnValue, policy);
+
+                cacheStore.Set(key, methodExecutedContext.Invocation.ReturnValue, DateTime.Now.AddMilliseconds(Duration + StaleWhileRevalidate));
                 Global.Cache.Phoenix[key] = phoenix;
             }
         }

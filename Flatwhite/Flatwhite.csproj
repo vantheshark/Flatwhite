@@ -54,6 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="IChangeMonitor.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="IServiceActivator.cs" />
@@ -104,7 +105,6 @@
     <Compile Include="Strategy\IMethodCacheStrategy.cs" />
     <Compile Include="Strategy\ITypeCacheRuleBuilder.cs" />
     <Compile Include="TaskHelpers.cs" />
-    <Compile Include="TimerWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

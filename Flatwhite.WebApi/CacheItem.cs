@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography;
 
 namespace Flatwhite.WebApi
 {
@@ -36,6 +37,25 @@ namespace Flatwhite.WebApi
         /// The response data
         /// </summary>
         public byte[] Content { get; set; }
+
+        private string _checkSum;
+        /// <summary>
+        /// The checksum of the Content
+        /// </summary>
+        public string Checksum {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_checkSum))
+                {
+                    using (var md5Hash = MD5.Create())
+                    {
+                        _checkSum = md5Hash.ComputeHash(Content).ToHex();
+                    }
+                }
+                return _checkSum;
+            }
+            internal set { _checkSum = value; }
+        }
 
         /// <summary>
         /// Media type

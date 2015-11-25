@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using System.Runtime.Caching;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -12,7 +12,6 @@ using System.Web.Http.Controllers;
 using System.Web.Http.Dependencies;
 using System.Web.Http.Filters;
 using Flatwhite.Provider;
-using Newtonsoft.Json;
 
 namespace Flatwhite.WebApi
 {
@@ -262,10 +261,8 @@ namespace Flatwhite.WebApi
             
             ApplyCacheHeaders(actionExecutedContext.ActionContext.Response, actionExecutedContext.Request);
 
-            var invocation = GetInvocation(actionExecutedContext.ActionContext);
-            var context = GetInvocationContext(actionExecutedContext.ActionContext);
-            var cacheStore = (IAsyncCacheStore)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_store];
             var storedKey = (string)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_key];
+            var cacheStore = (IAsyncCacheStore)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_store];
 
             if (actionExecutedContext.ActionContext.Response == null || !actionExecutedContext.ActionContext.Response.IsSuccessStatusCode)
             {
@@ -293,25 +290,30 @@ namespace Flatwhite.WebApi
                     Key = storedKey,
                     Content = await responseContent.ReadAsByteArrayAsync().ConfigureAwait(false),
                     ResponseMediaType = responseContent.Headers.ContentType.MediaType,
-                    ResponseCharSet = responseContent.Headers.ContentType.CharSet
+                    ResponseCharSet = responseContent.Headers.ContentType.CharSet,
+                    StoreId = cacheStore.StoreId
                 };
-
-                var phoenix = CreatePhoenix(invocation, cacheStore.StoreId, storedKey);
+                
                 var strategy = (ICacheStrategy)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_strategy];
-                var policy = new CacheItemPolicy { AbsoluteExpiration = DateTime.UtcNow.AddSeconds(MaxAge + Math.Max(StaleWhileRevalidate, StaleIfError))};
+                var invocation = GetInvocation(actionExecutedContext.ActionContext);
+                var context = GetInvocationContext(actionExecutedContext.ActionContext);
                 var changeMonitors = strategy.GetChangeMonitors(invocation, context);
 
+                var objectContent = responseContent as ObjectContent;
+                var phoenix = CreatePhoenix(invocation, cacheStore.StoreId, storedKey, objectContent?.Formatter);
+                
                 foreach (var mon in changeMonitors)
                 {
                     mon.CacheMonitorChanged += x =>
                     {
-                        phoenix.RebornOrDieForever();
+                        phoenix.RebornOrDieForever(this);
                     };
                 }
 
-                actionExecutedContext.Response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}\"");
-                cacheItem.StoreId = cacheStore.StoreId;
-                await cacheStore.SetAsync(cacheItem.Key, cacheItem, policy).ConfigureAwait(false);
+                actionExecutedContext.Response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}-{cacheItem.Checksum}\"");
+
+                var absoluteExpiration =  DateTime.UtcNow.AddSeconds(MaxAge + Math.Max(StaleWhileRevalidate, StaleIfError));
+                await cacheStore.SetAsync(cacheItem.Key, cacheItem, absoluteExpiration).ConfigureAwait(false);
             }
         }
 
@@ -335,7 +337,6 @@ namespace Flatwhite.WebApi
          | "s-maxage" "=" delta-seconds           ; Section 14.9.3
          | cache-extension                        ; Section 14.9.6
             */
-            var requestProperties = request.Properties;
             response.Headers.CacheControl = new CacheControlHeaderValue
             {
                 MaxAge = MaxAge > 0 ? TimeSpan.FromSeconds(MaxAge) : (TimeSpan?) null,
@@ -362,9 +363,14 @@ namespace Flatwhite.WebApi
         /// <returns></returns>
         protected virtual string HashCacheKey(string originalCacheKey)
         {
+            return GetHashString(Encoding.ASCII.GetBytes(originalCacheKey));
+        }
+
+        private string GetHashString(byte[] content)
+        {
             using (var md5Hash = MD5.Create())
             {
-                return md5Hash.ComputeHash(Encoding.ASCII.GetBytes(originalCacheKey)).ToHex();
+                return md5Hash.ComputeHash(content).ToHex();
             }
         }
 
@@ -388,7 +394,7 @@ namespace Flatwhite.WebApi
             var provider = new WebApiContextProvider(actionContext);
             var context = provider.GetContext();
             context[Global.__flatwhite_outputcache_attribute] = this;
-            context[WebApiExtensions.__webApi_dependency_scope] = actionContext.Request.GetDependencyScope(); ;
+            context[WebApiExtensions.__webApi_dependency_scope] = actionContext.Request.GetDependencyScope();
             return context;
         }
 
@@ -398,8 +404,9 @@ namespace Flatwhite.WebApi
         /// <param name="invocation"></param>
         /// <param name="cacheStoreId"></param>
         /// <param name="key"></param>
+        /// <param name="mediaTypeFormatter">The formater that was used to create the reasponse at the first invocation</param>
         /// <returns></returns>
-        protected virtual Phoenix CreatePhoenix(_IInvocation invocation, int cacheStoreId, string key)
+        protected virtual Phoenix CreatePhoenix(_IInvocation invocation, int cacheStoreId, string key, MediaTypeFormatter mediaTypeFormatter)
         {
             return new WebApiPhoenix(invocation, cacheStoreId, key, (int)MaxAge * 1000, (int)StaleWhileRevalidate * 1000, this);
         }

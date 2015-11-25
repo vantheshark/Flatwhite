@@ -16,25 +16,18 @@ namespace Flatwhite.WebApi
     public class CacheMessageHandler : DelegatingHandler
     {
         private readonly ICachControlHeaderHandlerProvider _handlerProvider;
-        private readonly Microsoft.Owin.Logging.ILogger _logger;
 
         /// <summary>
         /// Initializes an instance of <see cref="CacheMessageHandler" /> from a provided <see cref="ICachControlHeaderHandlerProvider" />
         /// </summary>
         /// <param name="handlerProvider"></param>
-        /// <param name="logger"></param>
-        public CacheMessageHandler(ICachControlHeaderHandlerProvider handlerProvider, Microsoft.Owin.Logging.ILogger logger)
+        public CacheMessageHandler(ICachControlHeaderHandlerProvider handlerProvider)
         {
             if (handlerProvider == null)
             {
                 throw new ArgumentNullException(nameof(handlerProvider));
             }
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
             _handlerProvider = handlerProvider;
-            _logger = logger;
         }
 
         /// <summary>
@@ -61,7 +54,7 @@ namespace Flatwhite.WebApi
                 }
                 catch (Exception ex)
                 {
-                    _logger.WriteError("Error during handling the request", ex);
+                    Global.Logger.Error("Error during handling the request", ex);
                 }
             }
 

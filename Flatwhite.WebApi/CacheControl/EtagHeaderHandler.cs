@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -39,37 +38,35 @@ namespace Flatwhite.WebApi.CacheControl
         {
             if (request.Headers.IfNoneMatch != null)
             {
-                // Etag format: fw-StoreId-Guid
+                // Etag format: fw-StoreId-HashedKey-Checksum
                 var requestEtags = request.Headers.IfNoneMatch.Where(t => t.Tag != null && t.Tag.StartsWith("\"fw-")).ToList();
                 if (requestEtags.Count > 0)
                 {
                     foreach (var etag in requestEtags)
                     {
-                        var hashedKey = etag.Tag.Trim('"');
-                        var index = hashedKey.IndexOf("-", 4, StringComparison.Ordinal);
-                        var storeIdString = index > 0 ? hashedKey.Substring(3, index - 3) : "0";
+                        var etagString = etag.Tag.Trim('"');
+                        var index = etagString.IndexOf("-", 4, StringComparison.Ordinal);
+                        var storeIdString = index > 0 ? etagString.Substring(3, index - 3) : "0";
+                        index = etagString.LastIndexOf("-", StringComparison.Ordinal);
+
                         int storeId;
                         IAsyncCacheStore cacheStore = null;
                         if (int.TryParse(storeIdString, out storeId))
                         {
                             cacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(storeId) ?? Global.CacheStoreProvider.GetAsyncCacheStore();
                         }
-                        
-                        if (cacheStore != null)
+
+                        if (cacheStore != null && index > 0)
                         {
+                            var hashedKey = etagString.Substring(0, index);
+                            var checkSum = etagString.Substring(index + 1);
                             var cacheItem = (await cacheStore.GetAsync(hashedKey)) as CacheItem;
 
-                            if (cacheItem != null)
+                            if (cacheItem != null && cacheItem.Checksum == checkSum)
                             {
                                 request.Properties[WebApiExtensions.__webApi_etag_matched] = true;
-                                return _builder.GetResponse(cacheControl, cacheItem, request);
                             }
-                            if (cacheControl != null && cacheControl.OnlyIfCached)
-                            {
-                                var response = new HttpResponseMessage {StatusCode = HttpStatusCode.GatewayTimeout};
-                                response.Headers.Add("X-Flatwhite-Message", "no cache available");
-                                return response;
-                            }
+                            return _builder.GetResponse(cacheControl, cacheItem, request);
                         }
                     }
                 }

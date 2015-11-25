@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -75,7 +74,7 @@ namespace Flatwhite
         /// <summary>
         /// Refresh the cache
         /// </summary>
-        public virtual void Reborn(object state = null)
+        public virtual void Reborn(object state)
         {
             try
             {
@@ -90,7 +89,7 @@ namespace Flatwhite
                 Global.Logger.Info($"Refreshing cache item {_cacheKey} on cacheStore {StoreId}");
                 var cacheStore = Global.CacheStoreProvider.GetCacheStore(StoreId);
 
-                cacheStore.Set(_cacheKey, result, new CacheItemPolicy { AbsoluteExpiration = DateTime.Now.AddMilliseconds(_cacheDuration + _staleWhileRevalidate) });
+                cacheStore.Set(_cacheKey, result, DateTime.Now.AddMilliseconds(_cacheDuration + _staleWhileRevalidate));
                 _timer.Change(GetNextReborn(), TimeSpan.Zero);
             }
             catch (Exception ex)
@@ -155,11 +154,11 @@ namespace Flatwhite
         /// <summary>
         /// Remove the cache and dispose
         /// </summary>
-        public void RebornOrDieForever()
+        public void RebornOrDieForever(object state)
         {
             if (_staleWhileRevalidate > 0)
             {
-                Reborn();
+                Reborn(state);
             }
             else
             {

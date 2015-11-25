@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
 namespace Flatwhite
 {
@@ -21,7 +20,6 @@ namespace Flatwhite
             }
 
             Global.RevalidateEvent += GlobalRevalidateEvent;
-            
         }
 
         private void GlobalRevalidateEvent(string revalidationKey)

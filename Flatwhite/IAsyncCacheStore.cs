@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Caching;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace Flatwhite
@@ -14,8 +13,8 @@ namespace Flatwhite
         /// </summary>
         /// <param name="key">A unique identifier for the cache entry.</param>
         /// <param name="value">The object to insert.</param>
-        /// <param name="policy">An object that contains eviction details for the cache entry. This object provides more options for eviction than a simple absolute expiration.</param>
-        Task SetAsync(string key, object value, CacheItemPolicy policy);
+        /// <param name="absoluteExpiration">a value that indicates whether a cache entry should be evicted after a specified duration.</param>
+        Task SetAsync(string key, object value, DateTimeOffset absoluteExpiration);
 
         /// <summary>
         /// When overridden in a derived class, removes the cache entry from the cache.

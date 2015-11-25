@@ -17,6 +17,11 @@ namespace Flatwhite
         internal static readonly string __flatwhite_outputcache_store = "__flatwhite_outputcache_store";
         internal static readonly string __flatwhite_outputcache_key = "__flatwhite_outputcache_key";
         internal static readonly string __flatwhite_outputcache_restored = "__flatwhite_outputcache_restored";
+        
+        /// <summary>
+        /// Internal cache for Flatwhite objects
+        /// </summary>
+        internal static MethodInfoCache Cache { get; set; }
 
         /// <summary>
         /// Global router for revalidation event
@@ -96,11 +101,6 @@ namespace Flatwhite
         /// The service activator to create instance of service when needed to invoke the MethodInfo for cache refreshing
         /// </summary>
         public static IServiceActivator ServiceActivator { get; set; }
-
-        /// <summary>
-        /// Internal cache for Flatwhite objects
-        /// </summary>
-        internal static MethodInfoCache Cache { get; set; }
 
         /// <summary>
         /// Logger

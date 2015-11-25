@@ -1,4 +1,7 @@
-* 1.0.4
+* 1.0.5 (2015-11-26 00:16:00 AEDT)
+- Fix a bug on WebApi.OutputCache keep return 304 even the cache item has changed. Add a few unit tests
+
+* 1.0.4 (2015-11-25 12:00:00 AEDT)
 - A lot of improvements, support auto refresh for stale content so the method call will never wait for response.
 
 * 1.0.3

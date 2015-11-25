@@ -5,7 +5,6 @@ using Autofac.Integration.WebApi;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
 using Flatwhite.WebApi.CacheControl;
-using Flatwhite.WebApi.Tests.Controllers;
 using Microsoft.Owin;
 using Owin;
 
@@ -35,17 +34,21 @@ namespace Flatwhite.WebApi.Tests
             // This will also be set to Global.CacheStrategyProvider in UseFlatwhiteCache method
             builder.RegisterType<WebApiCacheStrategyProvider>().As<ICacheStrategyProvider>().SingleInstance();
 
-            // This is required by EtagHeaderHandler
+            // This is required by EtagHeaderHandler and OutputCacheAttribute when it builds the response
             builder.RegisterType<CacheResponseBuilder>().As<ICacheResponseBuilder>().SingleInstance();
 
             // This is required by CachControlHeaderHandlerProvider
+            // NOTE: Register more instances of ICachControlHeaderHandler here
             builder.RegisterType<EtagHeaderHandler>().As<ICachControlHeaderHandler>().SingleInstance();
-            //NOTE: Register more instance of ICachControlHeaderHandler here
             
+            
+
+
 
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
             // OPTIONAL: Register the Autofac filter provider.
             builder.RegisterWebApiFilterProvider(config);
+
             
 
             var container = builder.Build();

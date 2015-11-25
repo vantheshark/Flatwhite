@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Flatwhite.Provider;
 
 namespace Flatwhite.Strategy
@@ -13,12 +14,22 @@ namespace Flatwhite.Strategy
         private readonly IServiceActivator _activator;
 
         /// <summary>
-        /// Initialize CacheStrategy with service activator
+        /// Initialize CacheStrategy with an optional service activator. The default one will be used if not provided
         /// </summary>
-        /// <param name="activator"></param>
+        /// <param name="activator">This is used to resove cache store by cache store TYPE if specified</param>
         public DefaultCacheStrategy(IServiceActivator activator = null)
         {
             _activator = activator ?? Global.ServiceActivator;
+        }
+
+        /// <summary>
+        /// Dynamic proxy doesn't work for none virtual or final methods so this is false by default.
+        /// However, derive of this class such as WebApiCacheStrategy can ignore this because WebAPI doesn't use dynamic proxy
+        /// </summary>
+        /// <returns></returns>
+        protected virtual bool CanCacheNoneVirtualOrFinalMethods()
+        {
+            return false;
         }
 
         /// <summary>
@@ -27,12 +38,22 @@ namespace Flatwhite.Strategy
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public virtual bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual bool CanCache(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             if (!Global.Cache.InterceptableCache.ContainsKey(invocation.Method))
             {
-                //https://msdn.microsoft.com/en-us/library/system.reflection.methodbase.isvirtual(v=vs.110).aspx
-                var possible = invocation.Method.ReturnType != typeof (void) && invocation.Method.IsVirtual && !invocation.Method.IsFinal;
+                var possible = invocation.Method.ReturnType != typeof(void);
+                if (!CanCacheNoneVirtualOrFinalMethods())
+                {
+                    //https://msdn.microsoft.com/en-us/library/system.reflection.methodbase.isvirtual(v=vs.110).aspx
+                    possible &= invocation.Method.IsVirtual && !invocation.Method.IsFinal;
+                }
+
+                if (possible && typeof(Task).IsAssignableFrom(invocation.Method.ReturnType) && invocation.Method.ReturnType.IsGenericType)
+                {
+                    possible = invocation.Method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>);
+                }
+
                 if (possible)
                 {
                     var atts = Global.AttributeProvider.GetAttributes(invocation.Method, invocationContext);
@@ -52,15 +73,15 @@ namespace Flatwhite.Strategy
         /// <returns></returns>
         public virtual ICacheStore GetCacheStore(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            var att = invocationContext[Global.__flatwhite_outputcache_attribute] as ICacheSettings ?? OutputCacheAttribute.Default;
+            var att = invocationContext.TryGetByKey<ICacheSettings>(Global.__flatwhite_outputcache_attribute, OutputCacheAttribute.Default);
             ICacheStore cacheStore = null;
+            if (att.CacheStoreId > 0)
+            {
+                cacheStore = Global.CacheStoreProvider.GetCacheStore(att.CacheStoreId);
+            }
+
             try
             {
-                if (att.CacheStoreId > 0)
-                {
-                    cacheStore = Global.CacheStoreProvider.GetCacheStore(att.CacheStoreId);
-                }
-
                 if (cacheStore == null && att.CacheStoreType != null && typeof (ICacheStore).IsAssignableFrom(att.CacheStoreType))
                 {
                     cacheStore = Global.CacheStoreProvider.GetCacheStore(att.CacheStoreType);
@@ -78,12 +99,11 @@ namespace Flatwhite.Strategy
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public IAsyncCacheStore GetAsyncCacheStore(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual IAsyncCacheStore GetAsyncCacheStore(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            var att = invocationContext[Global.__flatwhite_outputcache_attribute] as ICacheSettings ?? OutputCacheAttribute.Default;
+            var att = invocationContext.TryGetByKey<ICacheSettings>(Global.__flatwhite_outputcache_attribute, OutputCacheAttribute.Default);
             if (att.CacheStoreId > 0)
             {
-
                 var asyncCacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(att.CacheStoreId);
                 if (asyncCacheStore != null) return asyncCacheStore;
             }
@@ -121,12 +141,12 @@ namespace Flatwhite.Strategy
         /// <returns></returns>
         public virtual IEnumerable<IChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            var info = invocationContext[Global.__flatwhite_outputcache_attribute] as ICacheSettings;
-            if (string.IsNullOrWhiteSpace(info?.RevalidationKey))
+            var att = invocationContext.TryGetByKey<ICacheSettings>(Global.__flatwhite_outputcache_attribute, OutputCacheAttribute.Default);
+            if (string.IsNullOrWhiteSpace(att?.RevalidationKey))
             {
                 yield break;
             }
-            yield return new FlatwhiteCacheEntryChangeMonitor(info.RevalidationKey);
+            yield return new FlatwhiteCacheEntryChangeMonitor(att.RevalidationKey);
         }
         
         /// <summary>

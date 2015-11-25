@@ -10,12 +10,12 @@ namespace Flatwhite
     public interface ICacheStrategy
     {
         /// <summary>
-        /// Determine whether it can intercept the invocation
+        /// Determine whether it can cache the invocation
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        bool CanIntercept(_IInvocation invocation, IDictionary<string, object> invocationContext);
+        bool CanCache(_IInvocation invocation, IDictionary<string, object> invocationContext);
 
         /// <summary>
         /// Get <see cref="ICacheStore" /> for current invocation and context

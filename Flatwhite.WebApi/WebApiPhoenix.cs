@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using System.Net.Http.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -19,6 +20,7 @@ namespace Flatwhite.WebApi
     public class WebApiPhoenix : Phoenix
     {
         private readonly string _cacheKey;
+        private readonly MediaTypeFormatter _mediaTypeFormatter;
 
         /// <summary>
         /// Initializes a WebApiPhoenix
@@ -28,11 +30,13 @@ namespace Flatwhite.WebApi
         /// <param name="cacheKey"></param>
         /// <param name="cacheDuration"></param>
         /// <param name="staleWhileRevalidate"></param>
-        /// <param name="state"></param>
-        public WebApiPhoenix(_IInvocation invocation, int cacheStoreId, string cacheKey, int cacheDuration, int staleWhileRevalidate, object state) 
-            : base(invocation, cacheStoreId, cacheKey, cacheDuration, staleWhileRevalidate, state)
+        /// <param name="outputCache">This should the the OutputCacheAttribute isntance</param>
+        /// <param name="mediaTypeFormatter">The formater used to create the HttpResponse if the return type of the action method is not a standard WebAPI action result</param>
+        public WebApiPhoenix(_IInvocation invocation, int cacheStoreId, string cacheKey, int cacheDuration, int staleWhileRevalidate, OutputCacheAttribute outputCache, MediaTypeFormatter mediaTypeFormatter = null) 
+            : base(invocation, cacheStoreId, cacheKey, cacheDuration, staleWhileRevalidate, outputCache)
         {
             _cacheKey = cacheKey;
+            _mediaTypeFormatter = mediaTypeFormatter;
         }
 
         /// <summary>
@@ -44,11 +48,16 @@ namespace Flatwhite.WebApi
         /// Invoke the MethodInfo against the Controller and try to get the action method result
         /// </summary>
         /// <param name="serviceInstance"></param>
-        /// <param name="state">The OutPutCache itself</param>
+        /// <param name="outputCache">The OutputCache itself</param>
         /// <returns></returns>
-        protected override object GetMethodResult(object serviceInstance, object state)
+        protected override object GetMethodResult(object serviceInstance, object outputCache)
         {
-            var response = base.GetMethodResult(serviceInstance, state);
+            var response = base.GetMethodResult(serviceInstance, outputCache);
+
+            if (response == null)
+            {
+                return null;
+            }
 
             if (response is IHttpActionResult)
             {
@@ -57,19 +66,25 @@ namespace Flatwhite.WebApi
                     response = await ((IHttpActionResult) response).ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
                 }).GetAwaiter().GetResult();
             }
+
             var responseMsg = response as HttpResponseMessage;
-            if (responseMsg != null)
+
+            if (responseMsg == null)
             {
-                var responseContent = responseMsg.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-                return new CacheItem((OutputCacheAttribute)state)
+                responseMsg = new HttpResponseMessage
                 {
-                    Key = _cacheKey,
-                    Content = responseContent,
-                    ResponseMediaType = responseMsg.Content.Headers.ContentType.MediaType,
-                    ResponseCharSet = responseMsg.Content.Headers.ContentType.CharSet
+                    Content = new ObjectContent(response.GetType(), response, _mediaTypeFormatter)
                 };
             }
-            return response;
+            
+            var responseContent = responseMsg.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            return new CacheItem((OutputCacheAttribute)outputCache)
+            {
+                Key = _cacheKey,
+                Content = responseContent,
+                ResponseMediaType = responseMsg.Content.Headers.ContentType.MediaType,
+                ResponseCharSet = responseMsg.Content.Headers.ContentType.CharSet
+            };
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Flatwhite.WebApi
         internal static IServiceActivator _dependencyResolverActivator;
         
         /// <summary>
-        /// Create required components to use Flatwhite cache
+        /// Create required components to use Flatwhite cache for WebApi
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="app"></param>
@@ -55,9 +55,8 @@ namespace Flatwhite.WebApi
             var handlerProvider = config.DependencyResolver.GetService(typeof(ICachControlHeaderHandlerProvider)) as ICachControlHeaderHandlerProvider 
                                 ?? new CachControlHeaderHandlerProvider();
             allHandlers.ForEach(h => handlerProvider.Register(h));
-
-            var logger = app.CreateLogger<T>();
-            config.MessageHandlers.Add(new CacheMessageHandler(handlerProvider, logger));
+            
+            config.MessageHandlers.Add(new CacheMessageHandler(handlerProvider));
             return app;
         }
     }

@@ -1,13 +1,14 @@
-﻿using System.Runtime.Caching;
+﻿using System;
+using System.Runtime.Caching;
 
 namespace Flatwhite
 {
     internal class ObjectCacheStore : ICacheStore
     {
         private static readonly ObjectCache _cache = MemoryCache.Default;
-        public void Set(string key, object value, CacheItemPolicy policy)
+        public void Set(string key, object value, DateTimeOffset absoluteExpiration)
         {
-            _cache.Set(key, value, policy);
+            _cache.Set(key, value, absoluteExpiration);
         }
 
         public object Remove(string key)

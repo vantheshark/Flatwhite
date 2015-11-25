@@ -30,10 +30,8 @@ namespace Flatwhite.Strategy
     /// <typeparam name="TCacheAttribute"></typeparam>
     public class CacheSelectedMethodsInvocationStrategy<T, TCacheAttribute> : DefaultCacheStrategy, IMethodCacheStrategy<T>
         where T : class 
-        where TCacheAttribute : OutputCacheAttribute
+        where TCacheAttribute : OutputCacheAttribute, new()
     {
-        private static readonly ConstructorInfo _ctor = typeof(OutputCacheAttribute).GetConstructor(new[] { typeof(ICacheStrategy) });
-
         private ExpressionSetting<T, TCacheAttribute> _currentExpression;
         private readonly List<ExpressionSetting<T, TCacheAttribute>> _expressions;
 
@@ -51,7 +49,10 @@ namespace Flatwhite.Strategy
         /// <returns></returns>
         public IMethodCacheRuleBuilder<T> ForMember(Expression<Func<T, object>> functionExpression)
         {
-            var expression = new ExpressionSetting<T, TCacheAttribute>((TCacheAttribute)_ctor.Invoke(new object[] { this }))
+            var cacheAttribute = new TCacheAttribute();
+            cacheAttribute.SetCacheStrategy(this);
+
+            var expression = new ExpressionSetting<T, TCacheAttribute>(cacheAttribute)
             {
                 Expression = functionExpression,
             };

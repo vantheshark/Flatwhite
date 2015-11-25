@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Caching;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Flatwhite.Tests.Stubs
 {
@@ -15,17 +15,9 @@ namespace Flatwhite.Tests.Stubs
             StoreId = (int)storeId;
         }
         private readonly IDictionary<string, object> _cache = new Dictionary<string, object>();
-        public void Set(string key, object value, CacheItemPolicy policy)
+        public void Set(string key, object value, DateTimeOffset absoluteExpiration)
         {
             _cache[key] = value;
-            foreach (var mon in policy.ChangeMonitors)
-            {
-                // https://msdn.microsoft.com/en-us/library/system.runtime.caching.onchangedcallback(v=vs.110).aspx
-                mon.NotifyOnChanged(state =>
-                {
-                    Remove(key);
-                });
-            }
         }
 
         public object Remove(string key)

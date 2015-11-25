@@ -4,6 +4,22 @@
         <name>Flatwhite</name>
     </assembly>
     <members>
+        <member name="T:Flatwhite.ExtensionMethods">
+            <summary>
+            Provide some extension methods
+            </summary>
+        </member>
+        <member name="M:Flatwhite.ExtensionMethods.TryGetByKey``1(System.Collections.Generic.IDictionary{System.String,System.Object},System.String,``0)">
+            <summary>
+            Try to get the object from dictionary by key
+            If not found, return the provided default value
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="dictionary"></param>
+            <param name="key">The key to get the object</param>
+            <param name="default">Default value if dictonary doesn't contain key</param>
+            <returns></returns>
+        </member>
         <member name="T:Flatwhite.CacheMonitorChangeEvent">
             <summary>
             An event to notify the cache store when the data for the cached item has been changed
@@ -160,7 +176,7 @@
             Service actvator
             </summary>
         </member>
-        <member name="M:Flatwhite.Phoenix.RebornOrDieForever">
+        <member name="M:Flatwhite.Phoenix.RebornOrDieForever(System.Object)">
             <summary>
             Remove the cache and dispose
             </summary>
@@ -327,11 +343,18 @@
         </member>
         <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.#ctor(Flatwhite.IServiceActivator)">
             <summary>
-            Initialize CacheStrategy with service activator
+            Initialize CacheStrategy with an optional service activator. The default one will be used if not provided
             </summary>
-            <param name="activator"></param>
+            <param name="activator">This is used to resove cache store by cache store TYPE if specified</param>
         </member>
-        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.CanIntercept(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.CanCacheNoneVirtualOrFinalMethods">
+            <summary>
+            Dynamic proxy doesn't work for none virtual or final methods so this is false by default.
+            However, derive of this class such as WebApiCacheStrategy can ignore this because WebAPI doesn't use dynamic proxy
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.Strategy.DefaultCacheStrategy.CanCache(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Determine whether it can intercept the invocation
             </summary>
@@ -872,13 +895,13 @@
             Async cache provider
             </summary>
         </member>
-        <member name="M:Flatwhite.IAsyncCacheStore.SetAsync(System.String,System.Object,System.Runtime.Caching.CacheItemPolicy)">
+        <member name="M:Flatwhite.IAsyncCacheStore.SetAsync(System.String,System.Object,System.DateTimeOffset)">
             <summary>
             When overridden in a derived class, inserts a cache entry into the cache.
             </summary>
             <param name="key">A unique identifier for the cache entry.</param>
             <param name="value">The object to insert.</param>
-            <param name="policy">An object that contains eviction details for the cache entry. This object provides more options for eviction than a simple absolute expiration.</param>
+            <param name="absoluteExpiration">a value that indicates whether a cache entry should be evicted after a specified duration.</param>
         </member>
         <member name="M:Flatwhite.IAsyncCacheStore.RemoveAsync(System.String)">
             <summary>
@@ -1096,6 +1119,11 @@
             Global config
             </summary>
         </member>
+        <member name="P:Flatwhite.Global.Cache">
+            <summary>
+            Internal cache for Flatwhite objects
+            </summary>
+        </member>
         <member name="E:Flatwhite.Global.RevalidateEvent">
             <summary>
             Global router for revalidation event
@@ -1149,11 +1177,6 @@
             The service activator to create instance of service when needed to invoke the MethodInfo for cache refreshing
             </summary>
         </member>
-        <member name="P:Flatwhite.Global.Cache">
-            <summary>
-            Internal cache for Flatwhite objects
-            </summary>
-        </member>
         <member name="P:Flatwhite.Global.Logger">
             <summary>
             Logger
@@ -1164,13 +1187,13 @@
             Provide methods to save/retrieve cache data
             </summary>
         </member>
-        <member name="M:Flatwhite.ICacheStore.Set(System.String,System.Object,System.Runtime.Caching.CacheItemPolicy)">
+        <member name="M:Flatwhite.ICacheStore.Set(System.String,System.Object,System.DateTimeOffset)">
             <summary>
             When overridden in a derived class, inserts a cache entry into the cache.
             </summary>
             <param name="key">A unique identifier for the cache entry.</param>
             <param name="value">The object to insert.</param>
-            <param name="policy">An object that contains eviction details for the cache entry. This object provides more options for eviction than a simple absolute expiration.</param>
+            <param name="absoluteExpiration">a value that indicates whether a cache entry should be evicted after a specified duration.</param>
         </member>
         <member name="M:Flatwhite.ICacheStore.Remove(System.String)">
             <summary>
@@ -1203,9 +1226,9 @@
             Provide the cache strategy
             </summary>
         </member>
-        <member name="M:Flatwhite.ICacheStrategy.CanIntercept(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.ICacheStrategy.CanCache(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
-            Determine whether it can intercept the invocation
+            Determine whether it can cache the invocation
             </summary>
             <param name="invocation"></param>
             <param name="invocationContext"></param>
@@ -1265,12 +1288,6 @@
             Default constructor for OutputCacheAttribute
             </summary>
         </member>
-        <member name="M:Flatwhite.OutputCacheAttribute.#ctor(Flatwhite.ICacheStrategy)">
-            <summary>
-            Initializes an instance of OutputCacheAttribute with provided <see cref="T:Flatwhite.ICacheStrategy" />
-            </summary>
-            <param name="cacheStrategy"></param>
-        </member>
         <member name="P:Flatwhite.OutputCacheAttribute.Duration">
             <summary>
             Gets or sets the cache duration, in miliseconds.
@@ -1309,6 +1326,12 @@
             <summary>
             A key to used to delete the cache when an method with relevant <see cref="T:Flatwhite.RevalidateAttribute" /> is invoked
             </summary>
+        </member>
+        <member name="M:Flatwhite.OutputCacheAttribute.SetCacheStrategy(Flatwhite.ICacheStrategy)">
+            <summary>
+            Set the custom cache strategy <see cref="T:Flatwhite.ICacheStrategy" />
+            </summary>
+            <param name="cacheStrategy"></param>
         </member>
         <member name="M:Flatwhite.OutputCacheAttribute.OnMethodExecuting(Flatwhite.MethodExecutingContext)">
             <summary>

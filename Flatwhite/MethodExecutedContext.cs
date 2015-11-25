@@ -43,11 +43,7 @@ namespace Flatwhite
         /// <returns></returns>
         public T TryGet<T>(string invocationContextKey)
         {
-            if (!InvocationContext.ContainsKey(invocationContextKey))
-            {
-                return default(T);
-            }
-            return (T)InvocationContext[invocationContextKey];
+            return InvocationContext.TryGetByKey<T>(invocationContextKey);
         }
     }
 }

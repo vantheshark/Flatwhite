@@ -82,12 +82,11 @@
             and quite heavy "if your controller has too many dependencies". People should try to not having heavy Controller anyway. 
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.CacheMessageHandler.#ctor(Flatwhite.WebApi.CacheControl.ICachControlHeaderHandlerProvider,Microsoft.Owin.Logging.ILogger)">
+        <member name="M:Flatwhite.WebApi.CacheMessageHandler.#ctor(Flatwhite.WebApi.CacheControl.ICachControlHeaderHandlerProvider)">
             <summary>
             Initializes an instance of <see cref="T:Flatwhite.WebApi.CacheMessageHandler" /> from a provided <see cref="T:Flatwhite.WebApi.CacheControl.ICachControlHeaderHandlerProvider" />
             </summary>
             <param name="handlerProvider"></param>
-            <param name="logger"></param>
         </member>
         <member name="M:Flatwhite.WebApi.CacheMessageHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
             <summary>
@@ -105,7 +104,6 @@
             </summary>
         </member>
         <member name="M:Flatwhite.WebApi.CacheResponseBuilder.GetResponse(System.Net.Http.Headers.CacheControlHeaderValue,Flatwhite.WebApi.CacheItem,System.Net.Http.HttpRequestMessage)">
-            TODO: Unit test?
             <summary>
             Provide a single method to try to build a <see cref="T:System.Net.Http.Headers.HttpResponseHeaders" /> from <see cref="T:System.Net.Http.Headers.CacheControlHeaderValue" />  and <see cref="T:System.Net.Http.HttpRequestMessage" />
             </summary>
@@ -150,6 +148,11 @@
         <member name="P:Flatwhite.WebApi.CacheItem.Content">
             <summary>
             The response data
+            </summary>
+        </member>
+        <member name="P:Flatwhite.WebApi.CacheItem.Checksum">
+            <summary>
+            The checksum of the Content
             </summary>
         </member>
         <member name="P:Flatwhite.WebApi.CacheItem.ResponseMediaType">
@@ -242,17 +245,15 @@
             </summary>
             <param name="activator"></param>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.CanIntercept(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.CanCacheNoneVirtualOrFinalMethods">
             <summary>
-            Should always return true as it doesn't need to check the method info
+            Should return true as WebApi doesn't use Dynamic proxy
             </summary>
-            <param name="invocation"></param>
-            <param name="invocationContext"></param>
             <returns></returns>
         </member>
         <member name="M:Flatwhite.WebApi.WebApiCacheStrategy.GetCacheStore(Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
-            Get <see cref="T:Flatwhite.ICacheStore" /> for current invocation and context
+            WebAPI should use AsyncCacheStore instead
             </summary>
             <param name="invocation"></param>
             <param name="invocationContext"></param>
@@ -462,13 +463,14 @@
             <param name="actionContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.CreatePhoenix(Flatwhite._IInvocation,System.Int32,System.String)">
+        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.CreatePhoenix(Flatwhite._IInvocation,System.Int32,System.String,System.Net.Http.Formatting.MediaTypeFormatter)">
             <summary>
             Create the phoenix object which can refresh the cache itself if StaleWhileRevalidate > 0
             </summary>
             <param name="invocation"></param>
             <param name="cacheStoreId"></param>
             <param name="key"></param>
+            <param name="mediaTypeFormatter">The formater that was used to create the reasponse at the first invocation</param>
             <returns></returns>
         </member>
         <member name="T:Flatwhite.WebApi.WebApiContextProvider">
@@ -505,7 +507,7 @@
         </member>
         <member name="M:Flatwhite.WebApi.WebApiExtensions.UseFlatwhiteCache``1(Owin.IAppBuilder,System.Web.Http.HttpConfiguration)">
             <summary>
-            Create required components to use Flatwhite cache
+            Create required components to use Flatwhite cache for WebApi
             </summary>
             <typeparam name="T"></typeparam>
             <param name="app"></param>
@@ -524,7 +526,7 @@
             </para>
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiPhoenix.#ctor(Flatwhite._IInvocation,System.Int32,System.String,System.Int32,System.Int32,System.Object)">
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.#ctor(Flatwhite._IInvocation,System.Int32,System.String,System.Int32,System.Int32,Flatwhite.WebApi.OutputCacheAttribute,System.Net.Http.Formatting.MediaTypeFormatter)">
             <summary>
             Initializes a WebApiPhoenix
             </summary>
@@ -533,7 +535,8 @@
             <param name="cacheKey"></param>
             <param name="cacheDuration"></param>
             <param name="staleWhileRevalidate"></param>
-            <param name="state"></param>
+            <param name="outputCache">This should the the OutputCacheAttribute isntance</param>
+            <param name="mediaTypeFormatter">The formater used to create the HttpResponse if the return type of the action method is not a standard WebAPI action result</param>
         </member>
         <member name="P:Flatwhite.WebApi.WebApiPhoenix.Activator">
             <summary>
@@ -545,7 +548,7 @@
             Invoke the MethodInfo against the Controller and try to get the action method result
             </summary>
             <param name="serviceInstance"></param>
-            <param name="state">The OutPutCache itself</param>
+            <param name="outputCache">The OutputCache itself</param>
             <returns></returns>
         </member>
         <member name="T:Flatwhite.WebApi.WebApiDependencyResolverActivator">

@@ -11,7 +11,6 @@ namespace Flatwhite.WebApi
     /// </summary>
     public class CacheResponseBuilder : ICacheResponseBuilder
     {
-        /// TODO: Unit test?
         /// <summary>
         /// Provide a single method to try to build a <see cref="HttpResponseHeaders" /> from <see cref="CacheControlHeaderValue" />  and <see cref="HttpRequestMessage" />
         /// </summary>
@@ -33,7 +32,7 @@ namespace Flatwhite.WebApi
 
             var responseCacheControl = new CacheControlHeaderValue
             {
-                MaxAge = TimeSpan.FromSeconds(cacheItem.MaxAge),
+                MaxAge = TimeSpan.FromSeconds(Math.Max(cacheItem.MaxAge - age, 0)),
             };
 
             var cacheNotQualified = false;
@@ -88,7 +87,7 @@ namespace Flatwhite.WebApi
                 {
                     CharSet = cacheItem.ResponseCharSet
                 };
-                response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}\"");
+                response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}-{cacheItem.Checksum}\"");
             }
             return response;
         }

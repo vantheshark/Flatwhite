@@ -12,7 +12,8 @@ namespace Flatwhite.Strategy
 
         internal CacheOutputForAllMethod(int defaultDuration)
         {
-            _cacheAttribute = new OutputCacheAttribute(this) {Duration = defaultDuration};
+            _cacheAttribute = new OutputCacheAttribute() {Duration = defaultDuration};
+            _cacheAttribute.SetCacheStrategy(this);
         }
 
         /// <summary>
