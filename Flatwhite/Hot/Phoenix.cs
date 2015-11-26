@@ -1,18 +1,19 @@
 using System;
+using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Flatwhite
+namespace Flatwhite.Hot
 {
     /// <summary>
     /// A class contains all the info to create the new fresh cache item when cache is about to expire
     /// </summary>
     public class Phoenix : IDisposable
     {
-        private readonly string _cacheKey;
-        private readonly int _cacheDuration;
-        private readonly int _staleWhileRevalidate;
+        private readonly CacheInfo _info;
+        private IPhoenixState _phoenixState;
+
         /// <summary>
         /// The timer to refresh the cache item. It will run every "Duration" miliseconds if "StaleWhileRevalidate" > 0
         /// </summary>
@@ -27,32 +28,25 @@ namespace Flatwhite
         /// <summary>
         /// The method info
         /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public MethodInfo MethodInfo { get; set; }
 
         /// <summary>
         /// The arguments required to invoke the MethodInfo
         /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public object[] Arguments { get; set; }
-
-        /// <summary>
-        /// The id of the cache store that was used to keep the cache item
-        /// </summary>
-        public int StoreId { get; set; }
 
         /// <summary>
         /// Initialize a phoenix with provided cacheDuration and staleWhileRevalidate values
         /// </summary>
         /// <param name="invocation"></param>
-        /// <param name="cacheStoreId"></param>
-        /// <param name="cacheKey"></param>
-        /// <param name="cacheDuration"></param>
-        /// <param name="staleWhileRevalidate"></param>
+        /// <param name="info"></param>
         /// <param name="state"></param>
-        public Phoenix(_IInvocation invocation, int cacheStoreId, string cacheKey, int cacheDuration, int staleWhileRevalidate, object state = null)
+        public Phoenix(_IInvocation invocation, CacheInfo info, object state = null)
         {
-            _cacheKey = cacheKey;
-            _cacheDuration = cacheDuration;
-            _staleWhileRevalidate = staleWhileRevalidate;
+            _info = info;
+            _phoenixState = _info.StaleWhileRevalidate > 0 ? (IPhoenixState)new RaisingPhoenix() : new DisposingPhoenix(Die);
             if (invocation.Proxy != null)
             { 
                 // It is really a dynamic proxy
@@ -60,43 +54,46 @@ namespace Flatwhite
             }
 
             Arguments = invocation.Arguments;
-            StoreId = cacheStoreId;
             MethodInfo = invocation.Method;
 
-            _timer = new Timer(Reborn, state, GetNextReborn(), TimeSpan.Zero);
+            _timer = new Timer(Reborn, state, _info.GetRefreshTime(), TimeSpan.Zero);
         }
-
-        private TimeSpan GetNextReborn()
-        {
-            return _staleWhileRevalidate > 0 ? TimeSpan.FromMilliseconds(_cacheDuration) : Timeout.InfiniteTimeSpan;
-        }
-
+        
         /// <summary>
         /// Refresh the cache
         /// </summary>
         public virtual void Reborn(object state)
         {
-            try
+            Func<IPhoenixState> rebornAction = () =>
             {
-                var target = GetTargetInstance();
-                var result = GetMethodResult(target, state);
-                if (result == null)
+                try
                 {
-                    DieForever();
-                    return;
+                    var target = GetTargetInstance();
+                    var result = GetMethodResult(target, state);
+                    if (result == null)
+                    {
+                        var disposing =  new DisposingPhoenix(Die);
+                        disposing.Reborn(null);
+                        return disposing;
+                    }
+
+                    Global.Logger.Info($"Refreshing cache item {_info.CacheKey} on cacheStore {_info.CacheStoreId}");
+                    var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.CacheStoreId);
+
+                    cacheStore.Set(_info.CacheKey, result, DateTime.Now.AddMilliseconds(_info.CacheDuration + _info.CacheDuration));
+                    _timer.Change(_info.GetRefreshTime(), TimeSpan.Zero);
+
+                    return new AlivePhoenix();
                 }
+                catch (Exception ex)
+                {
+                    Global.Logger.Error($"Error while refreshing the cache key {_info.CacheKey}, store {_info.CacheStoreId}. Will retry after 1 second.", ex);
+                    _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.Zero);
+                    throw;
+                }
+            };
 
-                Global.Logger.Info($"Refreshing cache item {_cacheKey} on cacheStore {StoreId}");
-                var cacheStore = Global.CacheStoreProvider.GetCacheStore(StoreId);
-
-                cacheStore.Set(_cacheKey, result, DateTime.Now.AddMilliseconds(_cacheDuration + _staleWhileRevalidate));
-                _timer.Change(GetNextReborn(), TimeSpan.Zero);
-            }
-            catch (Exception ex)
-            {
-                Global.Logger.Error($"Error while refreshing the cache key {_cacheKey}, store {StoreId}. Will retry after 1 second.", ex);
-                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.Zero);
-            }
+            _phoenixState = _phoenixState.Reborn(rebornAction);
         }
 
         /// <summary>
@@ -132,46 +129,32 @@ namespace Flatwhite
             return target;
         }
 
-        private void DieForever()
-        {
-            try
-            {
-                var cacheStore = Global.CacheStoreProvider.GetCacheStore(StoreId);
-                _timer.Dispose();
-                cacheStore.Remove(_cacheKey);
-            }
-            catch (Exception ex)
-            {
-                Global.Logger.Error($"Error while deleting the cache key {_cacheKey}, store {StoreId}", ex);
-            }
-        }
-
         /// <summary>
         /// Service actvator
         /// </summary>
         protected virtual IServiceActivator Activator => Global.ServiceActivator;
 
         /// <summary>
-        /// Remove the cache and dispose
-        /// </summary>
-        public void RebornOrDieForever(object state)
-        {
-            if (_staleWhileRevalidate > 0)
-            {
-                Reborn(state);
-            }
-            else
-            {
-                DieForever();
-            }
-        }
-
-        /// <summary>
-        /// Dispose the timer and the object
+        /// Dispose the timer and remove it from <see cref="Global.Cache"/>
         /// </summary>
         public void Dispose()
         {
             _timer.Dispose();
+            Global.Cache.PhoenixFireCage.Remove(_info.CacheKey);
+        }
+
+        private void Die()
+        {
+            try
+            {
+                var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.CacheStoreId);
+                cacheStore.Remove(_info.CacheKey);
+                Dispose();
+            }
+            catch (Exception ex)
+            {
+                Global.Logger.Error($"Error while deleting the cache key {_info.CacheKey}, store {_info.CacheStoreId}", ex);
+            }
         }
     }
 }

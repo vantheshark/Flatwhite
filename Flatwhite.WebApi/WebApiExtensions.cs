@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Web.Http;
 using Flatwhite.WebApi.CacheControl;
-using Microsoft.Owin.Logging;
 using Owin;
 
 namespace Flatwhite.WebApi
@@ -16,7 +15,8 @@ namespace Flatwhite.WebApi
         internal static readonly string __webApi_dependency_scope = "__webApi_dependency_scope";
         internal static readonly string __webApi_etag_matched = "__flatwhite_webApi_etag_matched";
         internal static readonly string __webApi_outputcache_response_builder = "__flatwhite_webApi_outputcache_response_builder";
-        
+        internal static readonly string __webApi_cache_is_stale = "__flatwhite_webApi_cache_is_stale";
+        internal static readonly string __flatwhite_cache_is_stale = "__flatwhite_cache_is_stale";
         /// <summary>
         /// __flatwhite_dont_cache_
         /// </summary>

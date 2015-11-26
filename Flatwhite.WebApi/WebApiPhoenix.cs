@@ -3,6 +3,8 @@ using System.Net.Http.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Controllers;
+using Flatwhite.Hot;
 
 namespace Flatwhite.WebApi
 {
@@ -21,22 +23,22 @@ namespace Flatwhite.WebApi
     {
         private readonly string _cacheKey;
         private readonly MediaTypeFormatter _mediaTypeFormatter;
+        private readonly HttpRequestMessage _clonedRequestMessage;
 
         /// <summary>
         /// Initializes a WebApiPhoenix
         /// </summary>
         /// <param name="invocation"></param>
-        /// <param name="cacheStoreId"></param>
-        /// <param name="cacheKey"></param>
-        /// <param name="cacheDuration"></param>
-        /// <param name="staleWhileRevalidate"></param>
+        /// <param name="info"></param>
         /// <param name="outputCache">This should the the OutputCacheAttribute isntance</param>
+        /// <param name="requestMessage"></param>
         /// <param name="mediaTypeFormatter">The formater used to create the HttpResponse if the return type of the action method is not a standard WebAPI action result</param>
-        public WebApiPhoenix(_IInvocation invocation, int cacheStoreId, string cacheKey, int cacheDuration, int staleWhileRevalidate, OutputCacheAttribute outputCache, MediaTypeFormatter mediaTypeFormatter = null) 
-            : base(invocation, cacheStoreId, cacheKey, cacheDuration, staleWhileRevalidate, outputCache)
+        public WebApiPhoenix(_IInvocation invocation, CacheInfo info , OutputCacheAttribute outputCache, HttpRequestMessage requestMessage, MediaTypeFormatter mediaTypeFormatter = null) 
+            : base(invocation, info, outputCache)
         {
-            _cacheKey = cacheKey;
+            _cacheKey = info.CacheKey;
             _mediaTypeFormatter = mediaTypeFormatter;
+            _clonedRequestMessage = CloneRequest(requestMessage);
         }
 
         /// <summary>
@@ -85,6 +87,49 @@ namespace Flatwhite.WebApi
                 ResponseMediaType = responseMsg.Content.Headers.ContentType.MediaType,
                 ResponseCharSet = responseMsg.Content.Headers.ContentType.CharSet
             };
+        }
+
+        /// <summary>
+        /// Create the controller and set Request instance
+        /// </summary>
+        /// <returns></returns>
+        protected override object GetTargetInstance()
+        {
+            var controller = base.GetTargetInstance() as ApiController;
+            if (controller != null)
+            {
+                TODO: It does not work here
+                controller.Request = _clonedRequestMessage;
+                // Not support other stuff for now
+            }
+            return controller;
+        }
+
+        /// <summary>
+        /// Clone a HttpRequestMessage
+        /// </summary>
+        /// <param name="original"></param>
+        /// <returns></returns>
+        protected virtual HttpRequestMessage CloneRequest(HttpRequestMessage original)
+        {
+            var clonedRequestMessage = new HttpRequestMessage(original.Method, original.RequestUri)
+            {
+                Version = original.Version,
+                Headers = { },
+                Properties = { {"__created_by", "Flatwhite.Api"} }
+            };
+            foreach (var k in original.Headers)
+            {
+                clonedRequestMessage.Headers.Add(k.Key, k.Value);
+            }
+            foreach (var k in original.Properties)
+            {
+                if (!k.Key.StartsWith("__flatwhite"))
+                {
+                    clonedRequestMessage.Properties.Add(k.Key, k.Value);
+                }
+            }
+            return clonedRequestMessage;
         }
     }
 }

@@ -26,7 +26,10 @@ namespace Flatwhite
         void Info(string message);
     }
 
-    internal class ConsoleLog : ILogger
+    /// <summary>
+    /// Console logger
+    /// </summary>
+    public class ConsoleLogger : ILogger
     {
         public void Error(Exception ex)
         {
@@ -41,6 +44,21 @@ namespace Flatwhite
         public void Info(string message)
         {
             Console.WriteLine($"{DateTime.Now}: {message}");
+        }
+    }
+
+    internal class NullLogger : ILogger
+    {
+        public void Error(Exception ex)
+        {
+        }
+
+        public void Error(string message, Exception ex)
+        {
+        }
+
+        public void Info(string message)
+        {
         }
     }
 }

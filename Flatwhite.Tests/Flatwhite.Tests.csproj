@@ -76,7 +76,7 @@
     <Compile Include="Autofac\OutputCacheAttributeTests.cs" />
     <Compile Include="Autofac\Strategy\CacheOutputForAllMethodTests.cs" />
     <Compile Include="Autofac\Strategy\CacheSelectedMethodsInvocationStrategyTests.cs" />
-    <Compile Include="Core\PhoenixTests.cs" />
+    <Compile Include="Core\Hot\PhoenixTests.cs" />
     <Compile Include="MethodInterceptorTests.cs" />
     <Compile Include="IBlogService.cs" />
     <Compile Include="IUserService.cs" />

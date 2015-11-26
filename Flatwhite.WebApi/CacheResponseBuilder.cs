@@ -67,6 +67,7 @@ namespace Flatwhite.WebApi
 
             if (stale)
             {
+                request.Properties[WebApiExtensions.__flatwhite_cache_is_stale] = true;
                 response.Headers.Add("X-Flatwhite-Warning", "Response is Stale");
                 //https://tools.ietf.org/html/rfc7234#page-31
                 response.Headers.Add("Warning", $"110 - \"Response is Stale\"");

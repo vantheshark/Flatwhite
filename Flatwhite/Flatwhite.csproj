@@ -54,12 +54,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Hot\AlivePhoenix.cs" />
+    <Compile Include="Hot\DisposingPhoenix.cs" />
+    <Compile Include="Hot\RaisingPhoenix.cs" />
+    <Compile Include="CacheInfo.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="IChangeMonitor.cs" />
     <Compile Include="ILogger.cs" />
+    <Compile Include="Hot\IPhoenixState.cs" />
     <Compile Include="IServiceActivator.cs" />
     <Compile Include="ICacheSettings.cs" />
-    <Compile Include="Phoenix.cs" />
+    <Compile Include="Hot\Phoenix.cs" />
     <Compile Include="Strategy\IDynamicCacheStrategy.cs" />
     <Compile Include="InvocationAttribute.cs" />
     <Compile Include="ExceptionFilterAttribute.cs" />

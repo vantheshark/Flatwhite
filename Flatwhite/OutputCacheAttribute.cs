@@ -1,5 +1,5 @@
 using System;
-using System.Runtime.Caching;
+using Flatwhite.Hot;
 
 namespace Flatwhite
 {
@@ -63,6 +63,13 @@ namespace Flatwhite
         /// </summary>
         public string RevalidationKey { get; set; }
 
+        /// <summary>
+        /// If set to true, the cache will be auto refreshed every <see cref="Duration"/> ms.
+        /// <para>It's a trade-off to turn this on as you don't want too many Timers trying to refresh your cache data very small amout of seconds especially when you have <see cref="Duration"/> too small
+        /// and there is so many variaties of the cache (because of VaryByParam)</para>
+        /// </summary>
+        public bool AutoRefresh { get; set; }
+
         #endregion
 
         /// <summary>
@@ -119,32 +126,48 @@ namespace Flatwhite
 
                 var cacheStore = methodExecutedContext.TryGet<ICacheStore>(Global.__flatwhite_outputcache_store);
                 var strategy = methodExecutedContext.TryGet<ICacheStrategy>(Global.__flatwhite_outputcache_strategy);
-                var phoenix = CreatePhoenix(methodExecutedContext.Invocation, cacheStore.StoreId, key);
+                CreatePhoenix(methodExecutedContext.Invocation, cacheStore.StoreId, key);
 
                 var changeMonitors = strategy.GetChangeMonitors(methodExecutedContext.Invocation, methodExecutedContext.InvocationContext);
                 foreach (var mon in changeMonitors)
                 {
                     mon.CacheMonitorChanged += x =>
                     {
-                        phoenix.RebornOrDieForever(this);
+                        if (Global.Cache.PhoenixFireCage.ContainsKey(key))
+                        {
+                            Global.Cache.PhoenixFireCage[key].Reborn(this);
+                        }
                     };
                 }
-
                 cacheStore.Set(key, methodExecutedContext.Invocation.ReturnValue, DateTime.Now.AddMilliseconds(Duration + StaleWhileRevalidate));
-                Global.Cache.Phoenix[key] = phoenix;
             }
         }
 
         /// <summary>
         /// Create the phoenix object which can refresh the cache itself if StaleWhileRevalidate > 0
+        /// and store by key in Global.Cache.Phoenix
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="cacheStoreId"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        protected virtual Phoenix CreatePhoenix(_IInvocation invocation, int cacheStoreId, string key)
+        protected virtual void CreatePhoenix(_IInvocation invocation, int cacheStoreId, string key)
         {
-            return new Phoenix(invocation, cacheStoreId, key, Duration, StaleWhileRevalidate);
+            var cacheInfo = new CacheInfo
+            {
+                CacheKey = key,
+                CacheStoreId = cacheStoreId,
+                CacheDuration = Duration,
+                StaleWhileRevalidate = StaleWhileRevalidate,
+                AutoRefresh = AutoRefresh
+            };
+
+            var phoenix = new Phoenix(invocation, cacheInfo);
+            if (Global.Cache.PhoenixFireCage.ContainsKey(key))
+            {
+                Global.Cache.PhoenixFireCage[key].Dispose();
+            }
+            Global.Cache.PhoenixFireCage[key] = phoenix;
         }
     }
 }

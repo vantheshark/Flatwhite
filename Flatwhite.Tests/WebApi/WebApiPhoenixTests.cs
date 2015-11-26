@@ -15,6 +15,13 @@ namespace Flatwhite.Tests.WebApi
     {
         private readonly DummyController _controllerIntance = new DummyController();
         private readonly Flatwhite.WebApi.OutputCacheAttribute _cacheAttribute = new Flatwhite.WebApi.OutputCacheAttribute();
+        private static readonly CacheInfo CacheInfo = new CacheInfo
+        {
+            CacheKey = "cacheKey",
+            CacheStoreId = 0,
+            CacheDuration = 100000,
+            StaleWhileRevalidate = 100000
+        };
 
         [TestCase("HttpActionResult", 4)]
         [TestCase("HttpResponseMessageAsync", 4)]
@@ -30,7 +37,7 @@ namespace Flatwhite.Tests.WebApi
             invocation.Arguments.Returns(new object[0]);
             invocation.Method.Returns(typeof(DummyController).GetMethod(actionMethodName, BindingFlags.Instance | BindingFlags.Public));
 
-            var phoenix = new WebApiPhoenix(invocation, 0, "cacheKey", 100000, 100000, _cacheAttribute, new JsonMediaTypeFormatter());
+            var phoenix = new WebApiPhoenix(invocation, CacheInfo, _cacheAttribute, new HttpRequestMessage(), new JsonMediaTypeFormatter());
 
             // Action
             MethodInfo dynMethod = typeof(WebApiPhoenix).GetMethod("GetMethodResult", BindingFlags.NonPublic | BindingFlags.Instance);

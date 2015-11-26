@@ -146,6 +146,13 @@ namespace Flatwhite.WebApi
         /// </summary>
         public string RevalidationKey { get; set; }
 
+        /// <summary>
+        /// If set to true, the cache will be auto refreshed every <see cref="MaxAge"/> second(s).
+        /// <para>It's a trade-off to turn this on as you don't want too many Timers trying to refresh your cache data very small amout of seconds especially when you have <see cref="MaxAge"/> too small
+        /// and there is so many variaties of the cache (because of VaryByParam)</para>
+        /// </summary>
+        public bool AutoRefresh { get; set; }
+
         #endregion
 
         /// <summary>
@@ -221,6 +228,12 @@ namespace Flatwhite.WebApi
 
             var cacheItem = await cacheStore.GetAsync(storedKey).ConfigureAwait(false) as CacheItem;
             var response = builder.GetResponse(cacheControl, cacheItem, actionContext.Request);
+
+            if (response != null &&
+                actionContext.Request.Properties.TryGetByKey<bool>(WebApiExtensions.__flatwhite_cache_is_stale))
+            {
+                RefreshCache(storedKey);
+            }
 
             actionContext.Response = response;
         }
@@ -300,13 +313,13 @@ namespace Flatwhite.WebApi
                 var changeMonitors = strategy.GetChangeMonitors(invocation, context);
 
                 var objectContent = responseContent as ObjectContent;
-                var phoenix = CreatePhoenix(invocation, cacheStore.StoreId, storedKey, objectContent?.Formatter);
+                CreatePhoenix(invocation, cacheStore.StoreId, storedKey, actionExecutedContext.Request, objectContent?.Formatter);
                 
                 foreach (var mon in changeMonitors)
                 {
                     mon.CacheMonitorChanged += x =>
                     {
-                        phoenix.RebornOrDieForever(this);
+                        RefreshCache(storedKey);
                     };
                 }
 
@@ -314,6 +327,14 @@ namespace Flatwhite.WebApi
 
                 var absoluteExpiration =  DateTime.UtcNow.AddSeconds(MaxAge + Math.Max(StaleWhileRevalidate, StaleIfError));
                 await cacheStore.SetAsync(cacheItem.Key, cacheItem, absoluteExpiration).ConfigureAwait(false);
+            }
+        }
+
+        private void RefreshCache(string storedKey)
+        {
+            if (Global.Cache.PhoenixFireCage.ContainsKey(storedKey))
+            {
+                Global.Cache.PhoenixFireCage[storedKey].Reborn(this);
             }
         }
 
@@ -404,11 +425,26 @@ namespace Flatwhite.WebApi
         /// <param name="invocation"></param>
         /// <param name="cacheStoreId"></param>
         /// <param name="key"></param>
+        /// <param name="request"></param>
         /// <param name="mediaTypeFormatter">The formater that was used to create the reasponse at the first invocation</param>
         /// <returns></returns>
-        protected virtual Phoenix CreatePhoenix(_IInvocation invocation, int cacheStoreId, string key, MediaTypeFormatter mediaTypeFormatter)
+        protected virtual void CreatePhoenix(_IInvocation invocation, int cacheStoreId, string key, HttpRequestMessage request, MediaTypeFormatter mediaTypeFormatter)
         {
-            return new WebApiPhoenix(invocation, cacheStoreId, key, (int)MaxAge * 1000, (int)StaleWhileRevalidate * 1000, this);
+            var cacheInfo = new CacheInfo
+            {
+                CacheKey = key,
+                CacheStoreId = cacheStoreId,
+                CacheDuration = (int)MaxAge * 1000,
+                StaleWhileRevalidate = (int)StaleWhileRevalidate * 1000,
+                AutoRefresh = AutoRefresh
+            };
+
+            var phoenix = new WebApiPhoenix(invocation, cacheInfo, this, request, mediaTypeFormatter);
+            if (Global.Cache.PhoenixFireCage.ContainsKey(key))
+            {
+                Global.Cache.PhoenixFireCage[key].Dispose();
+            }
+            Global.Cache.PhoenixFireCage[key] = phoenix;
         }
     }
 }

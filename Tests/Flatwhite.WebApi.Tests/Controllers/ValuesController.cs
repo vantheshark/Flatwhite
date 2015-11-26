@@ -6,13 +6,18 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Flatwhite.Provider;
 
 namespace Flatwhite.WebApi.Tests.Controllers
 {
     public class ValuesController : ApiController
     {
-        [OutputCache(MaxAge = 10)]
+        [OutputCache(
+            MaxAge = 10,
+            StaleWhileRevalidate = 5,
+            VaryByParam = "packageId",
+            RevalidationKey = "VaryByParamMethod",
+            IgnoreRevalidationRequest = true,
+            AutoRefresh = true)]
         public virtual async Task<IEnumerable<string>> Get()
         {
             await Task.Delay(2000);

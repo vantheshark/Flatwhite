@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-// ReSharper disable InconsistentNaming
+using Flatwhite.Hot;
 
 namespace Flatwhite
 {
@@ -51,6 +51,6 @@ namespace Flatwhite
         public readonly IDictionary<MethodInfo, Tuple<string[], string[]>> VaryParamsCache = new Dictionary<MethodInfo, Tuple<string[], string[]>>();
         public readonly IDictionary<MethodInfo, bool> InterceptableCache = new Dictionary<MethodInfo, bool>();
         public readonly IDictionary<Type, IHashCodeGenerator> HashCodeGeneratorCache = new Dictionary<Type, IHashCodeGenerator>();
-        public readonly Dictionary<string, Phoenix> Phoenix = new Dictionary<string, Phoenix>();
+        public readonly Dictionary<string, Phoenix> PhoenixFireCage = new Dictionary<string, Phoenix>();
     }
 }

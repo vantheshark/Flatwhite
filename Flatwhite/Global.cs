@@ -67,7 +67,7 @@ namespace Flatwhite
             CacheKeyProvider = new DefaultCacheKeyProvider(HashCodeGeneratorProvider);
             CacheStoreProvider = new DefaultCacheStoreProvider();
             ServiceActivator = new ServiceActivator();
-            Logger = new ConsoleLog();
+            Logger = new NullLogger();
         }
 
         /// <summary>

@@ -4,7 +4,7 @@ using Autofac;
 using NUnit.Framework;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Tests.Stubs;
-using NSubstitute;
+
 // ReSharper disable InconsistentNaming
 
 namespace Flatwhite.Tests.Autofac
