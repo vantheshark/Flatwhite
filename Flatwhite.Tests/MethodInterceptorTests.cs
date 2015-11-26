@@ -159,6 +159,7 @@ namespace Flatwhite.Tests
         public void Test_async_cache_refresh()
         {
             Global.CacheStoreProvider.RegisterStore(new ObjectCacheStore());
+            Global.Logger = new ConsoleLogger();
 
             var builder = new ContainerBuilder().EnableFlatwhite();
             builder

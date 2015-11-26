@@ -1,3 +1,6 @@
+* 1.0.6 (2015-11-27 00:30:00 AEDT)
+- Fix minor bugs on WebApi.OutputCache. Add setting "AutoRefresh" to let the background timer run, otherwise the cache will only be refreshed when it starts to be stale
+
 * 1.0.5 (2015-11-26 00:16:00 AEDT)
 - Fix a bug on WebApi.OutputCache keep return 304 even the cache item has changed. Add a few unit tests
 

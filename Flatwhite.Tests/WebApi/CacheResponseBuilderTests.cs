@@ -49,7 +49,7 @@ namespace Flatwhite.Tests.WebApi
                 MaxStaleLimit = TimeSpan.FromSeconds(15)
             };
 
-            var cacheItem = new CacheItem
+            var cacheItem = new WebApiCacheItem
             {
                 CreatedTime = DateTime.UtcNow.AddSeconds(-11),
                 MaxAge = 10,
@@ -76,7 +76,7 @@ namespace Flatwhite.Tests.WebApi
                 MinFresh = TimeSpan.FromSeconds(100)
             };
 
-            var cacheItem = new CacheItem
+            var cacheItem = new WebApiCacheItem
             {
                 CreatedTime = DateTime.UtcNow.AddSeconds(-20),
                 MaxAge = 1000,
@@ -105,7 +105,7 @@ namespace Flatwhite.Tests.WebApi
                 MinFresh = TimeSpan.FromSeconds(20)
             };
 
-            var cacheItem = new CacheItem
+            var cacheItem = new WebApiCacheItem
             {
                 CreatedTime = DateTime.UtcNow.AddSeconds(-11),
                 MaxAge = 10,
@@ -143,7 +143,7 @@ namespace Flatwhite.Tests.WebApi
                 MinFresh = TimeSpan.FromSeconds(20)
             };
 
-            var cacheItem = new CacheItem
+            var cacheItem = new WebApiCacheItem
             {
                 CreatedTime = DateTime.UtcNow.AddSeconds(-11),
                 MaxAge = 10,

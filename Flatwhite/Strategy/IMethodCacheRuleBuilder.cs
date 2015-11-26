@@ -14,14 +14,14 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="duration"></param>
         /// <returns></returns>
-        IMethodCacheStrategy<T> Duration(int duration);
+        IMethodCacheStrategy<T> Duration(uint duration);
 
         /// <summary>
         /// Set StaleWhileRevalidate
         /// </summary>
         /// <param name="staleWhileRevalidate"></param>
         /// <returns></returns>
-        IMethodCacheStrategy<T> StaleWhileRevalidate(int staleWhileRevalidate);
+        IMethodCacheStrategy<T> StaleWhileRevalidate(uint staleWhileRevalidate);
 
         /// <summary>
         /// Set vảy by param

@@ -54,6 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheItem.cs" />
     <Compile Include="Hot\AlivePhoenix.cs" />
     <Compile Include="Hot\DisposingPhoenix.cs" />
     <Compile Include="Hot\RaisingPhoenix.cs" />

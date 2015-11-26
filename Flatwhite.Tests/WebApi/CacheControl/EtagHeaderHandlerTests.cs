@@ -65,7 +65,7 @@ namespace Flatwhite.Tests.WebApi.CacheControl
                 MinFresh = TimeSpan.FromSeconds(20)
             };
 
-            var oldCacheItem = new CacheItem
+            var oldCacheItem = new WebApiCacheItem
             {
                 CreatedTime = DateTime.UtcNow.AddSeconds(-11),
                 MaxAge = 10,

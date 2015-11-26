@@ -60,7 +60,7 @@ namespace Flatwhite.WebApi.CacheControl
                         {
                             var hashedKey = etagString.Substring(0, index);
                             var checkSum = etagString.Substring(index + 1);
-                            var cacheItem = (await cacheStore.GetAsync(hashedKey)) as CacheItem;
+                            var cacheItem = (await cacheStore.GetAsync(hashedKey)) as WebApiCacheItem;
 
                             if (cacheItem != null && cacheItem.Checksum == checkSum)
                             {

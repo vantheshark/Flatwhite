@@ -3,7 +3,6 @@ using System.Net.Http.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.Controllers;
 using Flatwhite.Hot;
 
 namespace Flatwhite.WebApi
@@ -13,15 +12,15 @@ namespace Flatwhite.WebApi
     /// <para>
     /// It will create instance of WebApi controller and invoke the ActionMethod with cached arguments.
     /// It will not work if the controller required QueryString, Headers or anything outside these action method parameters
-    /// You can override the Phoenix MethodInfo, Arguments or method <see cref="Phoenix.GetTargetInstance" />, <see cref="Phoenix.GetMethodResult" />, 
-    /// or completly change the way the Phoenix reborn by overriding method , <see cref="Phoenix.Reborn(object)" />,
+    /// But you can override the Phoenix MethodInfo, Arguments or method <see cref="Phoenix.GetTargetInstance" />, <see cref="Phoenix.InvokeAndGetBareResult" />, 
+    /// or completely change the way the Phoenix reborn by overriding method , <see cref="Phoenix.Reborn(object)" />,
     /// 
-    /// Idealy, keep Controller thin and use proper Model binding instead of dodgyly access the Request object.
+    /// Idealy, keep Controller thin and use proper Model binding instead of dodgy access the Request object.
     /// </para>
     /// </summary>
     public class WebApiPhoenix : Phoenix
     {
-        private readonly string _cacheKey;
+        private readonly CacheInfo _info;
         private readonly MediaTypeFormatter _mediaTypeFormatter;
         private readonly HttpRequestMessage _clonedRequestMessage;
 
@@ -36,7 +35,7 @@ namespace Flatwhite.WebApi
         public WebApiPhoenix(_IInvocation invocation, CacheInfo info , OutputCacheAttribute outputCache, HttpRequestMessage requestMessage, MediaTypeFormatter mediaTypeFormatter = null) 
             : base(invocation, info, outputCache)
         {
-            _cacheKey = info.CacheKey;
+            _info = info;
             _mediaTypeFormatter = mediaTypeFormatter;
             _clonedRequestMessage = CloneRequest(requestMessage);
         }
@@ -47,15 +46,13 @@ namespace Flatwhite.WebApi
         protected override IServiceActivator Activator { get; } = WebApiExtensions._dependencyResolverActivator;
 
         /// <summary>
-        /// Invoke the MethodInfo against the Controller and try to get the action method result
+        /// Build the <see cref="WebApiCacheItem" /> from action result byte[] data
         /// </summary>
-        /// <param name="serviceInstance"></param>
-        /// <param name="outputCache">The OutputCache itself</param>
+        /// <param name="response"></param>
+        /// <param name="outputCache"></param>
         /// <returns></returns>
-        protected override object GetMethodResult(object serviceInstance, object outputCache)
+        protected override CacheItem GetCacheItem(object response, object outputCache)
         {
-            var response = base.GetMethodResult(serviceInstance, outputCache);
-
             if (response == null)
             {
                 return null;
@@ -65,7 +62,7 @@ namespace Flatwhite.WebApi
             {
                 Task.Run(async () =>
                 {
-                    response = await ((IHttpActionResult) response).ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
+                    response = await ((IHttpActionResult)response).ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
                 }).GetAwaiter().GetResult();
             }
 
@@ -78,12 +75,15 @@ namespace Flatwhite.WebApi
                     Content = new ObjectContent(response.GetType(), response, _mediaTypeFormatter)
                 };
             }
+
+            var content = responseMsg.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
             
-            var responseContent = responseMsg.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            return new CacheItem((OutputCacheAttribute)outputCache)
+            return new WebApiCacheItem((OutputCacheAttribute)outputCache)
             {
-                Key = _cacheKey,
-                Content = responseContent,
+                Key = _info.CacheKey,
+                StoreId = _info.CacheStoreId,
+                Content = content,
                 ResponseMediaType = responseMsg.Content.Headers.ContentType.MediaType,
                 ResponseCharSet = responseMsg.Content.Headers.ContentType.CharSet
             };
@@ -98,8 +98,7 @@ namespace Flatwhite.WebApi
             var controller = base.GetTargetInstance() as ApiController;
             if (controller != null)
             {
-                TODO: It does not work here
-                controller.Request = _clonedRequestMessage;
+                controller.ControllerContext.Request = _clonedRequestMessage;
                 // Not support other stuff for now
             }
             return controller;
@@ -130,6 +129,14 @@ namespace Flatwhite.WebApi
                 }
             }
             return clonedRequestMessage;
+        }
+
+        /// <summary>
+        /// Write cache updated for request
+        /// </summary>
+        protected override void WriteCacheUpdatedLog()
+        {
+            Global.Logger.Info($"Updated key \"{_info.CacheKey}\", store \"{_info.CacheStoreId}\" for request {_clonedRequestMessage.RequestUri.PathAndQuery}");
         }
     }
 }

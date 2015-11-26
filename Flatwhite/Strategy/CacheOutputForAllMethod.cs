@@ -10,7 +10,7 @@ namespace Flatwhite.Strategy
     {
         private readonly OutputCacheAttribute _cacheAttribute;
 
-        internal CacheOutputForAllMethod(int defaultDuration)
+        internal CacheOutputForAllMethod(uint defaultDuration)
         {
             _cacheAttribute = new OutputCacheAttribute() {Duration = defaultDuration};
             _cacheAttribute.SetCacheStrategy(this);
@@ -39,13 +39,13 @@ namespace Flatwhite.Strategy
         }
 
         /// <summary>
-        /// Set cache duration in miliseconds
+        /// Set cache duration in seconds
         /// </summary>
-        /// <param name="durationMiliseconds"></param>
+        /// <param name="durationSeconds"></param>
         /// <returns></returns>
-        public CacheOutputForAllMethod Duration(int durationMiliseconds)
+        public CacheOutputForAllMethod Duration(uint durationSeconds)
         {
-            _cacheAttribute.Duration = durationMiliseconds;
+            _cacheAttribute.Duration = durationSeconds;
             return this;
         }
 

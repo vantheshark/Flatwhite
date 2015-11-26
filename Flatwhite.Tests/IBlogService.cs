@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Flatwhite.Tests
 {
     [TestHandleException]
-    [OutputCache(Duration = 50000)]
+    [OutputCache(Duration = 50)]
     public interface IBlogService
     {
         object GetById(Guid postId);
@@ -28,7 +28,7 @@ namespace Flatwhite.Tests
 
     public class BlogService : IBlogService
     {
-        [OutputCache(Duration = 2000)]
+        [OutputCache(Duration = 2)]
         public virtual object GetById(Guid postId)
         {
             InvokeCount++;
@@ -60,7 +60,7 @@ namespace Flatwhite.Tests
             return "Hello";
         }
 
-        [OutputCache(Duration = 2000)]  // This should be applied if EnableClassInterceptors
+        [OutputCache(Duration = 2)]  // This should be applied if EnableClassInterceptors
         public virtual IEnumerable<object> GetComments(Guid postId, int count)
         {
             InvokeCount++;

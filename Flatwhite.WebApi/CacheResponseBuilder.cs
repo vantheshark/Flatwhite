@@ -14,7 +14,7 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// Provide a single method to try to build a <see cref="HttpResponseHeaders" /> from <see cref="CacheControlHeaderValue" />  and <see cref="HttpRequestMessage" />
         /// </summary>
-        public virtual HttpResponseMessage GetResponse(CacheControlHeaderValue cacheControl, CacheItem cacheItem, HttpRequestMessage request)
+        public virtual HttpResponseMessage GetResponse(CacheControlHeaderValue cacheControl, WebApiCacheItem cacheItem, HttpRequestMessage request)
         {
             if (cacheControl != null && cacheControl.OnlyIfCached && cacheItem == null)
             {
@@ -67,7 +67,7 @@ namespace Flatwhite.WebApi
 
             if (stale)
             {
-                request.Properties[WebApiExtensions.__flatwhite_cache_is_stale] = true;
+                request.Properties[WebApiExtensions.__webApi_cache_is_stale] = true;
                 response.Headers.Add("X-Flatwhite-Warning", "Response is Stale");
                 //https://tools.ietf.org/html/rfc7234#page-31
                 response.Headers.Add("Warning", $"110 - \"Response is Stale\"");

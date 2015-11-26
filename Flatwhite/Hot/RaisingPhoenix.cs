@@ -7,15 +7,18 @@ namespace Flatwhite.Hot
     /// </summary>
     internal class RaisingPhoenix : IPhoenixState
     {
-        private bool _isReborn;
+        /// <summary>
+        /// true if the phoenix is executing rebornAction. This is to avoid many call on method Reborn many time
+        ///  </summary>
+        private volatile bool _isOnFire;
         public IPhoenixState Reborn(Func<IPhoenixState> rebornAction)
         {
-            if (_isReborn)
+            if (_isOnFire)
             {
                 return this;
             }
 
-            _isReborn = true;
+            _isOnFire = true;
 
             try
             {

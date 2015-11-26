@@ -1,5 +1,6 @@
 /.vs
 /packages
+logs
 bin
 obj
 /src/_ReSharper.*

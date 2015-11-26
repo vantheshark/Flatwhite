@@ -12,12 +12,12 @@ namespace Flatwhite.WebApi
     public interface ICacheResponseBuilder
     {
         /// <summary>
-        /// Build a <see cref="HttpResponseHeaders" /> from <see cref="CacheControlHeaderValue" /> and <see cref="CacheItem" />
+        /// Build a <see cref="HttpResponseHeaders" /> from <see cref="CacheControlHeaderValue" /> and <see cref="WebApiCacheItem" />
         /// </summary>
         /// <param name="requestCacheControl"></param>
         /// <param name="cacheItem"></param>
         /// <param name="request"></param>
         /// <returns>Return null if the cacheItem is not suitable for the request cache control, such as max-age, min-fresh is provided and the cache item is not qualified</returns>
-        HttpResponseMessage GetResponse(CacheControlHeaderValue requestCacheControl, CacheItem cacheItem, HttpRequestMessage request);
+        HttpResponseMessage GetResponse(CacheControlHeaderValue requestCacheControl, WebApiCacheItem cacheItem, HttpRequestMessage request);
     }
 }

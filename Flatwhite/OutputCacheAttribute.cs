@@ -25,17 +25,16 @@ namespace Flatwhite
 
         #region -- Cache params --
         /// <summary>
-        /// Gets or sets the cache duration, in miliseconds.
+        /// Gets or sets the cache duration, in seconds.
         /// </summary>
-        public int Duration { get; set; }
+        public uint Duration { get; set; }
 
         /// <summary>
-        /// If set with a positive number the system will try to refresh the cache automatically after <see cref="Duration" /> ms.
-        /// The stale cache item will still be return to the caller.
-        /// 
-        /// The value to set to this field is idealy the amount of time the actual call make the return the fresh value.
+        /// <para>This should be used with <see cref="Duration" /> to indicates that caches MAY serve the cached result in which it appears after it becomes stale, up to the indicated number of seconds</para>
+        /// <para>The first call comes to the service and gets a stale cache result will also make the cache system auto refresh once. So if the method is not called
+        /// many times in a short period, it's better to turn on <see cref="AutoRefresh" /> to make the cache refresh as soon as it starts to be stale</para> 
         /// </summary>
-        public int StaleWhileRevalidate { get; set; }
+        public uint StaleWhileRevalidate { get; set; }
 
         /// <summary>
         /// A semicolon-separated list of strings that correspond to to parameter values
@@ -64,9 +63,12 @@ namespace Flatwhite
         public string RevalidationKey { get; set; }
 
         /// <summary>
-        /// If set to true, the cache will be auto refreshed every <see cref="Duration"/> ms.
+        /// If set to true, the cache will be auto refreshed every <see cref="Duration"/> second(s).
         /// <para>It's a trade-off to turn this on as you don't want too many Timers trying to refresh your cache data very small amout of seconds especially when you have <see cref="Duration"/> too small
-        /// and there is so many variaties of the cache (because of VaryByParam)</para>
+        /// and there is so many variaties of the cache (because of ,<see cref="VaryByParam" />). 
+        /// </para>
+        /// <para>If the method is called many time in a short period with small value of <see cref="Duration"/> setting, it's better to keep this off and use <see cref="StaleWhileRevalidate"/> instead</para>
+        /// <para>If the method is not called quickly but you want to keep the cache always available, turn this on and specify the <see cref="StaleWhileRevalidate"/> with a value greater than 0</para>
         /// </summary>
         public bool AutoRefresh { get; set; }
 
@@ -97,11 +99,22 @@ namespace Flatwhite
             var key = strategy.CacheKeyProvider.GetCacheKey(methodExecutingContext.Invocation, methodExecutingContext.InvocationContext);
             var cacheStore = strategy.GetCacheStore(methodExecutingContext.Invocation, methodExecutingContext.InvocationContext);
 
-            var result = cacheStore.Get(key);
-            if (result != null)
+            var cacheItem = cacheStore.Get(key) as CacheItem;
+            if (cacheItem != null)
             {
-                methodExecutingContext.Result = result;
+                methodExecutingContext.Result = cacheItem.Data;
                 methodExecutingContext.InvocationContext[Global.__flatwhite_outputcache_restored] = true;
+
+                if (cacheItem.Age > cacheItem.MaxAge)
+                {
+                    if (!Global.Cache.PhoenixFireCage.ContainsKey(key))
+                    {
+                        //If this is the first request but the "cacheItem" (Possibly distributed cache item" has the cache
+                        CreatePhoenix(methodExecutingContext.Invocation, cacheItem);
+                    }
+                    RefreshCache(key);
+                }
+
                 return;
             }
             Global.Logger.Info($"Cache is not available for key {key}");
@@ -126,20 +139,32 @@ namespace Flatwhite
 
                 var cacheStore = methodExecutedContext.TryGet<ICacheStore>(Global.__flatwhite_outputcache_store);
                 var strategy = methodExecutedContext.TryGet<ICacheStrategy>(Global.__flatwhite_outputcache_strategy);
-                CreatePhoenix(methodExecutedContext.Invocation, cacheStore.StoreId, key);
+                var cacheItem = new CacheItem(this)
+                {
+                    Key = key,
+                    Data = methodExecutedContext.Result,
+                    StoreId = cacheStore.StoreId
+                };
+                CreatePhoenix(methodExecutedContext.Invocation, cacheItem);
 
                 var changeMonitors = strategy.GetChangeMonitors(methodExecutedContext.Invocation, methodExecutedContext.InvocationContext);
                 foreach (var mon in changeMonitors)
                 {
                     mon.CacheMonitorChanged += x =>
                     {
-                        if (Global.Cache.PhoenixFireCage.ContainsKey(key))
-                        {
-                            Global.Cache.PhoenixFireCage[key].Reborn(this);
-                        }
+                        RefreshCache(key);
                     };
                 }
-                cacheStore.Set(key, methodExecutedContext.Invocation.ReturnValue, DateTime.Now.AddMilliseconds(Duration + StaleWhileRevalidate));
+                
+                cacheStore.Set(key, cacheItem, DateTime.UtcNow.AddSeconds(Duration + StaleWhileRevalidate));
+            }
+        }
+
+        private void RefreshCache(string storedKey)
+        {
+            if (Global.Cache.PhoenixFireCage.ContainsKey(storedKey))
+            {
+                Global.Cache.PhoenixFireCage[storedKey].Reborn(this);
             }
         }
 
@@ -148,26 +173,25 @@ namespace Flatwhite
         /// and store by key in Global.Cache.Phoenix
         /// </summary>
         /// <param name="invocation"></param>
-        /// <param name="cacheStoreId"></param>
-        /// <param name="key"></param>
+        /// <param name="cacheItem"></param>
         /// <returns></returns>
-        protected virtual void CreatePhoenix(_IInvocation invocation, int cacheStoreId, string key)
+        protected virtual void CreatePhoenix(_IInvocation invocation, CacheItem cacheItem)
         {
             var cacheInfo = new CacheInfo
             {
-                CacheKey = key,
-                CacheStoreId = cacheStoreId,
+                CacheKey = cacheItem.Key,
+                CacheStoreId = cacheItem.StoreId,
                 CacheDuration = Duration,
                 StaleWhileRevalidate = StaleWhileRevalidate,
                 AutoRefresh = AutoRefresh
             };
-
-            var phoenix = new Phoenix(invocation, cacheInfo);
-            if (Global.Cache.PhoenixFireCage.ContainsKey(key))
+            
+            if (Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
             {
-                Global.Cache.PhoenixFireCage[key].Dispose();
+                Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();
             }
-            Global.Cache.PhoenixFireCage[key] = phoenix;
+
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(invocation, cacheInfo); ;
         }
     }
 }

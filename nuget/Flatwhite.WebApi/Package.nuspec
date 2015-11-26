@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Flatwhite.WebApi</id>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <authors>Van Thoai Nguyen</authors>
     <owners>Van Thoai Nguyen</owners>
 	<iconUrl>http://oi64.tinypic.com/23w19b4.jpg</iconUrl>
@@ -13,9 +13,10 @@
 	<description>Flatwhite.WebApi is an output cache library for WebApi with VaryByParam (on action method) and VaryByHeader support, facilitate usages of cache control and HTTP Cache-Control Extensions for Stale Content. It auto refreshes the stale content so the action method call will never wait</description>
     <releaseNotes>https://github.com/vanthoainguyen/Flatwhite/blob/master/nuget/Flatwhite/CHANGELOG.txt</releaseNotes>
     <copyright>Copyright 2015</copyright>
+	<language>en-US</language>
     <tags>Flatwhite WebApi Intercept DynamicProxy Caching Cache OutputCache CacheControl VaryByParam VaryByHeader</tags>
     <dependencies>
-		<dependency id="Flatwhite" version="1.0.5" />	
+		<dependency id="Flatwhite" version="1.0.6" />	
     </dependencies>
   </metadata>
 </package>

@@ -103,7 +103,7 @@
             http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.CacheResponseBuilder.GetResponse(System.Net.Http.Headers.CacheControlHeaderValue,Flatwhite.WebApi.CacheItem,System.Net.Http.HttpRequestMessage)">
+        <member name="M:Flatwhite.WebApi.CacheResponseBuilder.GetResponse(System.Net.Http.Headers.CacheControlHeaderValue,Flatwhite.WebApi.WebApiCacheItem,System.Net.Http.HttpRequestMessage)">
             <summary>
             Provide a single method to try to build a <see cref="T:System.Net.Http.Headers.HttpResponseHeaders" /> from <see cref="T:System.Net.Http.Headers.CacheControlHeaderValue" />  and <see cref="T:System.Net.Http.HttpRequestMessage" />
             </summary>
@@ -115,92 +115,62 @@
             http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.ICacheResponseBuilder.GetResponse(System.Net.Http.Headers.CacheControlHeaderValue,Flatwhite.WebApi.CacheItem,System.Net.Http.HttpRequestMessage)">
+        <member name="M:Flatwhite.WebApi.ICacheResponseBuilder.GetResponse(System.Net.Http.Headers.CacheControlHeaderValue,Flatwhite.WebApi.WebApiCacheItem,System.Net.Http.HttpRequestMessage)">
             <summary>
-            Build a <see cref="T:System.Net.Http.Headers.HttpResponseHeaders" /> from <see cref="T:System.Net.Http.Headers.CacheControlHeaderValue" /> and <see cref="T:Flatwhite.WebApi.CacheItem" />
+            Build a <see cref="T:System.Net.Http.Headers.HttpResponseHeaders" /> from <see cref="T:System.Net.Http.Headers.CacheControlHeaderValue" /> and <see cref="T:Flatwhite.WebApi.WebApiCacheItem" />
             </summary>
             <param name="requestCacheControl"></param>
             <param name="cacheItem"></param>
             <param name="request"></param>
             <returns>Return null if the cacheItem is not suitable for the request cache control, such as max-age, min-fresh is provided and the cache item is not qualified</returns>
         </member>
-        <member name="T:Flatwhite.WebApi.CacheItem">
+        <member name="T:Flatwhite.WebApi.WebApiCacheItem">
             <summary>
             A cache item object that keeps some details about the data to be cached
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.CacheItem.#ctor">
+        <member name="M:Flatwhite.WebApi.WebApiCacheItem.#ctor">
             <summary>
             Initializes a cache item
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.CacheItem.#ctor(Flatwhite.WebApi.OutputCacheAttribute)">
+        <member name="M:Flatwhite.WebApi.WebApiCacheItem.#ctor(Flatwhite.WebApi.OutputCacheAttribute)">
             <summary>
             Initializes a cache item
             </summary>
             <param name="cacheAttribute"></param>
         </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.Key">
-            <summary>
-            Cache key
-            </summary>
-        </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.Content">
+        <member name="P:Flatwhite.WebApi.WebApiCacheItem.Content">
             <summary>
             The response data
             </summary>
         </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.Checksum">
+        <member name="P:Flatwhite.WebApi.WebApiCacheItem.Checksum">
             <summary>
             The checksum of the Content
             </summary>
         </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.ResponseMediaType">
+        <member name="P:Flatwhite.WebApi.WebApiCacheItem.ResponseMediaType">
             <summary>
             Media type
             </summary>
         </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.ResponseCharSet">
+        <member name="P:Flatwhite.WebApi.WebApiCacheItem.ResponseCharSet">
             <summary>
             Charset
             </summary>
         </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.CreatedTime">
-            <summary>
-            The time the cache data is generated
-            </summary>
-        </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.MaxAge">
-            <summary>
-            Max age for the cache item
-            </summary>
-        </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.StaleWhileRevalidate">
-            <summary>
-            https://tools.ietf.org/html/rfc5861
-            </summary>
-        </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.StaleIfError">
+        <member name="P:Flatwhite.WebApi.WebApiCacheItem.StaleIfError">
             <summary>
             https://tools.ietf.org/html/rfc5861#4.1
             </summary>
         </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.StoreId">
-            <summary>
-            The id of the <see cref="T:Flatwhite.ICacheStore" /> where the cache item will be stored
-            </summary>
-        </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.IgnoreRevalidationRequest">
+        <member name="P:Flatwhite.WebApi.WebApiCacheItem.IgnoreRevalidationRequest">
             <summary>
             A cache MAY be configured to return stale responses without validation
             <para>If set to TRUE, the server will return cache item as soon as the cache item is available and ignore all cache control directives sent from client
             such as no-cache, no-store or max-age, max-stale. Warning 110 (Response is stale) will be included in the response header</para>
             <para>This may be helpful to guarantee that the endpoint will not revalidate the cache all the time by some one sending request with no-cache header</para>
-            </summary>
-        </member>
-        <member name="P:Flatwhite.WebApi.CacheItem.Age">
-            <summary>
-            Return the age of the CacheItem
             </summary>
         </member>
         <member name="T:Flatwhite.WebApi.RevalidateAttribute">
@@ -372,8 +342,9 @@
         <member name="P:Flatwhite.WebApi.OutputCacheAttribute.StaleWhileRevalidate">
             <summary>
             Set Cache-Control: max-age=*seconds*, stale-while-revalidate=*seconds* to the response message
-            <para>This should be used with <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.MaxAge" /> to indicates that caches MAY serve the response in which it appears after it becomes stale, up to the indicated number of seconds</para>
-            <para>https://tools.ietf.org/html/rfc5861</para> 
+            <para>This should be used with <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.MaxAge" /> to indicates that caches MAY serve the response in which it appears after it becomes stale, up to the indicated number of seconds https://tools.ietf.org/html/rfc5861</para>
+            <para>The first request comes to the server and gets a stale cache will also make the cache system auto refresh once. So if the endpoint is not 
+            so active, it's better to turn on <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.AutoRefresh" /> to make the cache refresh when it starts to be stale</para> 
             </summary>
         </member>
         <member name="P:Flatwhite.WebApi.OutputCacheAttribute.StaleIfError">
@@ -394,6 +365,16 @@
         <member name="P:Flatwhite.WebApi.OutputCacheAttribute.RevalidationKey">
             <summary>
             A key to used to delete the cache when an method with relevant <see cref="T:Flatwhite.WebApi.RevalidateAttribute" /> is invoked
+            </summary>
+        </member>
+        <member name="P:Flatwhite.WebApi.OutputCacheAttribute.AutoRefresh">
+            <summary>
+            If set to true, the cache will be auto refreshed every <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.MaxAge"/> second(s).
+            <para>It's a trade-off to turn this on as you don't want too many Timers trying to refresh your cache data very small amout of seconds especially when you have <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.MaxAge"/> too small
+            and there is so many variaties of the cache (because of ,<see cref="P:Flatwhite.WebApi.OutputCacheAttribute.VaryByParam" />). 
+            </para>
+            <para>If the api endpoint is an busy endpoint with small value of <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.MaxAge"/>, it's better to keep this off and use <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.StaleWhileRevalidate"/></para>
+            <para>If the endpoint is not busy but you want to keep the cache always available, turn this on and specify the <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.StaleWhileRevalidate"/> with a value greater than 0</para>
             </summary>
         </member>
         <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetCacheStrategy(System.Web.Http.Dependencies.IDependencyScope,Flatwhite._IInvocation,System.Collections.Generic.IDictionary{System.String,System.Object})">
@@ -463,13 +444,13 @@
             <param name="actionContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.CreatePhoenix(Flatwhite._IInvocation,System.Int32,System.String,System.Net.Http.Formatting.MediaTypeFormatter)">
+        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.CreatePhoenix(Flatwhite._IInvocation,Flatwhite.WebApi.WebApiCacheItem,System.Net.Http.HttpRequestMessage,System.Net.Http.Formatting.MediaTypeFormatter)">
             <summary>
             Create the phoenix object which can refresh the cache itself if StaleWhileRevalidate > 0
             </summary>
             <param name="invocation"></param>
-            <param name="cacheStoreId"></param>
-            <param name="key"></param>
+            <param name="cacheItem"></param>
+            <param name="request"></param>
             <param name="mediaTypeFormatter">The formater that was used to create the reasponse at the first invocation</param>
             <returns></returns>
         </member>
@@ -495,7 +476,7 @@
             Provide extension methods to enable Flatwhite WebApi cache
             </summary>
         </member>
-        <member name="F:Flatwhite.WebApi.WebApiExtensions.__flatwhite_dont_cache_">
+        <member name="F:Flatwhite.WebApi.WebApiExtensions.__flatwhite_dont_cache">
             <summary>
             __flatwhite_dont_cache_
             </summary>
@@ -519,23 +500,21 @@
             <para>
             It will create instance of WebApi controller and invoke the ActionMethod with cached arguments.
             It will not work if the controller required QueryString, Headers or anything outside these action method parameters
-            You can override the Phoenix MethodInfo, Arguments or method <see cref="M:Flatwhite.Phoenix.GetTargetInstance" />, <see cref="M:Flatwhite.Phoenix.GetMethodResult(System.Object,System.Object)" />, 
-            or completly change the way the Phoenix reborn by overriding method , <see cref="M:Flatwhite.Phoenix.Reborn(System.Object)" />,
+            But you can override the Phoenix MethodInfo, Arguments or method <see cref="M:Flatwhite.Hot.Phoenix.GetTargetInstance" />, <see cref="M:Flatwhite.Hot.Phoenix.InvokeAndGetBareResult(System.Object,System.Object)" />, 
+            or completely change the way the Phoenix reborn by overriding method , <see cref="M:Flatwhite.Hot.Phoenix.Reborn(System.Object)" />,
             
-            Idealy, keep Controller thin and use proper Model binding instead of dodgyly access the Request object.
+            Idealy, keep Controller thin and use proper Model binding instead of dodgy access the Request object.
             </para>
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiPhoenix.#ctor(Flatwhite._IInvocation,System.Int32,System.String,System.Int32,System.Int32,Flatwhite.WebApi.OutputCacheAttribute,System.Net.Http.Formatting.MediaTypeFormatter)">
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.#ctor(Flatwhite._IInvocation,Flatwhite.CacheInfo,Flatwhite.WebApi.OutputCacheAttribute,System.Net.Http.HttpRequestMessage,System.Net.Http.Formatting.MediaTypeFormatter)">
             <summary>
             Initializes a WebApiPhoenix
             </summary>
             <param name="invocation"></param>
-            <param name="cacheStoreId"></param>
-            <param name="cacheKey"></param>
-            <param name="cacheDuration"></param>
-            <param name="staleWhileRevalidate"></param>
+            <param name="info"></param>
             <param name="outputCache">This should the the OutputCacheAttribute isntance</param>
+            <param name="requestMessage"></param>
             <param name="mediaTypeFormatter">The formater used to create the HttpResponse if the return type of the action method is not a standard WebAPI action result</param>
         </member>
         <member name="P:Flatwhite.WebApi.WebApiPhoenix.Activator">
@@ -543,13 +522,31 @@
             This Activator mainly used to resolve the WebApi controller instance
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiPhoenix.GetMethodResult(System.Object,System.Object)">
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.GetCacheItem(System.Object,System.Object)">
             <summary>
-            Invoke the MethodInfo against the Controller and try to get the action method result
+            Build the <see cref="T:Flatwhite.WebApi.WebApiCacheItem" /> from action result byte[] data
             </summary>
-            <param name="serviceInstance"></param>
-            <param name="outputCache">The OutputCache itself</param>
+            <param name="response"></param>
+            <param name="outputCache"></param>
             <returns></returns>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.GetTargetInstance">
+            <summary>
+            Create the controller and set Request instance
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.CloneRequest(System.Net.Http.HttpRequestMessage)">
+            <summary>
+            Clone a HttpRequestMessage
+            </summary>
+            <param name="original"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.WriteCacheUpdatedLog">
+            <summary>
+            Write cache updated for request
+            </summary>
         </member>
         <member name="T:Flatwhite.WebApi.WebApiDependencyResolverActivator">
             <summary>

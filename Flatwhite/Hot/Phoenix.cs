@@ -15,7 +15,7 @@ namespace Flatwhite.Hot
         private IPhoenixState _phoenixState;
 
         /// <summary>
-        /// The timer to refresh the cache item. It will run every "Duration" miliseconds if "StaleWhileRevalidate" > 0
+        /// The timer to refresh the cache item. It will run every "Duration" seconds if "StaleWhileRevalidate" > 0
         /// </summary>
         private readonly Timer _timer;
         /// <summary>
@@ -69,25 +69,24 @@ namespace Flatwhite.Hot
                 try
                 {
                     var target = GetTargetInstance();
-                    var result = GetMethodResult(target, state);
-                    if (result == null)
+                    var cacheItem = GetCacheItem(InvokeAndGetBareResult(target, state), state);
+                    if (cacheItem == null)
                     {
                         var disposing =  new DisposingPhoenix(Die);
-                        disposing.Reborn(null);
-                        return disposing;
+                        return disposing.Reborn(null);
                     }
-
-                    Global.Logger.Info($"Refreshing cache item {_info.CacheKey} on cacheStore {_info.CacheStoreId}");
+                    
                     var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.CacheStoreId);
+                    cacheStore.Set(_info.CacheKey, cacheItem, DateTime.UtcNow.AddSeconds(_info.CacheDuration + _info.StaleWhileRevalidate));
 
-                    cacheStore.Set(_info.CacheKey, result, DateTime.Now.AddMilliseconds(_info.CacheDuration + _info.CacheDuration));
+                    WriteCacheUpdatedLog();
                     _timer.Change(_info.GetRefreshTime(), TimeSpan.Zero);
 
                     return new AlivePhoenix();
                 }
                 catch (Exception ex)
                 {
-                    Global.Logger.Error($"Error while refreshing the cache key {_info.CacheKey}, store {_info.CacheStoreId}. Will retry after 1 second.", ex);
+                    Global.Logger.Error($"Error while refreshing key {_info.CacheKey}, store \"{_info.CacheStoreId}\". Will retry after 1 second.", ex);
                     _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.Zero);
                     throw;
                 }
@@ -97,12 +96,20 @@ namespace Flatwhite.Hot
         }
 
         /// <summary>
-        /// Invoke the MethodInfo against the serviceInstance
+        /// Write cache updated log
+        /// </summary>
+        protected virtual void WriteCacheUpdatedLog()
+        {
+            Global.Logger.Info($"Updated key \"{_info.CacheKey}\", store \"{_info.CacheStoreId}\"");
+        }
+
+        /// <summary>
+        /// Invoke the MethodInfo against the serviceInstance, then build the CacheItem object to store in cache
         /// </summary>
         /// <param name="serviceInstance"></param>
         /// <param name="state"></param>
         /// <returns></returns>
-        protected virtual object GetMethodResult(object serviceInstance, object state)
+        protected virtual object InvokeAndGetBareResult(object serviceInstance, object state)
         {
             var invokeResult = MethodInfo.Invoke(serviceInstance, Arguments);
             var result = invokeResult;
@@ -116,6 +123,30 @@ namespace Flatwhite.Hot
                 result = taskResult.Result;
             }
             return result;
+        }
+
+        /// <summary>
+        /// Build the cache item object for the result of the method
+        /// </summary>
+        /// <param name="invocationBareResult"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        protected virtual CacheItem GetCacheItem(object invocationBareResult, object state)
+        {
+            if (invocationBareResult == null)
+            {
+                return null;
+            }
+
+            return new CacheItem
+            {
+                CreatedTime = DateTime.UtcNow,
+                Data = invocationBareResult,
+                Key = _info.CacheKey,
+                MaxAge = _info.CacheDuration,
+                StoreId = _info.CacheStoreId,
+                StaleWhileRevalidate = _info.StaleWhileRevalidate
+            };
         }
 
         /// <summary>

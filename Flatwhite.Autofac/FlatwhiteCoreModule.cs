@@ -14,6 +14,7 @@ namespace Flatwhite.AutofacIntergration
             builder.Register(c => Global.CacheStrategyProvider);
             builder.Register(c => Global.AttributeProvider);
             builder.Register(c => Global.HashCodeGeneratorProvider);
+            builder.Register(c => Global.Logger);
 
             builder.RegisterType<DefaultCacheStrategy>().As<ICacheStrategy>();
             builder.RegisterType<MethodInterceptorAdaptor>()

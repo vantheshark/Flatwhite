@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Reflection;
 using System.Threading;
@@ -23,6 +24,8 @@ namespace Flatwhite.Tests.WebApi
             StaleWhileRevalidate = 100000
         };
 
+        private static readonly Type controllerType = typeof (DummyController);
+
         [TestCase("HttpActionResult", 4)]
         [TestCase("HttpResponseMessageAsync", 4)]
         [TestCase("HttpResponseMessage", 4)]
@@ -30,18 +33,22 @@ namespace Flatwhite.Tests.WebApi
         [TestCase("String", 6)]
         [TestCase("StringAsync", 6)]
         [TestCase("Void", 6)]
-        public void The_method_GetMethodResult_should_execute_the_controller_method_and_return_CacheItem(string actionMethodName, int contentLength)
+        public void should_execute_the_controller_method_and_return_CacheItem(string actionMethodName, int contentLength)
         {
             // Arrange
             var invocation = Substitute.For<_IInvocation>();
             invocation.Arguments.Returns(new object[0]);
-            invocation.Method.Returns(typeof(DummyController).GetMethod(actionMethodName, BindingFlags.Instance | BindingFlags.Public));
+            invocation.Method.Returns(controllerType.GetMethod(actionMethodName, BindingFlags.Instance | BindingFlags.Public));
 
             var phoenix = new WebApiPhoenix(invocation, CacheInfo, _cacheAttribute, new HttpRequestMessage(), new JsonMediaTypeFormatter());
 
             // Action
-            MethodInfo dynMethod = typeof(WebApiPhoenix).GetMethod("GetMethodResult", BindingFlags.NonPublic | BindingFlags.Instance);
-            var result = (CacheItem)dynMethod.Invoke(phoenix, new object[] { _controllerIntance, _cacheAttribute });
+            MethodInfo dynMethod = typeof(WebApiPhoenix).GetMethod("InvokeAndGetBareResult", BindingFlags.NonPublic | BindingFlags.Instance);
+            var result = dynMethod.Invoke(phoenix, new object[] { _controllerIntance, _cacheAttribute });
+
+            dynMethod = typeof(WebApiPhoenix).GetMethod("GetCacheItem", BindingFlags.NonPublic | BindingFlags.Instance);
+            var cacheItem = (WebApiCacheItem)dynMethod.Invoke(phoenix, new object[] { result, _cacheAttribute });
+
 
             // Assert
             if (result == null)
@@ -50,7 +57,7 @@ namespace Flatwhite.Tests.WebApi
             }
             else
             {
-                Assert.AreEqual(contentLength, result.Content.Length);
+                Assert.AreEqual(contentLength, cacheItem.Content.Length);
             }
         }
     }

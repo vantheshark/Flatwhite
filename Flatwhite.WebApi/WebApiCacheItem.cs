@@ -6,12 +6,12 @@ namespace Flatwhite.WebApi
     /// <summary>
     /// A cache item object that keeps some details about the data to be cached
     /// </summary>
-    public class CacheItem
+    public class WebApiCacheItem : CacheItem
     {
         /// <summary>
         /// Initializes a cache item
         /// </summary>
-        public CacheItem()
+        public WebApiCacheItem()
         {
         }
 
@@ -19,7 +19,7 @@ namespace Flatwhite.WebApi
         /// Initializes a cache item
         /// </summary>
         /// <param name="cacheAttribute"></param>
-        public CacheItem(OutputCacheAttribute cacheAttribute)
+        public WebApiCacheItem(OutputCacheAttribute cacheAttribute)
         {
             CreatedTime = DateTime.UtcNow;
             StaleWhileRevalidate = cacheAttribute.StaleWhileRevalidate;
@@ -27,11 +27,6 @@ namespace Flatwhite.WebApi
             MaxAge = cacheAttribute.MaxAge;
             IgnoreRevalidationRequest = cacheAttribute.IgnoreRevalidationRequest;
         }
-
-        /// <summary>
-        /// Cache key
-        /// </summary>
-        public string Key { get; set; }
 
         /// <summary>
         /// The response data
@@ -68,27 +63,9 @@ namespace Flatwhite.WebApi
         public string ResponseCharSet { get; set; }
 
         /// <summary>
-        /// The time the cache data is generated
-        /// </summary>
-        public DateTime CreatedTime { get; set; }
-        /// <summary>
-        /// Max age for the cache item
-        /// </summary>
-        public uint MaxAge { get; set; }
-        /// <summary>
-        /// https://tools.ietf.org/html/rfc5861
-        /// </summary>
-        public uint StaleWhileRevalidate { get; set; }
-
-        /// <summary>
         /// https://tools.ietf.org/html/rfc5861#4.1
         /// </summary>
         public uint StaleIfError { get; set; }
-
-        /// <summary>
-        /// The id of the <see cref="ICacheStore" /> where the cache item will be stored
-        /// </summary>
-        public int StoreId { get; set; }
 
         /// <summary>
         /// A cache MAY be configured to return stale responses without validation
@@ -97,10 +74,5 @@ namespace Flatwhite.WebApi
         /// <para>This may be helpful to guarantee that the endpoint will not revalidate the cache all the time by some one sending request with no-cache header</para>
         /// </summary>
         public bool IgnoreRevalidationRequest { get; set; }
-
-        /// <summary>
-        /// Return the age of the CacheItem
-        /// </summary>
-        public uint Age => (uint)Math.Round(DateTime.UtcNow.Subtract(CreatedTime).TotalSeconds);
     }
 }

@@ -66,7 +66,7 @@
     <Compile Include="CacheControl\ICachControlHeaderHandler.cs" />
     <Compile Include="CacheResponseBuilder.cs" />
     <Compile Include="ICacheResponseBuilder.cs" />
-    <Compile Include="CacheItem.cs" />
+    <Compile Include="WebApiCacheItem.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="RevalidateAttribute.cs" />
     <Compile Include="WebApiCacheStrategy.cs" />

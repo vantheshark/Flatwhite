@@ -67,7 +67,7 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="duration"></param>
         /// <returns></returns>
-        public IMethodCacheStrategy<T> Duration(int duration)
+        public IMethodCacheStrategy<T> Duration(uint duration)
         {
             _currentExpression.CacheAttribute.Duration = duration;
             return this;
@@ -78,7 +78,7 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="staleWhileRevalidate"></param>
         /// <returns></returns>
-        public IMethodCacheStrategy<T> StaleWhileRevalidate(int staleWhileRevalidate)
+        public IMethodCacheStrategy<T> StaleWhileRevalidate(uint staleWhileRevalidate)
         {
             _currentExpression.CacheAttribute.StaleWhileRevalidate = staleWhileRevalidate;
             return this;

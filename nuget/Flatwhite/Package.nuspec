@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Flatwhite</id>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <authors>Van Thoai Nguyen</authors>
     <owners>Van Thoai Nguyen</owners>
 	<iconUrl>http://oi64.tinypic.com/23w19b4.jpg</iconUrl>
@@ -10,9 +10,10 @@
 	<projectUrl>https://github.com/vanthoainguyen/Flatwhite</projectUrl>	    	
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<summary>Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy</summary>    
-	<description>You can create MethodInvocationFilter to add custom logic to the method such as OutputCache which is a built-in support.</description>
+	<description>Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy. You can create MethodInvocationFilter to add custom logic to the method such as OutputCache which is a built-in support.</description>
     <releaseNotes>https://github.com/vanthoainguyen/Flatwhite/blob/master/nuget/Flatwhite/CHANGELOG.txt</releaseNotes>
     <copyright>Copyright 2015</copyright>
+	<language>en-US</language>
     <tags>Flatwhite Intercept DynamicProxy Caching Cache OutputCache ActionFilter MethodFilter AOP</tags>
     <dependencies>
     </dependencies>

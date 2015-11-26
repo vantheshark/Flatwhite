@@ -18,13 +18,13 @@ namespace Flatwhite
         /// </summary>
         public string CacheKey { get; set; }
         /// <summary>
-        /// Cache duration in milisecond
+        /// Cache duration in seconds
         /// </summary>
-        public int CacheDuration { get; set; }
+        public uint CacheDuration { get; set; }
         /// <summary>
-        /// Stale while revalidate in milisecond
+        /// Stale while revalidate in seconds
         /// </summary>
-        public int StaleWhileRevalidate { get; set; }
+        public uint StaleWhileRevalidate { get; set; }
         /// <summary>
         /// Auto refresh
         /// </summary>
@@ -36,7 +36,7 @@ namespace Flatwhite
         /// <returns></returns>
         public TimeSpan GetRefreshTime()
         {
-            return AutoRefresh && CacheDuration > 0 ? TimeSpan.FromMilliseconds(CacheDuration) : Timeout.InfiniteTimeSpan;
+            return AutoRefresh && CacheDuration > 0 ? TimeSpan.FromSeconds(CacheDuration) : Timeout.InfiniteTimeSpan;
         }
     }
 }

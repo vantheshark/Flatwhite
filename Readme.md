@@ -1,4 +1,4 @@
-﻿# Flatwhite (1.0.4) (Nov 25 2015) 
+﻿# Flatwhite (1.0.6) (Nov 27 2015) 
 ** Method filter & output cache using Dynamic proxy with MVC and WebAPI action filter attribute style
 
 ** Required packages:
@@ -30,7 +30,7 @@ builder.RegisterType<CustomerService>()
 ```C#
 public interface IUserService
 {
-    [OutputCache(Duration = 1000, VaryByParam = "userId")]
+    [OutputCache(Duration = 2, VaryByParam = "userId")]
     object GetById(Guid userId);
 
     [NoCache]
@@ -53,7 +53,7 @@ builder.RegisterType<UserService>()
 	   .As<IUserService>()	 
        .CacheWithStrategy(CacheStrategies
 			.AllMethods()
-			.Duration(5000)
+			.Duration(5)
 			.VaryByParam("userId")
 	    );
 ```
@@ -67,11 +67,11 @@ builder.RegisterType<BlogService>()
 	   .CacheWithStrategy(
 	           CacheStrategies.ForService<IBlogService>()
 						      .ForMember(x => x.GetById(Argument.Any<Guid>()))
-							  .Duration(1000)
+							  .Duration(2)
 							  .VaryByParam("postId")
                         
 							  .ForMember(x => x.GetComments(Argument.Any<Guid>(), Argument.Any<int>()))
-						      .Duration(2000)
+						      .Duration(2)
 							  .VaryByCustom("custom")
 							  .VaryByParam("postId")
 							  .WithChangeMonitors((i, context) => 
@@ -104,7 +104,7 @@ Note that you don't have to call EnableFlatwhiteCache() on the builder like the 
 ```C#
 public interface IUserService
 {
-    [OutputCache(Duration = 2000, StaleWhileRevalidate = 2000)]
+    [OutputCache(Duration = 2, StaleWhileRevalidate = 2)]
     object GetById(Guid userId);    
 }
 ```
@@ -114,10 +114,10 @@ public interface IUserService
 ```C#
 public interface IUserService
 {
-    [OutputCache(Duration = 2000, StaleWhileRevalidate = 2000, VaryByParam = "userId", RevalidationKey = "User")]
+    [OutputCache(Duration = 2, StaleWhileRevalidate = 2, VaryByParam = "userId", RevalidationKey = "User")]
 	object GetById(Guid userId);
 
-	[OutputCache(Duration = 2000, VaryByParam = "userId", RevalidationKey = "User")]
+	[OutputCache(Duration = 2, VaryByParam = "userId", RevalidationKey = "User")]
 	Task<object> GetByIdAsync(Guid userId);	
 
 	[Revalidate("User")]
