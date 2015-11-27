@@ -77,6 +77,7 @@
     <Compile Include="Autofac\Strategy\CacheOutputForAllMethodTests.cs" />
     <Compile Include="Autofac\Strategy\CacheSelectedMethodsInvocationStrategyTests.cs" />
     <Compile Include="Core\Hot\PhoenixTests.cs" />
+    <Compile Include="Core\Provider\DefaultCacheKeyProviderTests.cs" />
     <Compile Include="MethodInterceptorTests.cs" />
     <Compile Include="IBlogService.cs" />
     <Compile Include="IUserService.cs" />
@@ -85,6 +86,7 @@
     <Compile Include="WebApi\CacheMessageHandlerTests.cs" />
     <Compile Include="WebApi\CacheResponseBuilderTests.cs" />
     <Compile Include="WebApi\CacheControl\EtagHeaderHandlerTests.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetAllVaryCustomKey.cs" />
     <Compile Include="WebApi\WebApiContextProviderTests.cs" />
     <Compile Include="WebApi\WebApiPhoenixTests.cs" />
   </ItemGroup>
@@ -108,9 +110,7 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="WebApi\OutputCacheAttributeTests\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

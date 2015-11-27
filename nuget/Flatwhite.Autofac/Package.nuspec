@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Flatwhite.Autofac</id>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
     <authors>Van Thoai Nguyen</authors>
     <owners>Van Thoai Nguyen</owners>
 	<iconUrl>http://oi64.tinypic.com/23w19b4.jpg</iconUrl>
@@ -10,13 +10,13 @@
 	<projectUrl>https://github.com/vanthoainguyen/Flatwhite</projectUrl>	    	
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<summary>Flatwhite.Autofac support Flatwhite cache using Autofac</summary>    
-	<description>Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy. Flatwhite.Autofac is a Autofac support package for Flatwhite AOP</description>
+	<description>Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy. You can create MethodFilterAttribute to add custom logic to any methods as soon as it is interceptable by Castle Dynamic Proxy. Flatwhite has 1 built-in OutputCacheFilter to cache method result which can auto refresh stale content. You can use Flatwhite simply for caching or extending behavior of your methods such as profiling, logging by implement MethodFilterAttribute similar to MVC's ActionFilterAttribute. Flatwhite.Autofac is a Autofac support package for Flatwhite core</description>
     <releaseNotes>https://github.com/vanthoainguyen/Flatwhite/blob/master/nuget/Flatwhite/CHANGELOG.txt</releaseNotes>
     <copyright>Copyright 2015</copyright>
 	<language>en-US</language>
     <tags>Flatwhite Autofac Intercept DynamicProxy Caching Cache OutputCache ActionFilter MethodFilter AOP</tags>
     <dependencies>
-		<dependency id="Flatwhite" version="1.0.7" />
+		<dependency id="Flatwhite" version="1.0.8" />
 		<dependency id="Autofac" version="3.5.2" />		
 		<dependency id="Castle.Core" version="3.3.3" />		
     </dependencies>

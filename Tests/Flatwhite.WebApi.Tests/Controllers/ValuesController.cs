@@ -33,6 +33,7 @@ namespace Flatwhite.WebApi.Tests.Controllers
         }
 
 
+
         [HttpGet]
         [Route("api/vary-by-param-async/{packageId}")]
         [OutputCache(
@@ -53,6 +54,8 @@ namespace Flatwhite.WebApi.Tests.Controllers
                 Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} milliseconds", Encoding.UTF8, "text/html")
             };
         }
+
+
 
         [HttpGet]
         [Route("api/vary-by-param/{packageId}")]
@@ -76,6 +79,7 @@ namespace Flatwhite.WebApi.Tests.Controllers
         }
 
 
+
         [HttpGet]
         [Route("api/string/{packageId}")]
         [OutputCache(
@@ -89,9 +93,10 @@ namespace Flatwhite.WebApi.Tests.Controllers
         }
 
 
+
         [HttpGet]
         [Route("api/vary-by-header")]
-        [OutputCache(MaxAge = 3, StaleWhileRevalidate = 5, VaryByHeader = "UserAgent")]
+        [OutputCache(MaxAge = 3, StaleWhileRevalidate = 5, VaryByHeader = "UserAgent, CacheControl.Public", VaryByCustom = "query.src")]
         public virtual async Task<HttpResponseMessage> VaryByCustom()
         {
             var sw = Stopwatch.StartNew();
@@ -103,7 +108,6 @@ namespace Flatwhite.WebApi.Tests.Controllers
                 Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} milliseconds", Encoding.UTF8, "text/html")
             };
         }
-
 
         [HttpGet]
         [Route("api/reset")]

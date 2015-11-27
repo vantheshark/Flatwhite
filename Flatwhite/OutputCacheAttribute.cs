@@ -181,7 +181,7 @@ namespace Flatwhite
         /// <param name="invocation"></param>
         /// <param name="cacheItem"></param>
         /// <returns></returns>
-        protected virtual void CreatePhoenix(_IInvocation invocation, CacheItem cacheItem)
+        private void CreatePhoenix(_IInvocation invocation, CacheItem cacheItem)
         {
             var cacheInfo = new CacheInfo
             {
@@ -198,6 +198,15 @@ namespace Flatwhite
             }
 
             Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(invocation, cacheInfo); ;
+        }
+
+        /// <summary>
+        /// Get all vary by custom string
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetAllVaryCustomKey()
+        {
+            return VaryByCustom ?? "";
         }
     }
 }

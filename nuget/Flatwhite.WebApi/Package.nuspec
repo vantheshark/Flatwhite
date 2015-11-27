@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Flatwhite.WebApi</id>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
     <authors>Van Thoai Nguyen</authors>
     <owners>Van Thoai Nguyen</owners>
 	<iconUrl>http://oi64.tinypic.com/23w19b4.jpg</iconUrl>
@@ -10,13 +10,13 @@
 	<projectUrl>https://github.com/vanthoainguyen/Flatwhite/wiki/Flatwhite.WebApi</projectUrl>	    	
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
 	<summary>Flatwhite.WebApi support WebApi output cache with most of Cache-Control directives</summary>    
-	<description>Flatwhite.WebApi is an output cache library for WebApi with VaryByParam (on action method) and VaryByHeader support, facilitate usages of cache control and HTTP Cache-Control Extensions for Stale Content. It auto refreshes the stale content so the action method call will never wait</description>
+	<description>Flatwhite.WebApi is an high performance output cache library for WebApi with VaryByParam (on action method) and VaryByHeader support, facilitate usages of cache control and HTTP Cache-Control Extensions for Stale Content. It auto refreshes the stale content so the action method call will never wait. It intercepts the request at the earliest stage to see if cache data is available and return 304 if applicable. So most of the case, the WebAPI engine doesn't need to create API controllers and other stuff which boost the performance to the limit.</description>
     <releaseNotes>https://github.com/vanthoainguyen/Flatwhite/blob/master/nuget/Flatwhite/CHANGELOG.txt</releaseNotes>
     <copyright>Copyright 2015</copyright>
 	<language>en-US</language>
-    <tags>Flatwhite WebApi Intercept DynamicProxy Caching Cache OutputCache CacheControl VaryByParam VaryByHeader</tags>
+    <tags>Flatwhite WebApi Intercept Caching Cache OutputCache CacheControl VaryByParam VaryByHeader VaryByCustom AutoRefresh StaleWhileValidate</tags>
     <dependencies>
-		<dependency id="Flatwhite" version="1.0.7" />	
+		<dependency id="Flatwhite" version="1.0.8" />	
     </dependencies>
   </metadata>
 </package>

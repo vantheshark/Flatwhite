@@ -1,3 +1,7 @@
+* 1.0.8 (2015-11-27 23:30:00 AEDT)
+- Support vary by query string by using VaryByCustom.
+- Support VaryByCustom and VaryByHeader with property chain name
+
 * 1.0.7 (2015-11-27 12:30:00 AEDT)
 - Fix some bugs for WebApi.OutputCache
 

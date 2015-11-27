@@ -32,5 +32,11 @@ namespace Flatwhite
         /// Negative value mean this setting is not being used
         /// </summary>
         int CacheStoreId { get; set; }
+
+        /// <summary>
+        /// Get all vary by custom value
+        /// </summary>
+        /// <returns></returns>
+        string GetAllVaryCustomKey();
     }
 }

@@ -9,17 +9,6 @@
             A cache item object that keeps some details about the data to be cached
             </summary>
         </member>
-        <member name="M:Flatwhite.CacheItem.#ctor">
-            <summary>
-            Initializes a cache item
-            </summary>
-        </member>
-        <member name="M:Flatwhite.CacheItem.#ctor(Flatwhite.OutputCacheAttribute)">
-            <summary>
-            Initializes a cache item
-            </summary>
-            <param name="cacheAttribute"></param>
-        </member>
         <member name="P:Flatwhite.CacheItem.Key">
             <summary>
             Cache key
@@ -84,7 +73,7 @@
             Represent a raising phoenix. Calling reborn many time will not actually do anything until the method reborn complete and it will return <see cref="T:Flatwhite.Hot.AlivePhoenix"/>
             </summary>
         </member>
-        <member name="F:Flatwhite.Hot.RaisingPhoenix._isOnFire">
+        <member name="F:Flatwhite.Hot.RaisingPhoenix._backGround">
             <summary>
             true if the phoenix is executing rebornAction. This is to avoid many call on method Reborn many time
              </summary>
@@ -128,38 +117,42 @@
             The arguments required to invoke the MethodInfo
             </summary>
         </member>
-        <member name="M:Flatwhite.Hot.Phoenix.#ctor(Flatwhite._IInvocation,Flatwhite.CacheInfo,System.Object)">
+        <member name="M:Flatwhite.Hot.Phoenix.#ctor(Flatwhite._IInvocation,Flatwhite.CacheInfo)">
             <summary>
             Initialize a phoenix with provided cacheDuration and staleWhileRevalidate values
             </summary>
             <param name="invocation"></param>
             <param name="info"></param>
-            <param name="state"></param>
         </member>
-        <member name="M:Flatwhite.Hot.Phoenix.Reborn(System.Object)">
+        <member name="M:Flatwhite.Hot.Phoenix.Reborn">
             <summary>
-            Refresh the cache
+            Refresh the cache and change the internal <see cref="T:Flatwhite.Hot.IPhoenixState"/> to avoid refreshing too many unnecessary times
+            <para>The call will happen in background so the caller will not have to wait</para>
             </summary>
+        </member>
+        <member name="M:Flatwhite.Hot.Phoenix.Fire">
+            <summary>
+            Rebuild the cache and return the new <see cref="T:Flatwhite.Hot.IPhoenixState"/>
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Flatwhite.Hot.Phoenix.WriteCacheUpdatedLog">
             <summary>
             Write cache updated log
             </summary>
         </member>
-        <member name="M:Flatwhite.Hot.Phoenix.InvokeAndGetBareResult(System.Object,System.Object)">
+        <member name="M:Flatwhite.Hot.Phoenix.InvokeAndGetBareResult(System.Object)">
             <summary>
             Invoke the MethodInfo against the serviceInstance, then build the CacheItem object to store in cache
             </summary>
             <param name="serviceInstance"></param>
-            <param name="state"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.Hot.Phoenix.GetCacheItem(System.Object,System.Object)">
+        <member name="M:Flatwhite.Hot.Phoenix.GetCacheItem(System.Object)">
             <summary>
             Build the cache item object for the result of the method
             </summary>
             <param name="invocationBareResult"></param>
-            <param name="state"></param>
             <returns></returns>
         </member>
         <member name="M:Flatwhite.Hot.Phoenix.GetTargetInstance">
@@ -323,6 +316,12 @@
             The store id that we want to keep the cache (mem/redis, etc)
             Negative value mean this setting is not being used
             </summary>
+        </member>
+        <member name="M:Flatwhite.ICacheSettings.GetAllVaryCustomKey">
+            <summary>
+            Get all vary by custom value
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:Flatwhite.Strategy.IDynamicCacheStrategy">
             <summary>
@@ -809,10 +808,11 @@
             <param name="invocationContext"></param>
             <returns></returns>
         </member>
-        <member name="M:Flatwhite.Provider.DefaultCacheKeyProvider.BuildWithCustom(System.Collections.Generic.IDictionary{System.String,System.Object},System.String,System.Text.StringBuilder)">
+        <member name="M:Flatwhite.Provider.DefaultCacheKeyProvider.BuildWithCustom(System.String,System.Collections.Generic.IDictionary{System.String,System.Object},System.String,System.Text.StringBuilder)">
             <summary>
             Build the key with provided varyByParams
             </summary>
+            <param name="prefixKey"></param>
             <param name="invocationContext"></param>
             <param name="customKey"></param>
             <param name="key"></param>
@@ -1499,6 +1499,12 @@
             </summary>
             <param name="invocation"></param>
             <param name="cacheItem"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Flatwhite.OutputCacheAttribute.GetAllVaryCustomKey">
+            <summary>
+            Get all vary by custom string
+            </summary>
             <returns></returns>
         </member>
         <member name="T:Flatwhite.ExpressionSetting`2">

@@ -26,13 +26,13 @@ namespace Flatwhite.Tests.WebApi
 
         private static readonly Type controllerType = typeof (DummyController);
 
-        [TestCase("HttpActionResult", 4)]
-        [TestCase("HttpResponseMessageAsync", 4)]
-        [TestCase("HttpResponseMessage", 4)]
-        [TestCase("Object", 36)]
-        [TestCase("String", 6)]
-        [TestCase("StringAsync", 6)]
-        [TestCase("Void", 6)]
+        [TestCase(nameof(DummyController.HttpActionResult), 4)]
+        [TestCase(nameof(DummyController.HttpResponseMessageAsync), 4)]
+        [TestCase(nameof(DummyController.HttpResponseMessage), 4)]
+        [TestCase(nameof(DummyController.Object), 36)]
+        [TestCase(nameof(DummyController.String), 6)]
+        [TestCase(nameof(DummyController.StringAsync), 6)]
+        [TestCase(nameof(DummyController.Void), 6)]
         public void should_execute_the_controller_method_and_return_CacheItem(string actionMethodName, int contentLength)
         {
             // Arrange

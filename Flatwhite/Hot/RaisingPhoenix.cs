@@ -34,7 +34,7 @@ namespace Flatwhite.Hot
 
                 return this;
             }
-            catch (Exception)
+            catch
             {
                 return this;
             }

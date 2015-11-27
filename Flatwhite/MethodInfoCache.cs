@@ -23,6 +23,7 @@ namespace Flatwhite
                 typeof (long),
                 typeof (ulong),
 
+                typeof (bool),
                 typeof (char),
                 typeof (byte),
                 typeof (string),

@@ -58,12 +58,18 @@ namespace Flatwhite.WebApi
         public string VaryByParam { get; set; }
 
         /// <summary>
-        /// Gets or sets the VaryByCustom value which facilitate different cache rules by custom key in invocationContext
+        /// Gets or sets the VaryByCustom value which facilitate different cache rules by custom key in invocationContext.
+        /// <para>There are 4 default WebApi objects you can make use: "headers", "query", "method" and "requestUri". 
+        /// It supports dot notation for child properties and all require case-sensitive but query. All query string names and values are lowercase</para>
+        /// <para>For example you can use VaryByCustom= "headers.AcceptCharset, headers.CacheControl.Public, query.querystring1, query.querystring2"</para>
+        /// <para>Even though the WebApi headers object is available that way with VaryByCustom, you should use <see cref="VaryByHeader" /> without specifying "headers." prefix</para>
         /// </summary>
         public string VaryByCustom { get; set; }
 
         /// <summary>
-        /// The VaryByHeader is a semicolon-delimited set of headers used to vary the cached output. These are HTTP headers associated with the request
+        /// The VaryByHeader is a semicolon-delimited set of headers used to vary the cached output. 
+        /// <para>These are HTTP headers associated with the request, you can use nested objects as the headers object is actually WebApi Request.Headers object</para>
+        /// <para>Example: VaryByHeader = "UserAgent, CacheControl.Public"</para>
         /// </summary>
         public string VaryByHeader { get; set; }
 
@@ -446,7 +452,7 @@ namespace Flatwhite.WebApi
         /// <param name="request"></param>
         /// <param name="mediaTypeFormatter">The formater that was used to create the reasponse at the first invocation</param>
         /// <returns></returns>
-        protected virtual void CreatePhoenix(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request, MediaTypeFormatter mediaTypeFormatter)
+        private void CreatePhoenix(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request, MediaTypeFormatter mediaTypeFormatter)
         {
             var cacheInfo = new CacheInfo
             {
@@ -463,6 +469,16 @@ namespace Flatwhite.WebApi
                 Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();
             }
             Global.Cache.PhoenixFireCage[cacheItem.Key] = phoenix;
+        }
+
+        /// <summary>
+        /// Get all vary by custom string
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetAllVaryCustomKey()
+        {
+            var varyByHeaders = (VaryByHeader ?? "").Split(new[] {',', ' '}, StringSplitOptions.RemoveEmptyEntries);
+            return $"{VaryByCustom}, {string.Join(", ", varyByHeaders.Select(h => $"headers.{h}"))}";
         }
     }
 }

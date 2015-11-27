@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace Flatwhite.WebApi
@@ -22,5 +24,15 @@ namespace Flatwhite.WebApi
         //    var shb = SoapHexBinary.Parse(data);
         //    return shb.Value;
         //}
+
+        public static IDictionary<string, object> ToDictionary(this NameValueCollection col)
+        {
+            IDictionary<string, object> dict = new Dictionary<string, object>();
+            foreach (var k in col.AllKeys)
+            {
+                dict.Add(k.ToLower(), col[k].ToLower());
+            }
+            return dict;
+        }
     }
 }

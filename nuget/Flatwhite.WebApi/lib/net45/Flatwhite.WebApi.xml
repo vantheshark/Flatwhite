@@ -129,17 +129,6 @@
             A cache item object that keeps some details about the data to be cached
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiCacheItem.#ctor">
-            <summary>
-            Initializes a cache item
-            </summary>
-        </member>
-        <member name="M:Flatwhite.WebApi.WebApiCacheItem.#ctor(Flatwhite.WebApi.OutputCacheAttribute)">
-            <summary>
-            Initializes a cache item
-            </summary>
-            <param name="cacheAttribute"></param>
-        </member>
         <member name="P:Flatwhite.WebApi.WebApiCacheItem.Content">
             <summary>
             The response data
@@ -172,6 +161,22 @@
             such as no-cache, no-store or max-age, max-stale. Warning 110 (Response is stale) will be included in the response header</para>
             <para>This may be helpful to guarantee that the endpoint will not revalidate the cache all the time by some one sending request with no-cache header</para>
             </summary>
+        </member>
+        <member name="P:Flatwhite.WebApi.WebApiCacheItem.AutoRefresh">
+            <summary>
+            If set to true, the cache will be auto refreshed every <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.MaxAge"/> second(s).
+            <para>It's a trade-off to turn this on as you don't want too many Timers trying to refresh your cache data very small amout of seconds especially when you have <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.MaxAge"/> too small
+            and there is so many variaties of the cache (because of VaryByParam). 
+            </para>
+            <para>If the api endpoint is an busy endpoint with small value of <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.MaxAge"/>, it's better to keep this off and use <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.StaleWhileRevalidate"/></para>
+            <para>If the endpoint is not busy but you want to keep the cache always available, turn this on and specify the <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.StaleWhileRevalidate"/> with a value greater than 0</para>
+            </summary>
+        </member>
+        <member name="M:Flatwhite.WebApi.WebApiCacheItem.Clone">
+            <summary>
+            Clone the WebApiCacheItem without the content and with a fresh CreatedTime
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:Flatwhite.WebApi.RevalidateAttribute">
             <summary>
@@ -280,12 +285,18 @@
         </member>
         <member name="P:Flatwhite.WebApi.OutputCacheAttribute.VaryByCustom">
             <summary>
-            Gets or sets the VaryByCustom value which facilitate different cache rules by custom key in invocationContext
+            Gets or sets the VaryByCustom value which facilitate different cache rules by custom key in invocationContext.
+            <para>There are 4 default WebApi objects you can make use: "headers", "query", "method" and "requestUri". 
+            It supports dot notation for child properties and all require case-sensitive but query. All query string names and values are lowercase</para>
+            <para>For example you can use VaryByCustom= "headers.AcceptCharset, headers.CacheControl.Public, query.querystring1, query.querystring2"</para>
+            <para>Even though the WebApi headers object is available that way with VaryByCustom, you should use <see cref="P:Flatwhite.WebApi.OutputCacheAttribute.VaryByHeader" /> without specifying "headers." prefix</para>
             </summary>
         </member>
         <member name="P:Flatwhite.WebApi.OutputCacheAttribute.VaryByHeader">
             <summary>
-            The VaryByHeader is a semicolon-delimited set of headers used to vary the cached output. These are HTTP headers associated with the request
+            The VaryByHeader is a semicolon-delimited set of headers used to vary the cached output. 
+            <para>These are HTTP headers associated with the request, you can use nested objects as the headers object is actually WebApi Request.Headers object</para>
+            <para>Example: VaryByHeader = "UserAgent, CacheControl.Public"</para>
             </summary>
         </member>
         <member name="P:Flatwhite.WebApi.OutputCacheAttribute.MustRevalidate">
@@ -454,6 +465,12 @@
             <param name="mediaTypeFormatter">The formater that was used to create the reasponse at the first invocation</param>
             <returns></returns>
         </member>
+        <member name="M:Flatwhite.WebApi.OutputCacheAttribute.GetAllVaryCustomKey">
+            <summary>
+            Get all vary by custom string
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Flatwhite.WebApi.WebApiContextProvider">
             <summary>
             A <see cref="T:Flatwhite.Provider.IContextProvider" /> for webapi that puts request data to the context dictionary
@@ -500,20 +517,20 @@
             <para>
             It will create instance of WebApi controller and invoke the ActionMethod with cached arguments.
             It will not work if the controller required QueryString, Headers or anything outside these action method parameters
-            But you can override the Phoenix MethodInfo, Arguments or method <see cref="M:Flatwhite.Hot.Phoenix.GetTargetInstance" />, <see cref="M:Flatwhite.Hot.Phoenix.InvokeAndGetBareResult(System.Object,System.Object)" />, 
-            or completely change the way the Phoenix reborn by overriding method , <see cref="M:Flatwhite.Hot.Phoenix.Reborn(System.Object)" />,
+            But you can override the Phoenix MethodInfo, Arguments or method <see cref="M:Flatwhite.Hot.Phoenix.GetTargetInstance" />, <see cref="M:Flatwhite.Hot.Phoenix.InvokeAndGetBareResult(System.Object)" />, 
+            or completely change the way the Phoenix reborn by overriding method , <see cref="!:Phoenix.Reborn(object)" />,
             
             Idealy, keep Controller thin and use proper Model binding instead of dodgy access the Request object.
             </para>
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiPhoenix.#ctor(Flatwhite._IInvocation,Flatwhite.CacheInfo,Flatwhite.WebApi.OutputCacheAttribute,System.Net.Http.HttpRequestMessage,System.Net.Http.Formatting.MediaTypeFormatter)">
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.#ctor(Flatwhite._IInvocation,Flatwhite.CacheInfo,Flatwhite.WebApi.WebApiCacheItem,System.Net.Http.HttpRequestMessage,System.Net.Http.Formatting.MediaTypeFormatter)">
             <summary>
             Initializes a WebApiPhoenix
             </summary>
             <param name="invocation"></param>
             <param name="info"></param>
-            <param name="outputCache">This should the the OutputCacheAttribute isntance</param>
+            <param name="cacheItem">This should the the WebApiCacheItem isntance</param>
             <param name="requestMessage"></param>
             <param name="mediaTypeFormatter">The formater used to create the HttpResponse if the return type of the action method is not a standard WebAPI action result</param>
         </member>
@@ -522,12 +539,11 @@
             This Activator mainly used to resolve the WebApi controller instance
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiPhoenix.GetCacheItem(System.Object,System.Object)">
+        <member name="M:Flatwhite.WebApi.WebApiPhoenix.GetCacheItem(System.Object)">
             <summary>
             Build the <see cref="T:Flatwhite.WebApi.WebApiCacheItem" /> from action result byte[] data
             </summary>
             <param name="response"></param>
-            <param name="outputCache"></param>
             <returns></returns>
         </member>
         <member name="M:Flatwhite.WebApi.WebApiPhoenix.GetTargetInstance">

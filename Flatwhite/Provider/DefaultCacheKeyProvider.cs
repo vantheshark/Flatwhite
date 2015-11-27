@@ -20,14 +20,9 @@ namespace Flatwhite.Provider
         /// Initialize a default cache key provider using <see cref="IHashCodeGeneratorProvider"/>
         /// </summary>
         /// <param name="hashCodeGeneratorProvider"></param>
-        public DefaultCacheKeyProvider(IHashCodeGeneratorProvider hashCodeGeneratorProvider)
+        public DefaultCacheKeyProvider(IHashCodeGeneratorProvider hashCodeGeneratorProvider = null)
         {
-            if (hashCodeGeneratorProvider == null)
-            {
-                throw new ArgumentNullException(nameof(hashCodeGeneratorProvider));
-            }
-
-            _hashCodeGeneratorProvider = hashCodeGeneratorProvider;
+            _hashCodeGeneratorProvider = hashCodeGeneratorProvider ?? Global.HashCodeGeneratorProvider;
         }
 
         /// <summary>
@@ -48,19 +43,24 @@ namespace Flatwhite.Provider
             var key = new StringBuilder($"Flatwhite::{(invocation.Method.DeclaringType ?? invocation.TargetType).FullName}.{invocation.Method.Name}(");
             
             var varyByParams = (info.VaryByParam ?? "").Split(new [] {',',' '}, StringSplitOptions.RemoveEmptyEntries);
-            var varyByCustoms = (info.VaryByCustom ?? "").Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var varyByCustoms = info.GetAllVaryCustomKey().Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
             var parameters = invocation.Method.GetParameters();
             if (parameters.Length > 0)
             {
                 BuildWithParams(invocation, parameters, varyByParams, key);
+                key.Remove(key.Length - 2, 2);
             }
-
-            key.Remove(key.Length - 2, 2);
+            
             key.Append(") :: ");
-            foreach (var custom in varyByCustoms)
+
+            if (varyByCustoms.Length > 0)
             {
-                BuildWithCustom(invocationContext, custom, key);
+                foreach (var custom in varyByCustoms)
+                {
+                    BuildWithCustom("", invocationContext, custom, key);
+                    key.Append(", ");
+                }
             }
             return key.ToString();
         }
@@ -68,10 +68,11 @@ namespace Flatwhite.Provider
         /// <summary>
         /// Build the key with provided varyByParams
         /// </summary>
+        /// <param name="prefixKey"></param>
         /// <param name="invocationContext"></param>
         /// <param name="customKey"></param>
         /// <param name="key"></param>
-        protected virtual void BuildWithCustom(IDictionary<string, object> invocationContext, string customKey, StringBuilder key)
+        protected virtual void BuildWithCustom(string prefixKey, IDictionary<string, object> invocationContext, string customKey, StringBuilder key)
         {
             if (invocationContext.ContainsKey(customKey))
             {
@@ -79,7 +80,7 @@ namespace Flatwhite.Provider
                 var code = customValue == null
                     ? "null"
                     : _hashCodeGeneratorProvider.GetForType(customValue.GetType()).GetCode(customValue);
-                key.Append($" {customKey}:{code}");
+                key.Append($" {prefixKey}:{code}");
             }
             else
             {
@@ -93,15 +94,27 @@ namespace Flatwhite.Provider
                         var value = invocationContext[prefix];
                         if (value is IDictionary<string, object>)
                         {
-                            BuildWithCustom((IDictionary<string, object>)value, fieldName, key);
+                            BuildWithCustom($"{prefixKey}{prefix}.{fieldName}", (IDictionary<string, object>)value, fieldName, key);
                         }
                         else
                         {
+                            indexOfDot = fieldName.IndexOf(".", StringComparison.Ordinal);
+
                             try
                             {
-                                var pInfo = value.GetType().GetProperty(fieldName);
-                                var customValue = pInfo.GetValue(value, null);
-                                BuildWithCustom(new Dictionary<string, object> { { fieldName, customValue } }, fieldName, key);
+                                if (indexOfDot < 0) // this should be a propertyName
+                                {
+                                    var pInfo = value.GetType().GetProperty(fieldName);
+                                    var customValue = pInfo.GetValue(value, null);
+                                    BuildWithCustom($"{prefixKey}{prefix}.{fieldName}", new Dictionary<string, object> {{fieldName, customValue}}, fieldName, key);
+                                }
+                                else // Still property chain
+                                {
+                                    var prefix2 = fieldName.Substring(0, indexOfDot);
+                                    var pInfo = value.GetType().GetProperty(prefix2);
+                                    var customValue = pInfo.GetValue(value, null);
+                                    BuildWithCustom($"{prefixKey}{prefix}.", new Dictionary<string, object> { { prefix2, customValue } }, fieldName, key);
+                                }
                             }
                             catch
                             {
