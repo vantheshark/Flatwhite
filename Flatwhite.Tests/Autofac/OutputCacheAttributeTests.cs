@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Autofac;
 using NUnit.Framework;
 using Flatwhite.AutofacIntergration;
@@ -76,9 +77,12 @@ namespace Flatwhite.Tests.Autofac
         [Test]
         public void Test_revalidaton_key()
         {
+            var count = new CountdownEvent(2);
             var id1 = Guid.Parse("3dd19adf-b743-43d9-add4-19f85dc857da");
             var svc = Substitute.For<IUserService>();
             svc.GetById(id1).Returns(new { Name = "Van", Email = "van@gmail.com", Id = id1 });
+            svc.When(x => x.GetById(id1))
+                .Do(c => { count.Signal(); });
 
             var builder = new ContainerBuilder().EnableFlatwhite();
             builder
@@ -102,6 +106,8 @@ namespace Flatwhite.Tests.Autofac
             {
                 var name1 = cachedService.GetById(id1);
             }
+
+            Assert.IsTrue(count.Wait(2000));
             svc.Received(2).GetById(Arg.Is(id1));
         }
     }

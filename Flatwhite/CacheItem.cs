@@ -8,24 +8,6 @@ namespace Flatwhite
     public class CacheItem
     {
         /// <summary>
-        /// Initializes a cache item
-        /// </summary>
-        public CacheItem()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a cache item
-        /// </summary>
-        /// <param name="cacheAttribute"></param>
-        public CacheItem(OutputCacheAttribute cacheAttribute)
-        {
-            CreatedTime = DateTime.UtcNow;
-            StaleWhileRevalidate = cacheAttribute.StaleWhileRevalidate;
-            MaxAge = cacheAttribute.Duration;
-        }
-
-        /// <summary>
         /// Cache key
         /// </summary>
         public string Key { get; set; }

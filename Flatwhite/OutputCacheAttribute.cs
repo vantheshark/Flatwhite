@@ -112,7 +112,10 @@ namespace Flatwhite
                         //If this is the first request but the "cacheItem" (Possibly distributed cache item" has the cache
                         CreatePhoenix(methodExecutingContext.Invocation, cacheItem);
                     }
-                    RefreshCache(key);
+                    if (!AutoRefresh)
+                    {
+                        RefreshCache(key);
+                    }
                 }
 
                 return;
@@ -139,11 +142,14 @@ namespace Flatwhite
 
                 var cacheStore = methodExecutedContext.TryGet<ICacheStore>(Global.__flatwhite_outputcache_store);
                 var strategy = methodExecutedContext.TryGet<ICacheStrategy>(Global.__flatwhite_outputcache_strategy);
-                var cacheItem = new CacheItem(this)
+                var cacheItem = new CacheItem
                 {
                     Key = key,
                     Data = methodExecutedContext.Result,
-                    StoreId = cacheStore.StoreId
+                    StoreId = cacheStore.StoreId,
+                    StaleWhileRevalidate = StaleWhileRevalidate,
+                    MaxAge = Duration,
+                    CreatedTime = DateTime.UtcNow
                 };
                 CreatePhoenix(methodExecutedContext.Invocation, cacheItem);
 
@@ -164,7 +170,7 @@ namespace Flatwhite
         {
             if (Global.Cache.PhoenixFireCage.ContainsKey(storedKey))
             {
-                Global.Cache.PhoenixFireCage[storedKey].Reborn(this);
+                Global.Cache.PhoenixFireCage[storedKey].Reborn();
             }
         }
 

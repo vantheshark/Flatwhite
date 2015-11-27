@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Flatwhite.Hot
 {
@@ -10,19 +11,28 @@ namespace Flatwhite.Hot
         /// <summary>
         /// true if the phoenix is executing rebornAction. This is to avoid many call on method Reborn many time
         ///  </summary>
-        private volatile bool _isOnFire;
+
+        private Task<IPhoenixState> _backGround;
         public IPhoenixState Reborn(Func<IPhoenixState> rebornAction)
         {
-            if (_isOnFire)
+            if (_backGround != null && _backGround.Status != TaskStatus.RanToCompletion)
             {
                 return this;
             }
 
-            _isOnFire = true;
-
             try
             {
-                return rebornAction();
+                if (_backGround == null)
+                {
+                    _backGround = Task.Run(rebornAction);
+                }
+
+                if (_backGround.Status == TaskStatus.RanToCompletion)
+                {
+                    return _backGround.Result.Reborn(rebornAction);
+                }
+
+                return this;
             }
             catch (Exception)
             {

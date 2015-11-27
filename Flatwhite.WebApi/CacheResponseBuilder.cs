@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace Flatwhite.WebApi
 {
@@ -50,6 +51,17 @@ namespace Flatwhite.WebApi
                 {
                     //  https://tools.ietf.org/html/rfc5861
                     responseCacheControl.Extensions.Add(new NameValueHeaderValue("stale-while-revalidate", cacheItem.StaleWhileRevalidate.ToString()));
+                }
+
+                if (!Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
+                {
+                    // No phoenix yet, let the OutputCacheFilter created the phoenix and call the builder again
+                    return null;
+                }
+
+                if (!cacheItem.AutoRefresh)
+                {
+                    Global.Cache.PhoenixFireCage[cacheItem.Key].Reborn();
                 }
             }
 

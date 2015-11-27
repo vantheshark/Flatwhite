@@ -36,18 +36,19 @@ namespace Flatwhite.Tests.WebApi
         public void should_execute_the_controller_method_and_return_CacheItem(string actionMethodName, int contentLength)
         {
             // Arrange
+            var currentCacheItem = new WebApiCacheItem();
             var invocation = Substitute.For<_IInvocation>();
             invocation.Arguments.Returns(new object[0]);
             invocation.Method.Returns(controllerType.GetMethod(actionMethodName, BindingFlags.Instance | BindingFlags.Public));
 
-            var phoenix = new WebApiPhoenix(invocation, CacheInfo, _cacheAttribute, new HttpRequestMessage(), new JsonMediaTypeFormatter());
+            var phoenix = new WebApiPhoenix(invocation, CacheInfo, currentCacheItem, new HttpRequestMessage(), new JsonMediaTypeFormatter());
 
             // Action
             MethodInfo dynMethod = typeof(WebApiPhoenix).GetMethod("InvokeAndGetBareResult", BindingFlags.NonPublic | BindingFlags.Instance);
-            var result = dynMethod.Invoke(phoenix, new object[] { _controllerIntance, _cacheAttribute });
+            var result = dynMethod.Invoke(phoenix, new object[] { _controllerIntance });
 
             dynMethod = typeof(WebApiPhoenix).GetMethod("GetCacheItem", BindingFlags.NonPublic | BindingFlags.Instance);
-            var cacheItem = (WebApiCacheItem)dynMethod.Invoke(phoenix, new object[] { result, _cacheAttribute });
+            var cacheItem = (WebApiCacheItem)dynMethod.Invoke(phoenix, new[] { result });
 
 
             // Assert

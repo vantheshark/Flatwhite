@@ -1,4 +1,4 @@
-﻿# Flatwhite (1.0.6) (Nov 27 2015) 
+﻿# Flatwhite (1.0.7) (Nov 27 2015) 
 ** Method filter & output cache using Dynamic proxy with MVC and WebAPI action filter attribute style
 
 ** Required packages:

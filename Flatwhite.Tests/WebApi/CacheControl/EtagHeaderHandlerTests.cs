@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Flatwhite.Hot;
 using Flatwhite.WebApi;
 using Flatwhite.WebApi.CacheControl;
 using NSubstitute;
@@ -14,6 +15,7 @@ namespace Flatwhite.Tests.WebApi.CacheControl
     [TestFixture]
     public class EtagHeaderHandlerTests
     {
+
         [Test]
         public async Task Should_return_null_if_no_etag_in_request()
         {
@@ -53,11 +55,12 @@ namespace Flatwhite.Tests.WebApi.CacheControl
             Assert.IsNull(response);
         }
 
-        //[TestCase("NEWCHECKSUM", HttpStatusCode.OK)]
+        [TestCase("NEWCHECKSUM", HttpStatusCode.OK)]
         [TestCase("OLDCHECKSUM", HttpStatusCode.NotModified)]
         public async Task Should_return_new_etag_if_cache_item_found_but_doesnt_match_checksum(string cacheChecksum, HttpStatusCode resultCode)
         {
             // Arrange
+            
             var cacheControl = new CacheControlHeaderValue
             {
                 MaxStale = true,
@@ -88,8 +91,10 @@ namespace Flatwhite.Tests.WebApi.CacheControl
             var builder = new CacheResponseBuilder();
             var handler = new EtagHeaderHandler(builder);
             await Global.CacheStoreProvider.GetAsyncCacheStore().SetAsync("fw-0-HASHEDKEY", oldCacheItem, DateTimeOffset.Now.AddDays(1)).ConfigureAwait(false);
-            
+
+
             // Action
+            Global.Cache.PhoenixFireCage["fw-0-HASHEDKEY"] = new WebApiPhoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheInfo(), oldCacheItem, request);
             var response = await handler.HandleAsync(cacheControl, request, CancellationToken.None).ConfigureAwait(false);
 
             Assert.AreEqual(resultCode, response.StatusCode);

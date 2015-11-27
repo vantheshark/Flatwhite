@@ -238,7 +238,14 @@ namespace Flatwhite.WebApi
                     //If this is the first request but the "cacheItem" (Possibly distributed cache item" has the cache
                     CreatePhoenix(invocation, cacheItem, actionContext.Request, null);
                 }
-                RefreshCache(storedKey);
+                else
+                {
+                    if (!AutoRefresh)
+                    {
+                        RefreshCache(storedKey);
+                    }
+                }
+                
             }
 
             actionContext.Response = builder.GetResponse(cacheControl, cacheItem, actionContext.Request); ;
@@ -304,13 +311,19 @@ namespace Flatwhite.WebApi
 
             if (responseContent != null)
             {
-                var cacheItem = new WebApiCacheItem(this)
+                var cacheItem = new WebApiCacheItem
                 {
                     Key = storedKey,
                     Content = await responseContent.ReadAsByteArrayAsync().ConfigureAwait(false),
                     ResponseMediaType = responseContent.Headers.ContentType.MediaType,
                     ResponseCharSet = responseContent.Headers.ContentType.CharSet,
-                    StoreId = cacheStore.StoreId
+                    StoreId = cacheStore.StoreId,
+                    StaleWhileRevalidate = StaleWhileRevalidate,
+                    MaxAge = MaxAge,
+                    CreatedTime = DateTime.UtcNow,
+                    IgnoreRevalidationRequest = IgnoreRevalidationRequest,
+                    StaleIfError = StaleIfError,
+                    AutoRefresh = AutoRefresh
                 };
                 
                 var strategy = (ICacheStrategy)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_strategy];
@@ -340,7 +353,7 @@ namespace Flatwhite.WebApi
         {
             if (Global.Cache.PhoenixFireCage.ContainsKey(storedKey))
             {
-                Global.Cache.PhoenixFireCage[storedKey].Reborn(this);
+                Global.Cache.PhoenixFireCage[storedKey].Reborn();
             }
         }
 
@@ -444,7 +457,7 @@ namespace Flatwhite.WebApi
                 AutoRefresh = AutoRefresh
             };
 
-            var phoenix = new WebApiPhoenix(invocation, cacheInfo, this, request, mediaTypeFormatter);
+            var phoenix = new WebApiPhoenix(invocation, cacheInfo, cacheItem, request, mediaTypeFormatter);
             if (Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
             {
                 Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();

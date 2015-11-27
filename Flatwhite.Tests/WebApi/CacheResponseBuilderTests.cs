@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Flatwhite.Hot;
 using Flatwhite.WebApi;
 using NUnit.Framework;
 
@@ -55,7 +56,13 @@ namespace Flatwhite.Tests.WebApi
                 MaxAge = 10,
                 StaleWhileRevalidate = 5,
                 IgnoreRevalidationRequest = false,
+                ResponseCharSet = "UTF8",
+                ResponseMediaType = "text/json",
+                Content = new byte[0],
+                Key = "CacheKey" + Guid.NewGuid()
             };
+
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheInfo());
 
             var request = new HttpRequestMessage();
             var svc = new CacheResponseBuilder { };
@@ -113,8 +120,11 @@ namespace Flatwhite.Tests.WebApi
                 IgnoreRevalidationRequest = true,
                 ResponseCharSet = "UTF8",
                 ResponseMediaType = "text/json",
-                Content = new byte[0]
+                Content = new byte[0],
+                Key = "CacheKey" + Guid.NewGuid()
             };
+
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheInfo());
 
             var request = new HttpRequestMessage();
             var svc = new CacheResponseBuilder { };
@@ -151,8 +161,11 @@ namespace Flatwhite.Tests.WebApi
                 IgnoreRevalidationRequest = true,
                 ResponseCharSet = "UTF8",
                 ResponseMediaType = "text/json",
-                Content = new byte[0]
+                Content = new byte[0],
+                Key = "CacheKey" + Guid.NewGuid()
             };
+
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheInfo());
 
             var request = new HttpRequestMessage();
             request.Properties[WebApiExtensions.__webApi_etag_matched] = true;

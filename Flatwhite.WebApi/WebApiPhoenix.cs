@@ -21,6 +21,7 @@ namespace Flatwhite.WebApi
     public class WebApiPhoenix : Phoenix
     {
         private readonly CacheInfo _info;
+        private readonly WebApiCacheItem _cacheItem;
         private readonly MediaTypeFormatter _mediaTypeFormatter;
         private readonly HttpRequestMessage _clonedRequestMessage;
 
@@ -29,13 +30,14 @@ namespace Flatwhite.WebApi
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="info"></param>
-        /// <param name="outputCache">This should the the OutputCacheAttribute isntance</param>
+        /// <param name="cacheItem">This should the the WebApiCacheItem isntance</param>
         /// <param name="requestMessage"></param>
         /// <param name="mediaTypeFormatter">The formater used to create the HttpResponse if the return type of the action method is not a standard WebAPI action result</param>
-        public WebApiPhoenix(_IInvocation invocation, CacheInfo info , OutputCacheAttribute outputCache, HttpRequestMessage requestMessage, MediaTypeFormatter mediaTypeFormatter = null) 
-            : base(invocation, info, outputCache)
+        public WebApiPhoenix(_IInvocation invocation, CacheInfo info , WebApiCacheItem cacheItem, HttpRequestMessage requestMessage, MediaTypeFormatter mediaTypeFormatter = null) 
+            : base(invocation, info)
         {
             _info = info;
+            _cacheItem = cacheItem;
             _mediaTypeFormatter = mediaTypeFormatter;
             _clonedRequestMessage = CloneRequest(requestMessage);
         }
@@ -49,9 +51,8 @@ namespace Flatwhite.WebApi
         /// Build the <see cref="WebApiCacheItem" /> from action result byte[] data
         /// </summary>
         /// <param name="response"></param>
-        /// <param name="outputCache"></param>
         /// <returns></returns>
-        protected override CacheItem GetCacheItem(object response, object outputCache)
+        protected override CacheItem GetCacheItem(object response)
         {
             if (response == null)
             {
@@ -78,15 +79,9 @@ namespace Flatwhite.WebApi
 
             var content = responseMsg.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
-            
-            return new WebApiCacheItem((OutputCacheAttribute)outputCache)
-            {
-                Key = _info.CacheKey,
-                StoreId = _info.CacheStoreId,
-                Content = content,
-                ResponseMediaType = responseMsg.Content.Headers.ContentType.MediaType,
-                ResponseCharSet = responseMsg.Content.Headers.ContentType.CharSet
-            };
+            var newCacheItem = _cacheItem.Clone();
+            newCacheItem.Content = content;
+            return newCacheItem;
         }
 
         /// <summary>

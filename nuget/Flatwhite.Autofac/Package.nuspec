@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Flatwhite.Autofac</id>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <authors>Van Thoai Nguyen</authors>
     <owners>Van Thoai Nguyen</owners>
 	<iconUrl>http://oi64.tinypic.com/23w19b4.jpg</iconUrl>
@@ -16,7 +16,7 @@
 	<language>en-US</language>
     <tags>Flatwhite Autofac Intercept DynamicProxy Caching Cache OutputCache ActionFilter MethodFilter AOP</tags>
     <dependencies>
-		<dependency id="Flatwhite" version="1.0.6" />
+		<dependency id="Flatwhite" version="1.0.7" />
 		<dependency id="Autofac" version="3.5.2" />		
 		<dependency id="Castle.Core" version="3.3.3" />		
     </dependencies>

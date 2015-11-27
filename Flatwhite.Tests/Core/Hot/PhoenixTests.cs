@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Flatwhite.AutofacIntergration;
@@ -24,7 +25,7 @@ namespace Flatwhite.Tests.Core.Hot
             StaleWhileRevalidate = 5000
         };
 
-        public void SetUp(string method)
+        public AutoResetEvent SetUp(string method)
         {
             var svc = Substitute.For<IUserService>();
             svc.GetById(Arg.Any<Guid>()).Returns(cx => cx.Arg<Guid>());
@@ -45,21 +46,27 @@ namespace Flatwhite.Tests.Core.Hot
 
             Global.Cache = new MethodInfoCache();
             var cacheStore = Substitute.For<ICacheStore>();
+            var autoResetEvent = new AutoResetEvent(false);
+            cacheStore.When(x => x.Set("cacheKey", Arg.Is<object>(obj => obj != null), Arg.Any<DateTimeOffset>()))
+                .Do(c => autoResetEvent.Set());
             cacheStore.StoreId.Returns(_storeId);
             Global.CacheStoreProvider.RegisterStore(cacheStore);
+
+            return autoResetEvent;
         }
 
         [Test]
         public void The_method_Reborn_should_try_to_refresh_the_cache()
         {
             // Arrange
-            SetUp("GetById");
-            var phoenix = new Phoenix(_invocation, CacheInfo, _cacheAttribute);
+            var wait = SetUp("GetById");
+            var phoenix = new Phoenix(_invocation, CacheInfo);
 
             // Action
-            phoenix.Reborn(_cacheAttribute);
+            phoenix.Reborn();
 
             // Assert
+            Assert.IsTrue(wait.WaitOne(2000));
             Global.CacheStoreProvider.GetCacheStore(_storeId).Received(1)
                 .Set("cacheKey", Arg.Is<object>(obj => obj != null), Arg.Any<DateTimeOffset>());
         }
@@ -68,13 +75,15 @@ namespace Flatwhite.Tests.Core.Hot
         public void The_method_Reborn_should_work_with_async_method()
         {
             // Arrange
-            SetUp("GetByIdAsync");
-            var phoenix = new Phoenix(_invocation, CacheInfo, _cacheAttribute);
+            var wait = SetUp("GetByIdAsync");
+            var phoenix = new Phoenix(_invocation, CacheInfo);
 
             // Action
-            phoenix.Reborn(_cacheAttribute);
+            
+            phoenix.Reborn();
 
             // Assert
+            Assert.IsTrue(wait.WaitOne(2000));
             Global.CacheStoreProvider.GetCacheStore(_storeId).Received(1)
                 .Set("cacheKey", Arg.Is<object>(obj => obj != null), Arg.Any<DateTimeOffset>());
         }

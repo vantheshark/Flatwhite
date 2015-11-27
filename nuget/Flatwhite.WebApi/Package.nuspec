@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Flatwhite.WebApi</id>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <authors>Van Thoai Nguyen</authors>
     <owners>Van Thoai Nguyen</owners>
 	<iconUrl>http://oi64.tinypic.com/23w19b4.jpg</iconUrl>
@@ -16,7 +16,7 @@
 	<language>en-US</language>
     <tags>Flatwhite WebApi Intercept DynamicProxy Caching Cache OutputCache CacheControl VaryByParam VaryByHeader</tags>
     <dependencies>
-		<dependency id="Flatwhite" version="1.0.6" />	
+		<dependency id="Flatwhite" version="1.0.7" />	
     </dependencies>
   </metadata>
 </package>

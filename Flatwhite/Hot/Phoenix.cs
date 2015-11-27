@@ -42,8 +42,7 @@ namespace Flatwhite.Hot
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="info"></param>
-        /// <param name="state"></param>
-        public Phoenix(_IInvocation invocation, CacheInfo info, object state = null)
+        public Phoenix(_IInvocation invocation, CacheInfo info)
         {
             _info = info;
             _phoenixState = _info.StaleWhileRevalidate > 0 ? (IPhoenixState)new RaisingPhoenix() : new DisposingPhoenix(Die);
@@ -56,43 +55,49 @@ namespace Flatwhite.Hot
             Arguments = invocation.Arguments;
             MethodInfo = invocation.Method;
 
-            _timer = new Timer(Reborn, state, _info.GetRefreshTime(), TimeSpan.Zero);
+
+            _timer = new Timer(_ => Reborn(), null, _info.GetRefreshTime(), TimeSpan.Zero);
         }
-        
+
         /// <summary>
-        /// Refresh the cache
+        /// Refresh the cache and change the internal <see cref="IPhoenixState"/> to avoid refreshing too many unnecessary times
+        /// <para>The call will happen in background so the caller will not have to wait</para>
         /// </summary>
-        public virtual void Reborn(object state)
+        public virtual void Reborn()
         {
-            Func<IPhoenixState> rebornAction = () =>
+            _phoenixState = _phoenixState.Reborn(Fire);
+        }
+
+        /// <summary>
+        /// Rebuild the cache and return the new <see cref="IPhoenixState"/>
+        /// </summary>
+        /// <returns></returns>
+        private IPhoenixState Fire()
+        {
+            try
             {
-                try
+                var target = GetTargetInstance();
+                var cacheItem = GetCacheItem(InvokeAndGetBareResult(target));
+                if (cacheItem == null)
                 {
-                    var target = GetTargetInstance();
-                    var cacheItem = GetCacheItem(InvokeAndGetBareResult(target, state), state);
-                    if (cacheItem == null)
-                    {
-                        var disposing =  new DisposingPhoenix(Die);
-                        return disposing.Reborn(null);
-                    }
-                    
-                    var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.CacheStoreId);
-                    cacheStore.Set(_info.CacheKey, cacheItem, DateTime.UtcNow.AddSeconds(_info.CacheDuration + _info.StaleWhileRevalidate));
-
-                    WriteCacheUpdatedLog();
-                    _timer.Change(_info.GetRefreshTime(), TimeSpan.Zero);
-
-                    return new AlivePhoenix();
+                    var disposing = new DisposingPhoenix(Die);
+                    return disposing.Reborn(null);
                 }
-                catch (Exception ex)
-                {
-                    Global.Logger.Error($"Error while refreshing key {_info.CacheKey}, store \"{_info.CacheStoreId}\". Will retry after 1 second.", ex);
-                    _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.Zero);
-                    throw;
-                }
-            };
 
-            _phoenixState = _phoenixState.Reborn(rebornAction);
+                var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.CacheStoreId);
+                cacheStore.Set(_info.CacheKey, cacheItem, DateTime.UtcNow.AddSeconds(_info.CacheDuration + _info.StaleWhileRevalidate));
+
+                WriteCacheUpdatedLog();
+                _timer.Change(_info.GetRefreshTime(), TimeSpan.Zero);
+
+                return new AlivePhoenix();
+            }
+            catch (Exception ex)
+            {
+                Global.Logger.Error($"Error while refreshing key {_info.CacheKey}, store \"{_info.CacheStoreId}\". Will retry after 1 second.", ex);
+                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.Zero);
+                throw;
+            }
         }
 
         /// <summary>
@@ -107,9 +112,8 @@ namespace Flatwhite.Hot
         /// Invoke the MethodInfo against the serviceInstance, then build the CacheItem object to store in cache
         /// </summary>
         /// <param name="serviceInstance"></param>
-        /// <param name="state"></param>
         /// <returns></returns>
-        protected virtual object InvokeAndGetBareResult(object serviceInstance, object state)
+        protected virtual object InvokeAndGetBareResult(object serviceInstance)
         {
             var invokeResult = MethodInfo.Invoke(serviceInstance, Arguments);
             var result = invokeResult;
@@ -129,9 +133,8 @@ namespace Flatwhite.Hot
         /// Build the cache item object for the result of the method
         /// </summary>
         /// <param name="invocationBareResult"></param>
-        /// <param name="state"></param>
         /// <returns></returns>
-        protected virtual CacheItem GetCacheItem(object invocationBareResult, object state)
+        protected virtual CacheItem GetCacheItem(object invocationBareResult)
         {
             if (invocationBareResult == null)
             {

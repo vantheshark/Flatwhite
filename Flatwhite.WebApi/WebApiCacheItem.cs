@@ -9,26 +9,6 @@ namespace Flatwhite.WebApi
     public class WebApiCacheItem : CacheItem
     {
         /// <summary>
-        /// Initializes a cache item
-        /// </summary>
-        public WebApiCacheItem()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a cache item
-        /// </summary>
-        /// <param name="cacheAttribute"></param>
-        public WebApiCacheItem(OutputCacheAttribute cacheAttribute)
-        {
-            CreatedTime = DateTime.UtcNow;
-            StaleWhileRevalidate = cacheAttribute.StaleWhileRevalidate;
-            StaleIfError = cacheAttribute.StaleIfError;
-            MaxAge = cacheAttribute.MaxAge;
-            IgnoreRevalidationRequest = cacheAttribute.IgnoreRevalidationRequest;
-        }
-
-        /// <summary>
         /// The response data
         /// </summary>
         public byte[] Content { get; set; }
@@ -74,5 +54,22 @@ namespace Flatwhite.WebApi
         /// <para>This may be helpful to guarantee that the endpoint will not revalidate the cache all the time by some one sending request with no-cache header</para>
         /// </summary>
         public bool IgnoreRevalidationRequest { get; set; }
+
+
+        public bool AutoRefresh { get; set; }
+
+        /// <summary>
+        /// Clone the WebApiCacheItem without the content and with a fresh CreatedTime
+        /// </summary>
+        /// <returns></returns>
+        public WebApiCacheItem Clone()
+        {
+            var clone = (WebApiCacheItem) MemberwiseClone();
+            clone.Checksum = null;
+            clone.Data = null;
+            clone.Content = null;
+            clone.CreatedTime = DateTime.UtcNow;
+            return clone;
+        }
     }
 }
