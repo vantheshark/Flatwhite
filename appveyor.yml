@@ -5,8 +5,9 @@ configuration: Release
 platform: Any CPU
 
 environment:
+  configuration: Release
   COVERALLS_REPO_TOKEN:
-    secure: K2NkAYD7KVzzaf9kcZHcKC4oXxbtndFQv
+    secure: e/oDVJZrz6WCzy8HKGaJVTNbipT2sIJIFRFLIGT/sVMAxkd5V0dxgnkEWII5axJ8    
 
 before_build:
 - cmd: nuget restore Flatwhite.sln
