@@ -12,3 +12,4 @@ obj
 *.pdb
 *.nupkg
 *.bak
+opencoverCoverage.xml
