@@ -13,6 +13,7 @@ namespace Flatwhite.Hot
     {
         private readonly CacheInfo _info;
         private IPhoenixState _phoenixState;
+        private static readonly object PhoenixCage = new object();
 
         /// <summary>
         /// The timer to refresh the cache item. It will run every "Duration" seconds if "StaleWhileRevalidate" > 0
@@ -65,7 +66,10 @@ namespace Flatwhite.Hot
         /// </summary>
         public virtual void Reborn()
         {
-            _phoenixState = _phoenixState.Reborn(Fire);
+            lock (PhoenixCage)
+            {
+                _phoenixState = _phoenixState.Reborn(Fire);
+            }
         }
 
         /// <summary>
