@@ -13,3 +13,4 @@ obj
 *.nupkg
 *.bak
 opencoverCoverage.xml
+/TestResult.xml
