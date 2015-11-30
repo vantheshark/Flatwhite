@@ -5,11 +5,12 @@ using Autofac.Integration.WebApi;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
 using Flatwhite.WebApi.CacheControl;
+using Flatwhite.WebApi.Tests;
 using log4net;
 using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartup(typeof(Flatwhite.WebApi.Tests.Startup))]
+[assembly: OwinStartup(typeof(Startup))]
 
 namespace Flatwhite.WebApi.Tests
 {
@@ -28,7 +29,6 @@ namespace Flatwhite.WebApi.Tests
 
             app.UseWebApi(config)
                .UseFlatwhiteCache<Startup>(config)
-               .UseAutofacMiddleware(container) // Optional, not required by Flatwhite
                ;
         }
 
