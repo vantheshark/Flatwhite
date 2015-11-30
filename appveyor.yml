@@ -1,4 +1,4 @@
-﻿version: 1.0.{build}
+version: 1.0.{build}
 
 configuration: Release
 
@@ -7,7 +7,7 @@ platform: Any CPU
 environment:
   COVERALLS_REPO_TOKEN:
     secure: K2NkAYD7KVzzaf9kcZHcKC4oXxbtndFQv
-	
+
 before_build:
 - cmd: nuget restore Flatwhite.sln
 
