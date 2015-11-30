@@ -1,6 +1,6 @@
 ﻿<img alt="Flatwhite logo" src="https://dl.dropboxusercontent.com/u/81698224/nuget-logos/coffee-.png" title="Flatwhite" width="100px" height="100px"/>
 
-# Flatwhite (Nov 27 2015) [![Latest version](https://img.shields.io/nuget/v/Flatwhite.svg)](https://www.nuget.org/packages?q=flatwhite) [![Build Status](https://api.travis-ci.org/vanthoainguyen/Flatwhite.svg)](https://travis-ci.org/vanthoainguyen/Flatwhite) [![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING)
+# Flatwhite (Nov 27 2015) [![Latest version](https://img.shields.io/nuget/v/Flatwhite.svg)](https://www.nuget.org/packages?q=flatwhite) [![Build Status](https://api.travis-ci.org/vanthoainguyen/Flatwhite.svg)](https://travis-ci.org/vanthoainguyen/Flatwhite) [![Build status](https://ci.appveyor.com/api/projects/status/rsognbyobn8fbasj?svg=true)](https://ci.appveyor.com/project/vanthoainguyen/flatwhite) [![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING)
 
 Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy. 
 You can create MethodFilterAttribute to add custom logic to any methods as soon as it is interceptable by Castle Dynamic Proxy. 
@@ -18,7 +18,7 @@ You can use Flatwhite simply for caching or extending behavior of your methods s
 Your function needs to be **virtual** to enable the cache on class. Or the class needs to implement an interface and be registered as that interface type.
 
 #### 1/ Enable class interceptor
-If you can modify the class to make the method virtual and decorate the method with **OutputCacheAttribute**, you can register the class like this:
+If you modify the class to make the method virtual and decorate the method with **OutputCacheAttribute**, you will register the class like this:
 
 ```C#
 public class UserService
