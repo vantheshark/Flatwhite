@@ -1,0 +1,15 @@
+﻿# Travis-CI Build for Flatwhite
+# see travis-ci.org for details
+
+language: csharp
+solution: Flatwhite.sln
+
+# Make sure build dependencies are installed.
+install:
+  - nuget restore Flatwhite.sln
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+
+  # Run the build script
+script:
+  - xbuild /p:Configuration=Release Flatwhite.sln
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Flatwhite.Tests/bin/Release/Flatwhite.Tests.dll

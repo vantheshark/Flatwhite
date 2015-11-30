@@ -1,6 +1,6 @@
 ﻿<img alt="Flatwhite logo" src="https://dl.dropboxusercontent.com/u/81698224/nuget-logos/coffee-.png" title="Flatwhite" width="100px" height="100px"/>
 
-# Flatwhite (1.0.8) (Nov 27 2015) 
+# Flatwhite (Nov 27 2015) [![Latest version](https://img.shields.io/nuget/v/Flatwhite.svg)](https://www.nuget.org/packages?q=flatwhite) [![Build Status](https://api.travis-ci.org/vanthoainguyen/Flatwhite.svg)](https://travis-ci.org/vanthoainguyen/Flatwhite) [![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING)
 
 Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy. 
 You can create MethodFilterAttribute to add custom logic to any methods as soon as it is interceptable by Castle Dynamic Proxy. 
@@ -9,15 +9,9 @@ You can use Flatwhite simply for caching or extending behavior of your methods s
 
 ** Required packages:
 
-Autofac
+[![Autofac](https://img.shields.io/badge/Autofac-3.5.2-yellow.svg)](https://www.nuget.org/packages/Autofac/3.5.2)
 
-Castle.Core
-
-Flatwhite
-
-Flatwhite.Autofac
-
-Nuget: *https://www.nuget.org/packages/Flatwhite
+[![Castle.Core](https://img.shields.io/badge/Castle.Core-3.3.3-yellow.svg)](https://www.nuget.org/packages/Castle.Core/3.3.3)
 
 ## Usage: 
 
@@ -289,5 +283,4 @@ https://github.com/vanthoainguyen/Flatwhite/wiki
 
 
 ## LICENCE
-http://sam.zoy.org/wtfpl/COPYING 
-![Troll](http://i40.tinypic.com/2m4vl2x.jpg) 
+[![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING) ![Troll](http://i40.tinypic.com/2m4vl2x.jpg) 
