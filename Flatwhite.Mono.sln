@@ -11,11 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{80A704A3
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flatwhite.WebApi", "Flatwhite.WebApi\Flatwhite.WebApi.csproj", "{31CDF9B3-0801-484B-A915-03CC8C81EC5B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{9C0C9F4B-D095-47D2-A55A-502CF47C90A6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flatwhite.Tests", "Tests\Flatwhite.Tests\Flatwhite.Tests.csproj", "{8C2B2D09-340C-4A78-B42C-FD7DA10342AC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flatwhite.WebApi.Owin", "Examples\Flatwhite.WebApi.Owin\Flatwhite.WebApi.Owin.csproj", "{69D7502A-B91D-4B4B-9C9E-D63FFA2AC450}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,16 +35,11 @@ Global
 		{8C2B2D09-340C-4A78-B42C-FD7DA10342AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C2B2D09-340C-4A78-B42C-FD7DA10342AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C2B2D09-340C-4A78-B42C-FD7DA10342AC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{69D7502A-B91D-4B4B-9C9E-D63FFA2AC450}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{69D7502A-B91D-4B4B-9C9E-D63FFA2AC450}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{69D7502A-B91D-4B4B-9C9E-D63FFA2AC450}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{69D7502A-B91D-4B4B-9C9E-D63FFA2AC450}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8C2B2D09-340C-4A78-B42C-FD7DA10342AC} = {80A704A3-DD4B-49B5-B5F1-FB3AC47ACFD2}
-		{69D7502A-B91D-4B4B-9C9E-D63FFA2AC450} = {9C0C9F4B-D095-47D2-A55A-502CF47C90A6}
 	EndGlobalSection
 EndGlobal

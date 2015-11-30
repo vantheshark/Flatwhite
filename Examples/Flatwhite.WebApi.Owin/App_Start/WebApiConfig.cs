@@ -1,6 +1,6 @@
 ﻿using System.Web.Http;
 
-namespace Flatwhite.WebApi.Tests
+namespace Flatwhite.WebApi.Owin
 {
     public static class WebApiConfig
     {

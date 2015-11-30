@@ -30,10 +30,9 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// Create required components to use Flatwhite cache for WebApi
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="app"></param>
         /// <param name="config"></param>
-        public static IAppBuilder UseFlatwhiteCache<T>(this IAppBuilder app, HttpConfiguration config)
+        public static IAppBuilder UseFlatwhiteCache(this IAppBuilder app, HttpConfiguration config)
         {
             Global.CacheStrategyProvider = new WebApiCacheStrategyProvider();
             _dependencyResolverActivator = new WebApiDependencyResolverActivator(() => config.DependencyResolver);

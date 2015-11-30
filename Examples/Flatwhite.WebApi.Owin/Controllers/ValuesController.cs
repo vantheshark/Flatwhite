@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using log4net;
 
-namespace Flatwhite.WebApi.Tests.Controllers
+namespace Flatwhite.WebApi.Owin.Controllers
 {
     public class ValuesController : ApiController
     {

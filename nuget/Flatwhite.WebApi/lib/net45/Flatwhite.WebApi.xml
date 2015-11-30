@@ -503,11 +503,10 @@
             This will be used by Phoenix to create Controller instance on the fly when cache is refreshing
             </summary>
         </member>
-        <member name="M:Flatwhite.WebApi.WebApiExtensions.UseFlatwhiteCache``1(Owin.IAppBuilder,System.Web.Http.HttpConfiguration)">
+        <member name="M:Flatwhite.WebApi.WebApiExtensions.UseFlatwhiteCache(Owin.IAppBuilder,System.Web.Http.HttpConfiguration)">
             <summary>
             Create required components to use Flatwhite cache for WebApi
             </summary>
-            <typeparam name="T"></typeparam>
             <param name="app"></param>
             <param name="config"></param>
         </member>
