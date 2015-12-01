@@ -13,14 +13,13 @@ namespace Flatwhite.Tests.Core.Hot
     [TestFixture]
     public class PhoenixTests
     {
-        private readonly OutputCacheAttribute _cacheAttribute = new OutputCacheAttribute();
         private _IInvocation _invocation;
-        private readonly int _storeId = 100;
-
+        private const int StoreId = 99999;
+        private readonly Guid _id = Guid.NewGuid();
         private static readonly CacheInfo CacheInfo = new CacheInfo
         {
             CacheKey = "cacheKey",
-            CacheStoreId = 100,
+            CacheStoreId = StoreId,
             CacheDuration = 5000,
             StaleWhileRevalidate = 5000
         };
@@ -29,7 +28,7 @@ namespace Flatwhite.Tests.Core.Hot
         {
             var svc = Substitute.For<IUserService>();
             svc.GetById(Arg.Any<Guid>()).Returns(cx => cx.Arg<Guid>());
-            svc.GetByIdAsync(Arg.Any<Guid>()).Returns(cx => Task.FromResult(cx.Arg<Guid>()));
+            svc.GetByIdAsync(Arg.Any<Guid>()).Returns(cx => Task.FromResult((object)cx.Arg<Guid>()));
 
             var builder = new ContainerBuilder().EnableFlatwhite();
             builder
@@ -40,16 +39,16 @@ namespace Flatwhite.Tests.Core.Hot
             var proxy = container.Resolve<IUserService>();
 
             _invocation = Substitute.For<_IInvocation>();
-            _invocation.Arguments.Returns(new object[] { Guid.NewGuid() });
+            _invocation.Arguments.Returns(new object[] { _id });
             _invocation.Method.Returns(typeof(IUserService).GetMethod(method, BindingFlags.Instance | BindingFlags.Public));
             _invocation.Proxy.Returns(proxy);
 
             Global.Cache = new MethodInfoCache();
             var cacheStore = Substitute.For<ICacheStore>();
             var autoResetEvent = new AutoResetEvent(false);
-            cacheStore.When(x => x.Set("cacheKey", Arg.Is<object>(obj => obj != null), Arg.Any<DateTimeOffset>()))
+            cacheStore.When(x => x.Set(CacheInfo.CacheKey, Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>()))
                 .Do(c => autoResetEvent.Set());
-            cacheStore.StoreId.Returns(_storeId);
+            cacheStore.StoreId.Returns(StoreId);
             Global.CacheStoreProvider.RegisterStore(cacheStore);
 
             return autoResetEvent;
@@ -67,8 +66,8 @@ namespace Flatwhite.Tests.Core.Hot
 
             // Assert
             Assert.IsTrue(wait.WaitOne(2000));
-            Global.CacheStoreProvider.GetCacheStore(_storeId).Received(1)
-                .Set("cacheKey", Arg.Is<object>(obj => obj != null), Arg.Any<DateTimeOffset>());
+            Global.CacheStoreProvider.GetCacheStore(StoreId).Received(1)
+                .Set("cacheKey", Arg.Is<object>(obj => _id.Equals(((CacheItem) obj).Data)), Arg.Any<DateTimeOffset>());
         }
 
         [Test]
@@ -79,13 +78,12 @@ namespace Flatwhite.Tests.Core.Hot
             var phoenix = new Phoenix(_invocation, CacheInfo);
 
             // Action
-            
             phoenix.Reborn();
 
             // Assert
             Assert.IsTrue(wait.WaitOne(2000));
-            Global.CacheStoreProvider.GetCacheStore(_storeId).Received(1)
-                .Set("cacheKey", Arg.Is<object>(obj => obj != null), Arg.Any<DateTimeOffset>());
+            Global.CacheStoreProvider.GetCacheStore(StoreId).Received(1)
+                .Set("cacheKey", Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>());
         }
     }
 }

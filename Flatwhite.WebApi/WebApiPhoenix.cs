@@ -13,7 +13,7 @@ namespace Flatwhite.WebApi
     /// It will create instance of WebApi controller and invoke the ActionMethod with cached arguments.
     /// It will not work if the controller required QueryString, Headers or anything outside these action method parameters
     /// But you can override the Phoenix MethodInfo, Arguments or method <see cref="Phoenix.GetTargetInstance" />, <see cref="Phoenix.InvokeAndGetBareResult" />, 
-    /// or completely change the way the Phoenix reborn by overriding method , <see cref="Phoenix.Reborn(object)" />,
+    /// or completely change the way the Phoenix reborn by overriding method , <see cref="Phoenix.Reborn" />,
     /// 
     /// Idealy, keep Controller thin and use proper Model binding instead of dodgy access the Request object.
     /// </para>
