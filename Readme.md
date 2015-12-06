@@ -1,24 +1,30 @@
-﻿<img alt="Flatwhite logo" src="https://dl.dropboxusercontent.com/u/81698224/nuget-logos/coffee-.png" title="Flatwhite" width="100px" height="100px"/>
+<img alt="Flatwhite logo" src="https://dl.dropboxusercontent.com/u/81698224/nuget-logos/coffee-.png" title="Flatwhite" width="100px" height="100px"/>
 
 # Flatwhite (Nov 27 2015) 
 
 [![Latest version](https://img.shields.io/nuget/v/Flatwhite.svg)](https://www.nuget.org/packages?q=flatwhite) [![Build Status](https://api.travis-ci.org/vanthoainguyen/Flatwhite.svg)](https://travis-ci.org/vanthoainguyen/Flatwhite) [![Build status](https://ci.appveyor.com/api/projects/status/rsognbyobn8fbasj?svg=true)](https://ci.appveyor.com/project/vanthoainguyen/flatwhite) [![Coverage Status](https://coveralls.io/repos/vanthoainguyen/Flatwhite/badge.svg?branch=master&service=github)](https://coveralls.io/github/vanthoainguyen/Flatwhite?branch=master) [![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING)
 
-Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy. 
-You can create MethodFilterAttribute to add custom logic to any methods as soon as it is interceptable by Castle Dynamic Proxy. 
-Flatwhite has 1 built-in OutputCacheFilter to cache method result which can auto refresh stale content. 
-You can use Flatwhite simply for caching or extending behavior of your methods such as profiling, logging by implement MethodFilterAttribute similar to MVC's ActionFilterAttribute
+## What is Flatwhite?
 
-** Required packages:
+Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy. There are many libraries out there to help you intercept a method call such as PostSharp, recently CodeCop and they're really cool tools. However, I've been using Castle dynamic proxy for a many years and I think it has enough needs for my projects. Therefore, Flatwhite is an opinionated library to facilitate usages of Castle dynamic proxy to intercept methods.
 
-[![Autofac](https://img.shields.io/badge/Autofac-3.5.2-yellow.svg)](https://www.nuget.org/packages/Autofac/3.5.2)
+Currently release only supports Autofac but I think other IOC containers also use Castle dynamic proxy when they come to interception so they will be supported in the future.
 
-[![Castle.Core](https://img.shields.io/badge/Castle.Core-3.3.3-yellow.svg)](https://www.nuget.org/packages/Castle.Core/3.3.3)
+You can create MethodFilterAttribute to add custom logic to any methods as soon as it is interceptable by Castle Dynamic Proxy (virtual not final). Flatwhite has a built-in OutputCacheFilter to cache method result which can auto refresh stale content. You can use Flatwhite simply for caching or extending behavior of your methods such as profiling, logging by implement MethodFilterAttribute similar to MVC's ActionFilterAttribute
 
-## Usage: 
+## When to use Flatwhite?
+You have classes implement interfaces and registered using Autofac (for now). You have a need to intercept methods call so you have 2 quick options:
+- Use Autofac.Extras and call EnableInterfaceInterceptor() on type registration then create/register custom IInterceptor.
+- Or use Flatwhite, implement an MethodFilterAttribute and decorate on the methods on your interface which you want to intercept.
 
-Your function needs to be **virtual** to enable the cache on class. Or the class needs to implement an interface and be registered as that interface type.
+As mentioned above, Flatwhite has a built in OutputCacheFilter to cache method output. It works for methods that have a return value both sync and async methods. Beside caching, you can also implement MethodFilterAttribute and ExceptionFilterAttribute to add custom logic to your methods.
 
+## How to use Flatwhite?
+** Required packages: [![Autofac](https://img.shields.io/badge/Autofac-3.5.2-yellow.svg)](https://www.nuget.org/packages/Autofac/3.5.2) [![Castle.Core](https://img.shields.io/badge/Castle.Core-3.3.3-yellow.svg)](https://www.nuget.org/packages/Castle.Core/3.3.3)
+
+For now, Flatwhite needs to be used with Autofac. It requires Castle Dynamic proxy to intercept method so you have to have public interface or your methods must be **virtual** and **not final** to be intercepted.
+
+### For caching:
 #### 1/ Enable class interceptor
 If you modify the class to make the method virtual and decorate the method with **OutputCacheAttribute**, you will register the class like this:
 
@@ -160,116 +166,38 @@ public interface IUserService
 Unfortunately, this is not working for distributed services. That means the method is called on one server cannot notify the other service instances on remote servers. 
 However, it's technically achievable to extend this filter using queueing or something like that to notify remote system.
 
-
-#### 7/ Implement a filter
-Flatwhite is inspired by WebAPI and ASP.NET MVC ActionFilterAttribute, so it works exactly the same. The base filter attribute has following methods. So simply implement your filter class and do whatever you want.
+### For additional logic before/after calling methods
+Flatwhite is inspired by WebAPI and ASP.NET MVC ActionFilterAttribute, so it works quite similar. The base filter attribute has following methods. So simply implement your filter class and do whatever you want.
 
 ```C#
 public abstract class MethodFilterAttribute : Attribute
 {
-    /// <summary>
-    /// Gets or sets the order in which the action filters are executed.
-    /// </summary>
-    public int Order { get; set; }
-
-    /// <summary>
-    /// Occurs before the action method is invoked.
-    /// </summary>
-    /// <param name="methodExecutingContext"></param>
-    public virtual void OnMethodExecuting(MethodExecutingContext methodExecutingContext)
-    {
-    }
-
-    /// <summary>
-    /// Occurs before the action method is invoked.
-    /// </summary>
-    /// <param name="methodExecutingContext"></param>
-    /// <returns></returns>
-    public virtual Task OnMethodExecutingAsync(MethodExecutingContext methodExecutingContext)
-    {
-        try
-        {
-            OnMethodExecuting(methodExecutingContext);
-        }
-        catch (Exception ex)
-        {
-            TaskHelpers.FromError(ex);
-        }
-
-        return TaskHelpers.DefaultCompleted;
-    }
-
-
-    /// <summary>
-    ///  Occurs after the action method is invoked.
-    /// </summary>
-    /// <param name="methodExecutedContext"></param>
-    public virtual void OnMethodExecuted(MethodExecutedContext methodExecutedContext)
-    {
-    }
-
-    /// <summary>
-    ///  Occurs after the action method is invoked.
-    /// </summary>
-    /// <param name="methodExecutedContext"></param>
-    /// <returns></returns>
-    public virtual Task OnMethodExecutedAsync(MethodExecutedContext methodExecutedContext)
-    {
-        try
-        {
-            OnMethodExecuted(methodExecutedContext);
-        }
-        catch (Exception ex)
-        {
-            TaskHelpers.FromError(ex);
-        }
-
-        return TaskHelpers.DefaultCompleted;
-    }
+    
+    public virtual void OnMethodExecuting(MethodExecutingContext methodExecutingContext);    
+    public virtual Task OnMethodExecutingAsync(MethodExecutingContext methodExecutingContext);   
+    public virtual void OnMethodExecuted(MethodExecutedContext methodExecutedContext);    
+    public virtual Task OnMethodExecutedAsync(MethodExecutedContext methodExecutedContext);    
 }
 ```
 
-#### 7/ Extend or change the framework:
-The Flatwhite.Global class has following static providers that are used in the code, you can change any of them. Usecases such as changing CacheStrategyProvider, ServiceActivator or Logger
+If you decorate the filter on async methods, only OnMethodExecutingAsync and OnMethodExecutedAsync are called. During the filters are being executed, if the Result value is set to the MethodExecutingContext, the remaining filters will be ignored.
+
+
+### For error handling
+Similar to MethodFilterAttribute, you can implement ExceptionFilterAttribute to provide custom error handling logic. If the property MethodExceptionContext.Handled is true, all remaining ExceptionFilter will be ignored.
 
 ```C#
-/// <summary>
-/// Context provider
-/// </summary>
-public static IContextProvider ContextProvider { get; set; }
-/// <summary>
-/// Cache key provider
-/// </summary>
-public static ICacheKeyProvider CacheKeyProvider { get; set; }
-/// <summary>
-/// Cache strategy provider
-/// </summary>
-public static ICacheStrategyProvider CacheStrategyProvider { get; set; }
-        
-/// <summary>
-/// Attribute provider
-/// </summary>
-public static IAttributeProvider AttributeProvider { get; set; }
-/// <summary>
-/// Parameter serializer provider
-/// </summary>
-public static IHashCodeGeneratorProvider HashCodeGeneratorProvider { get; set; }
-
-/// <summary>
-/// A provider to resolve cache stores
-/// </summary>
-public static ICacheStoreProvider CacheStoreProvider { get; set; }
-
-/// <summary>
-/// The service activator to create instance of service when needed to invoke the MethodInfo for cache refreshing
-/// </summary>
-public static IServiceActivator ServiceActivator { get; set; }
-
-/// <summary>
-/// Logger
-/// </summary>
-public static ILogger Logger { get; set; }
+public abstract class ExceptionFilterAttribute : Attribute
+{    
+    public virtual void OnException(MethodExceptionContext exceptionContext);    
+    public virtual Task OnExceptionAsync(MethodExceptionContext exceptionContext);       
+}
 ```
+
+## What's else?
+
+- Flatwhite for WebAPI: https://github.com/vanthoainguyen/Flatwhite/wiki/Flatwhite.WebApi
+- Wiki: https://github.com/vanthoainguyen/Flatwhite/wiki
 
 
 ## TODO:
@@ -279,10 +207,7 @@ Better documents
 Support other IOC library
 
 
-## WIKI:
-
-https://github.com/vanthoainguyen/Flatwhite/wiki
-
 
 ## LICENCE
 [![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING) ![Troll](http://i40.tinypic.com/2m4vl2x.jpg) 
+
