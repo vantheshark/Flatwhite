@@ -9,12 +9,6 @@ namespace Flatwhite.WebApi
     public class WebApiCacheStrategy : DefaultCacheStrategy
     {
         /// <summary>
-        /// Create an instance of WebApiCacheStrategy with ServiceActivator
-        /// </summary>
-        /// <param name="activator"></param>
-        public WebApiCacheStrategy(IServiceActivator activator = null) : base(activator){}
-
-        /// <summary>
         /// Should return true as WebApi doesn't use Dynamic proxy
         /// </summary>
         /// <returns></returns>

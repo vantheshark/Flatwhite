@@ -1,8 +1,10 @@
 ﻿using System;
 using Autofac;
 using Flatwhite.AutofacIntergration;
+using Flatwhite.Provider;
 using Flatwhite.Strategy;
 using Flatwhite.Tests.Stubs;
+using NSubstitute;
 using NUnit.Framework;
 // ReSharper disable InconsistentNaming
 
@@ -12,9 +14,9 @@ namespace Flatwhite.Tests.Autofac.Strategy
     public class CacheSelectedMethodsInvocationStrategyTests
     {
         [SetUp]
-        public void ShowSomeTrace()
+        public void SetUp()
         {
-            Global.Cache = new MethodInfoCache();
+            Global.Init();
             Global.CacheStoreProvider.RegisterStore(new NoneExpireCacheStore());
         }
 
@@ -61,11 +63,15 @@ namespace Flatwhite.Tests.Autofac.Strategy
             builder
                 .RegisterType<BlogService>()
                 .As<IBlogService>()
+                .SingleInstance()
                 .CacheWithStrategy(
                     CacheStrategies.ForService<IBlogService>()
                         .ForMember(x => x.GetById(Argument.Any<Guid>()))
-                        .Duration(5000)
+                        .Duration(5)
+                        .StaleWhileRevalidate(5)
                         .VaryByParam("postId")
+                        .WithCacheStore(0)
+                        .WithRevalidationKey("posts")
                         .WithChangeMonitors((i, context) =>
                         {
                             mon = new FlatwhiteCacheEntryChangeMonitor("");
@@ -93,6 +99,40 @@ namespace Flatwhite.Tests.Autofac.Strategy
                 var result = cachedService.GetById(id);
             }
             Assert.AreEqual(2, blogSvc.__target.InvokeCount);
+        }
+
+        [Test]
+        public void Test_cache_on_selected_method_with_custom_cache_store_type()
+        {
+            var cacheStore = Substitute.For<ICacheStore>();
+            
+            FlatwhiteCacheEntryChangeMonitor mon = null;
+            var builder = new ContainerBuilder().EnableFlatwhite();
+            builder
+                .RegisterType<BlogService>()
+                .As<IBlogService>()
+                .SingleInstance()
+                .CacheWithStrategy(
+                    CacheStrategies.ForService<IBlogService>()
+                        .ForMember(x => x.GetById(Argument.Any<Guid>()))
+                        .Duration(5)
+                        .WithCacheStoreType(cacheStore.GetType())
+                );
+
+            builder.RegisterInstance(cacheStore).As<ICacheStore>();
+            var container = builder.Build();
+
+            var cachedService = container.Resolve<IBlogService>();
+            var cacheStoreProvider = Substitute.For<ICacheStoreProvider>();
+            cacheStoreProvider.GetCacheStore(Arg.Is<Type>(t => t == cacheStore.GetType())).Returns(cacheStore);
+            Global.CacheStoreProvider = cacheStoreProvider;
+            var id = Guid.NewGuid();
+            for (var i = 0; i < 10; i++)
+            {
+                var result = cachedService.GetById(id);
+            }
+
+            cacheStore.Received().Get(Arg.Any<string>());
         }
     }
 }

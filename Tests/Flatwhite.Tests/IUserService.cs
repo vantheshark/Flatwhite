@@ -18,10 +18,15 @@ namespace Flatwhite.Tests
         [NoCache, TestHandleException]
         Task<object> GetByEmailAsync(string email);
 
+        [SwallowException, BadMethodFilter]
         IEnumerable<object> GetRoles(Guid userId);
 
         [Revalidate("User")]
         void DisableUser(Guid userId);
+
+        [Revalidate("User")]
+        [TestHandleException]
+        Task DisableUserAsync(Guid userId);
 
         [OutputCache(Duration = 2, CacheStoreId = 100)]
         object TestCustomStoreId();

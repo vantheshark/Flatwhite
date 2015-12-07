@@ -62,7 +62,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
             builder
                 .RegisterInstance(svc)
                 .As<IUserService>()
-                .CacheWithStrategy(CacheStrategies.AllMethods().VaryByParam("userId"));
+                .CacheWithStrategy(CacheStrategies.AllMethods().VaryByParam("userId").VaryByCustom("custom").Duration(10));
 
             var container = builder.Build();
 

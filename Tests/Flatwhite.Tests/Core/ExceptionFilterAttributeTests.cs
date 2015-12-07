@@ -32,11 +32,13 @@ namespace Flatwhite.Tests.Core
             });
             var att = Substitute.ForPartsOf<ExceptionFilterAttribute>();
             att.When(x => x.OnException(Arg.Any<MethodExceptionContext>())).Do(c => { throw new Exception("Test exception"); } );
-            var t = att.OnExceptionAsync(new MethodExceptionContext(new Exception(), context));
+            var exceptionContext = new MethodExceptionContext(new Exception(), context);
+            var t = att.OnExceptionAsync(exceptionContext);
 
             Assert.IsTrue(t.Status == TaskStatus.Faulted);
             Assert.AreEqual("Test exception", t.Exception.InnerExceptions[0].Message);
             Assert.IsNull(context.Result);
+            Assert.IsNull(exceptionContext.Result);
         }
     }
 }

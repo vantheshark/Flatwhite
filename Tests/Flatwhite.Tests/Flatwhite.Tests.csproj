@@ -72,15 +72,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Autofac\AutofacServiceActivatorTests.cs" />
     <Compile Include="Autofac\FlatwhiteBuilderInterceptModuleTests.cs" />
     <Compile Include="Autofac\OutputCacheAttributeTests.cs" />
     <Compile Include="Autofac\Strategy\CacheOutputForAllMethodTests.cs" />
     <Compile Include="Autofac\Strategy\CacheSelectedMethodsInvocationStrategyTests.cs" />
     <Compile Include="Core\CacheStoreAdaptorTests.cs" />
     <Compile Include="Core\ExceptionFilterAttributeTests.cs" />
+    <Compile Include="Core\FlatwhiteCacheEntryChangeMonitorTests.cs" />
     <Compile Include="Core\Hot\AlivePhoenixTests.cs" />
     <Compile Include="Core\Hot\RaisingPhoenixTests.cs" />
     <Compile Include="Core\MethodFilterAttributeTests.cs" />
+    <Compile Include="Core\MethodInterceptorTests.cs" />
     <Compile Include="Core\Strategy\DefaultCacheStrategyTests.cs" />
     <Compile Include="Core\ToStringHashCodeGeneratorTests.cs" />
     <Compile Include="Core\DefaultHashCodeGeneratorTests.cs" />
@@ -89,7 +92,7 @@
     <Compile Include="Core\Provider\DefaultCacheStoreProviderTests.cs" />
     <Compile Include="Core\Provider\DefaultHashCodeGeneratorProviderTests.cs" />
     <Compile Include="Core\RevalidateAttributeTests.cs" />
-    <Compile Include="MethodInterceptorTests.cs" />
+    <Compile Include="MethodInterceptorDemoTests.cs" />
     <Compile Include="IBlogService.cs" />
     <Compile Include="IUserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

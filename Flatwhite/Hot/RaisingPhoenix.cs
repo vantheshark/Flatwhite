@@ -15,29 +15,20 @@ namespace Flatwhite.Hot
         private Task<IPhoenixState> _backGround;
         public IPhoenixState Reborn(Func<IPhoenixState> rebornAction)
         {
-            if (_backGround != null && _backGround.Status != TaskStatus.RanToCompletion)
+            if (_backGround == null || _backGround.Status == TaskStatus.Faulted || _backGround.Status == TaskStatus.Canceled)
             {
-                return this;
+                _backGround = Task.Run(rebornAction);
+                _backGround.ContinueWith(t => { /* To not make it bubble up the exception */}, TaskContinuationOptions.OnlyOnFaulted); 
             }
-
-            try
+            
+            if (_backGround.Status == TaskStatus.RanToCompletion && _backGround.Result != null)
             {
-                if (_backGround == null)
-                {
-                    _backGround = Task.Run(rebornAction);
-                }
-
-                if (_backGround.Status == TaskStatus.RanToCompletion)
-                {
-                    return _backGround.Result.Reborn(rebornAction);
-                }
-
-                return this;
+                return _backGround.Result.Reborn(rebornAction);
             }
-            catch
-            {
-                return this;
-            }
+            
+
+            return this;
+            
         }
     }
 }

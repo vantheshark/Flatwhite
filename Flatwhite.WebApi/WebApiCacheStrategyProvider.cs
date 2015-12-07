@@ -19,7 +19,7 @@ namespace Flatwhite.WebApi
         public ICacheStrategy GetStrategy(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             return invocationContext.ContainsKey(WebApiExtensions.__webApi) 
-                ? new WebApiCacheStrategy(new WebApiDependencyResolverActivator(() => invocationContext[WebApiExtensions.__webApi_dependency_scope] as IDependencyScope)) 
+                ? new WebApiCacheStrategy() 
                 : new DefaultCacheStrategy();
         }
     }

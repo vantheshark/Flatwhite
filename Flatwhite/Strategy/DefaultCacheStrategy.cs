@@ -12,17 +12,6 @@ namespace Flatwhite.Strategy
     /// </summary>
     public class DefaultCacheStrategy : ICacheStrategy
     {
-        private readonly IServiceActivator _activator;
-
-        /// <summary>
-        /// Initialize CacheStrategy with an optional service activator. The default one will be used if not provided
-        /// </summary>
-        /// <param name="activator">This is used to resove cache store by cache store TYPE if specified</param>
-        public DefaultCacheStrategy(IServiceActivator activator = null)
-        {
-            _activator = activator ?? Global.ServiceActivator;
-        }
-
         /// <summary>
         /// Dynamic proxy doesn't work for none virtual or final methods so this is false by default.
         /// However, derive of this class such as WebApiCacheStrategy can ignore this because WebAPI doesn't use dynamic proxy
@@ -110,8 +99,9 @@ namespace Flatwhite.Strategy
                     var asyncCacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(att.CacheStoreId);
                     if (asyncCacheStore != null) return asyncCacheStore;
                 }
-                catch (KeyNotFoundException)
+                catch (Exception ex)
                 {
+                    Global.Logger.Error($"Cannot resolve cache store with id {att.CacheStoreId}", ex);
                 }
             }
 
@@ -119,7 +109,8 @@ namespace Flatwhite.Strategy
             {
                 try
                 {
-                    return _activator.CreateInstance(att.CacheStoreType) as IAsyncCacheStore ?? Global.CacheStoreProvider.GetAsyncCacheStore(att.CacheStoreType);
+                    var asyncCacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(att.CacheStoreType);
+                    if (asyncCacheStore != null) return asyncCacheStore;
                 }
                 catch (KeyNotFoundException)
                 {
@@ -130,7 +121,7 @@ namespace Flatwhite.Strategy
             {
                 try
                 {
-                    var syncCacheStore = _activator.CreateInstance(att.CacheStoreType) as ICacheStore ?? Global.CacheStoreProvider.GetCacheStore(att.CacheStoreType);
+                    var syncCacheStore = Global.CacheStoreProvider.GetCacheStore(att.CacheStoreType);
                     if (syncCacheStore != null) return new CacheStoreAdaptor(syncCacheStore);
                 }
                 catch (KeyNotFoundException)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
@@ -12,7 +13,7 @@ using NUnit.Framework;
 namespace Flatwhite.Tests
 {
     [TestFixture]
-    public class MethodInterceptorTests
+    public class MethodInterceptorDemoTests
     {
         [SetUp]
         public void SetUp()
@@ -70,6 +71,29 @@ namespace Flatwhite.Tests
         }
 
         [Test]
+        public async Task Test_intercept_async_void_method()
+        {
+            var mockObj = Substitute.For<IUserService>();
+            mockObj.GetByIdAsync(Arg.Any<Guid>()).Returns(Task.FromResult(new object()));
+
+            var builder = new ContainerBuilder().EnableFlatwhite();
+            builder
+                .RegisterInstance(mockObj)
+                .As<IUserService>()
+                .EnableInterceptors();
+
+            var container = builder.Build();
+
+            var interceptedSvc = container.Resolve<IUserService>();
+            var sw = Stopwatch.StartNew();
+            for (var i = 0; i < 1000; i++)
+            {
+                await interceptedSvc.DisableUserAsync(Guid.Empty).ConfigureAwait(false);
+            }
+            Console.WriteLine($"Async Total : {sw.ElapsedMilliseconds} ms");
+        }
+
+        [Test]
         public void Test_error_handler()
         {
             var mockObj = Substitute.For<IUserService>();
@@ -93,6 +117,26 @@ namespace Flatwhite.Tests
         }
 
         [Test]
+        public void Test_error_handler_for_exception_thrown_by_other_filters()
+        {
+            var mockObj = Substitute.For<IUserService>();
+            mockObj.GetRoles(Arg.Any<Guid>()).Returns(new List<object> {new {}, new {}});
+            var builder = new ContainerBuilder().EnableFlatwhite();
+            builder
+                .RegisterInstance(mockObj)
+                .As<IUserService>()
+                .EnableInterceptors();
+
+            var container = builder.Build();
+
+            var interceptedSvc = container.Resolve<IUserService>();
+
+            var obj = interceptedSvc.GetRoles(Guid.NewGuid());
+            Assert.IsNotNull(obj);
+            Assert.AreEqual(2, obj.Count());
+        }
+
+        [Test]
         public async Task Test_error_handler_on_async_method()
         {
             var mockObj = Substitute.For<IUserService>();
@@ -113,6 +157,27 @@ namespace Flatwhite.Tests
             var obj = await interceptedSvc.GetByEmailAsync("");
 
             Assert.AreEqual("Error OnExceptionAsync", obj);
+        }
+
+        [Test]
+        public async Task Test_error_handler_on_async_void_method()
+        {
+            var mockObj = Substitute.For<IUserService>();
+            mockObj
+                .When(x => x.DisableUserAsync(Arg.Any<Guid>()))
+                .Do(c => { throw new Exception(); });
+
+            var builder = new ContainerBuilder().EnableFlatwhite();
+            builder
+                .RegisterInstance(mockObj)
+                .As<IUserService>()
+                .EnableInterceptors();
+
+            var container = builder.Build();
+
+            var interceptedSvc = container.Resolve<IUserService>();
+
+            await interceptedSvc.DisableUserAsync(Guid.NewGuid());
         }
 
         private class DummyUserService : IUserService
@@ -145,6 +210,11 @@ namespace Flatwhite.Tests
             }
 
             public void DisableUser(Guid userId)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task DisableUserAsync(Guid userId)
             {
                 throw new NotImplementedException();
             }
@@ -224,6 +294,44 @@ namespace Flatwhite.Tests
         public override Task OnMethodExecutingAsync(MethodExecutingContext actionContext)
         {
             //Console.WriteLine($"{DateTime.Now} {nameof(TestMethod2FilterAttribute)} OnMethodExecutingAsync");
+            return TaskHelpers.DefaultCompleted;
+        }
+    }
+
+
+    public class BadMethodFilterAttribute : MethodFilterAttribute
+    {
+        public override void OnMethodExecuted(MethodExecutedContext methodExecutedContext)
+        {
+            throw new Exception();
+        }
+
+        public override Task OnMethodExecutedAsync(MethodExecutedContext actionExecutedContext)
+        {
+            throw new Exception();
+        }
+
+        public override void OnMethodExecuting(MethodExecutingContext methodExecutingContext)
+        {
+        }
+
+        public override Task OnMethodExecutingAsync(MethodExecutingContext actionContext)
+        {
+            return TaskHelpers.DefaultCompleted;
+        }
+    }
+
+    public class SwallowExceptionAttribute : ExceptionFilterAttribute
+    {
+        public override void OnException(MethodExceptionContext exceptionContext)
+        {
+            exceptionContext.Handled = true;
+            
+        }
+
+        public override Task OnExceptionAsync(MethodExceptionContext exceptionContext)
+        {
+            exceptionContext.Handled = true;
             return TaskHelpers.DefaultCompleted;
         }
     }

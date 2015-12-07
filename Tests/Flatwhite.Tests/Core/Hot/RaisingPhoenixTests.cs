@@ -32,12 +32,16 @@ namespace Flatwhite.Tests.Core.Hot
         }
 
         [Test]
-        public void Reborn_should_return_same_isntane_if_there_is_exception()
+        public void Reborn_should_return_same_instance_if_there_is_exception()
         {
+            Func<IPhoenixState> action = () =>
+            {
+                throw new Exception();
+            };
             var state = new RaisingPhoenix();
             for (var i = 0; i < 10000; i++)
             {
-                Assert.AreSame(state, state.Reborn(null));
+                Assert.AreSame(state, state.Reborn(action));
             }
         }
 

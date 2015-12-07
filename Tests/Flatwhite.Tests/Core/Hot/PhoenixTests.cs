@@ -24,11 +24,22 @@ namespace Flatwhite.Tests.Core.Hot
             StaleWhileRevalidate = 5000
         };
 
-        public AutoResetEvent SetUp(string method)
+        public AutoResetEvent SetUp(string method, IUserService svc = null)
         {
-            var svc = Substitute.For<IUserService>();
-            svc.GetById(Arg.Any<Guid>()).Returns(cx => cx.Arg<Guid>());
-            svc.GetByIdAsync(Arg.Any<Guid>()).Returns(cx => Task.FromResult((object)cx.Arg<Guid>()));
+            Global.Init();
+            if (svc == null)
+            {
+                svc = Substitute.For<IUserService>();
+                if (method == nameof(IUserService.GetById))
+                {
+                    svc.GetById(Arg.Any<Guid>()).Returns(cx => cx.Arg<Guid>());
+                }
+
+                if (method == nameof(IUserService.GetByIdAsync))
+                {
+                    svc.GetByIdAsync(Arg.Any<Guid>()).Returns(cx => Task.FromResult((object)cx.Arg<Guid>()));
+                }
+            }
 
             var builder = new ContainerBuilder().EnableFlatwhite();
             builder
@@ -43,11 +54,16 @@ namespace Flatwhite.Tests.Core.Hot
             _invocation.Method.Returns(typeof(IUserService).GetMethod(method, BindingFlags.Instance | BindingFlags.Public));
             _invocation.Proxy.Returns(proxy);
 
-            Global.Cache = new MethodInfoCache();
+            
             var cacheStore = Substitute.For<ICacheStore>();
             var autoResetEvent = new AutoResetEvent(false);
             cacheStore.When(x => x.Set(CacheInfo.CacheKey, Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>()))
                 .Do(c => autoResetEvent.Set());
+
+            cacheStore.When(x => x.Remove(CacheInfo.CacheKey))
+                .Do(c => autoResetEvent.Set());
+
+
             cacheStore.StoreId.Returns(StoreId);
             Global.CacheStoreProvider.RegisterStore(cacheStore);
 
@@ -84,6 +100,47 @@ namespace Flatwhite.Tests.Core.Hot
             Assert.IsTrue(wait.WaitOne(2000));
             Global.CacheStoreProvider.GetCacheStore(StoreId).Received(1)
                 .Set("cacheKey", Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>());
+        }
+
+        [Test]
+        public void The_method_Reborn_should_dispose_and_return_DisposingPhoenix_if_cannot_create_new_cacheItem()
+        {
+            // Arrange
+            var svc = Substitute.For<IUserService>();
+            svc.GetById(Arg.Any<Guid>()).Returns(null);
+            var wait = SetUp("GetById", svc);
+            var phoenix = new Phoenix(_invocation, CacheInfo);
+
+            // Action
+            phoenix.Reborn();
+            Assert.IsTrue(wait.WaitOne(2000));
+            // Assert
+            var storeId = Global.CacheStoreProvider.GetCacheStore(StoreId);
+            storeId.Received(1).Remove("cacheKey");
+        }
+
+        [Test]
+        public void The_method_Reborn_should_throw_if_error_and_retry_after_1_second()
+        {
+            // Arrange
+            var svc = Substitute.For<IUserService>();
+            var wait = SetUp("GetById", svc);
+            svc.When(x => x.GetById(Arg.Any<Guid>())).Do(c =>
+            {
+                wait.Set();
+                throw new Exception();
+            });
+            
+            var phoenix = new Phoenix(_invocation, CacheInfo);
+
+            // Action
+            phoenix.Reborn();
+            Assert.IsTrue(wait.WaitOne(2000));
+            wait.Reset();
+            Assert.IsTrue(wait.WaitOne(2000));
+
+            // Assert
+            svc.Received(2).GetById(Arg.Any<Guid>());
         }
     }
 }
