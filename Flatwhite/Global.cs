@@ -58,6 +58,11 @@ namespace Flatwhite
 
         static Global()
         {
+            Init();
+        }
+
+        internal static void Init()
+        {
             Cache = new MethodInfoCache();
 
             ContextProvider = new EmptyContextProvider();

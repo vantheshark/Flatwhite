@@ -37,8 +37,16 @@ namespace Flatwhite
         public int StoreId { get; set; }
 
         /// <summary>
-        /// Return the age of the CacheItem
+        /// Return the age of the CacheItem in seconds
         /// </summary>
         public uint Age => (uint)Math.Round(DateTime.UtcNow.Subtract(CreatedTime).TotalSeconds);
+
+        /// <summary>
+        /// Return true if the cache item is started to stale
+        /// </summary>
+        public bool IsStale()
+        {
+            return DateTime.UtcNow.Subtract(CreatedTime).TotalMilliseconds > MaxAge * 1000;
+        }
     }
 }

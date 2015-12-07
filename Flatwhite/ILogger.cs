@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Flatwhite
 {
@@ -29,24 +30,39 @@ namespace Flatwhite
     /// <summary>
     /// Console logger
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class ConsoleLogger : ILogger
     {
+        /// <summary>
+        /// Log an exception
+        /// </summary>
+        /// <param name="ex"></param>
         public void Error(Exception ex)
         {
             Console.WriteLine($"{DateTime.Now}: {ex.Message}");
         }
 
+        /// <summary>
+        /// Log a message and exception
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="ex"></param>
         public void Error(string message, Exception ex)
         {
             Console.WriteLine($"{DateTime.Now}: {message}\r\n\t\t{ex.Message}");
         }
 
+        /// <summary>
+        /// Log info
+        /// </summary>
+        /// <param name="message"></param>
         public void Info(string message)
         {
             Console.WriteLine($"{DateTime.Now}: {message}");
         }
     }
 
+    [ExcludeFromCodeCoverage]
     internal class NullLogger : ILogger
     {
         public void Error(Exception ex)

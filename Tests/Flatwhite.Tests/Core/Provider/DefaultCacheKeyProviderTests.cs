@@ -48,5 +48,14 @@ namespace Flatwhite.Tests.Core.Provider
             Assert.AreEqual("Flatwhite::Flatwhite.Tests.IUserService.GetById(Guid:5e31d440-c9f8-4110-b94d-fdf8affdc675) ::  query.source:a,  headers.UserAgent:Flatwhite.UnitTest,  headers.CacheControl.Public:True, , ", key);
         }
 
+        [Test]
+        public void Should_throw_exception_if_CacheSettings_not_found_in_context()
+        {
+            var invocation = Substitute.For<_IInvocation>();
+            var provider = new DefaultCacheKeyProvider();
+            var invocationContext = new Dictionary<string, object>();
+
+            Assert.Throws<InvalidOperationException>(() => provider.GetCacheKey(invocation, invocationContext));
+        }
     }
 }

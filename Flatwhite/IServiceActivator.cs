@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Flatwhite
 {
@@ -15,6 +16,7 @@ namespace Flatwhite
         object CreateInstance(Type serviceType);
     }
 
+    [ExcludeFromCodeCoverage]
     internal class ServiceActivator : IServiceActivator
     {
         public object CreateInstance(Type serviceType)

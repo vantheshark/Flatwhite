@@ -33,7 +33,7 @@ namespace Flatwhite.Provider
         /// <returns></returns>
         public virtual string GetCacheKey(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            var info = invocationContext[Global.__flatwhite_outputcache_attribute] as ICacheSettings;
+            var info = invocationContext.TryGetByKey<ICacheSettings>(Global.__flatwhite_outputcache_attribute);
             if (info == null)
             {
                 throw new InvalidOperationException($"{nameof(ICacheSettings)} object not found in {nameof(invocationContext)}");

@@ -131,6 +131,7 @@ namespace Flatwhite.Provider
                 throw new InvalidOperationException($"There is a registered ICacheStore with id {store.StoreId}: {_cacheStore[store.StoreId].GetType().Name}");
             }
             _asyncCacheStore[store.StoreId] = store;
+            _asyncCacheStoreTypes[store.GetType()] = store;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http.Controllers;
@@ -6,6 +7,7 @@ using System.Web.Http.Controllers;
 
 namespace Flatwhite.WebApi
 {
+    [ExcludeFromCodeCoverage]
     public class WebApiInvocation : _IInvocation
     {
         private readonly HttpActionContext _httpActionContext;

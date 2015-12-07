@@ -16,6 +16,12 @@ namespace Flatwhite.Tests.WebApi.CacheControl
     public class EtagHeaderHandlerTests
     {
 
+        [SetUp]
+        public void SetUp()
+        {
+            Global.Init();
+        }
+
         [Test]
         public async Task Should_return_null_if_no_etag_in_request()
         {

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Caching;
 
 namespace Flatwhite
 {
+    [ExcludeFromCodeCoverage]
     internal class ObjectCacheStore : ICacheStore
     {
         private static readonly ObjectCache _cache = MemoryCache.Default;

@@ -1,8 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Flatwhite
 {
     /// <summary>
     /// A class which can provide any argument for caching stuff
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class Argument
     {
         /// <summary>

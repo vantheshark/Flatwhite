@@ -52,7 +52,7 @@ namespace Flatwhite.Tests.WebApi
 
             var cacheItem = new WebApiCacheItem
             {
-                CreatedTime = DateTime.UtcNow.AddSeconds(-11),
+                CreatedTime = DateTime.UtcNow.AddSeconds(-10).AddMilliseconds(-1), // should stale just by 1 milisecond
                 MaxAge = 10,
                 StaleWhileRevalidate = 5,
                 IgnoreRevalidationRequest = false,

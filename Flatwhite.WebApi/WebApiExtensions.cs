@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Web.Http;
 using Flatwhite.WebApi.CacheControl;
 using Owin;
@@ -8,6 +9,7 @@ namespace Flatwhite.WebApi
     /// <summary>
     /// Provide extension methods to enable Flatwhite WebApi cache
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class WebApiExtensions
     {
         // ReSharper disable InconsistentNaming

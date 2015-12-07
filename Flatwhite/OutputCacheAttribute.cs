@@ -105,7 +105,7 @@ namespace Flatwhite
                 methodExecutingContext.Result = cacheItem.Data;
                 methodExecutingContext.InvocationContext[Global.__flatwhite_outputcache_restored] = true;
 
-                if (cacheItem.Age > cacheItem.MaxAge)
+                if (cacheItem.IsStale())
                 {
                     if (!Global.Cache.PhoenixFireCage.ContainsKey(key))
                     {

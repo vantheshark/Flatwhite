@@ -2,7 +2,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
 
 namespace Flatwhite.WebApi
 {
@@ -29,17 +28,17 @@ namespace Flatwhite.WebApi
                 return null;
             }
 
-            var age = cacheItem.Age;
+            var ageInSeconds = cacheItem.Age;
 
             var responseCacheControl = new CacheControlHeaderValue
             {
-                MaxAge = TimeSpan.FromSeconds(Math.Max(cacheItem.MaxAge - age, 0)),
+                MaxAge = TimeSpan.FromSeconds(Math.Max(cacheItem.MaxAge - ageInSeconds, 0)),
             };
 
             var cacheNotQualified = false;
-            bool stale = cacheControl?.MaxAge?.TotalSeconds > 0 && cacheControl.MaxAge.Value.TotalSeconds < age;
+            bool stale = cacheControl?.MaxAge?.TotalSeconds > 0 && cacheControl.MaxAge.Value.TotalSeconds < ageInSeconds;
             
-            if (cacheItem.MaxAge < age)
+            if (cacheItem.IsStale())
             {
                 stale = true;
 
@@ -47,7 +46,7 @@ namespace Flatwhite.WebApi
                     cacheControl != null &&
                     cacheControl.MaxStale &&
                     cacheControl.MaxStaleLimit.HasValue &&
-                    cacheControl.MaxStaleLimit.Value.TotalSeconds > (age - cacheItem.MaxAge))
+                    cacheControl.MaxStaleLimit.Value.TotalSeconds > (ageInSeconds - cacheItem.MaxAge))
                 {
                     //  https://tools.ietf.org/html/rfc5861
                     responseCacheControl.Extensions.Add(new NameValueHeaderValue("stale-while-revalidate", cacheItem.StaleWhileRevalidate.ToString()));
@@ -66,7 +65,7 @@ namespace Flatwhite.WebApi
             }
 
             var response = request.CreateResponse();
-            if (cacheControl?.MinFresh?.TotalSeconds > age)
+            if (cacheControl?.MinFresh?.TotalSeconds > ageInSeconds)
             {
                 response.Headers.Add("X-Flatwhite-Warning", "Cache freshness lifetime not qualified");
                 cacheNotQualified = true;
@@ -83,9 +82,10 @@ namespace Flatwhite.WebApi
                 response.Headers.Add("X-Flatwhite-Warning", "Response is Stale");
                 //https://tools.ietf.org/html/rfc7234#page-31
                 response.Headers.Add("Warning", $"110 - \"Response is Stale\"");
+                Global.Logger.Info($"Stale, age: {ageInSeconds}");
             }
             
-            response.Headers.Age = TimeSpan.FromSeconds(age);
+            response.Headers.Age = TimeSpan.FromSeconds(ageInSeconds);
             response.Headers.CacheControl = responseCacheControl;
 
             if (request.Properties.ContainsKey(WebApiExtensions.__webApi_etag_matched))

@@ -237,7 +237,7 @@ namespace Flatwhite.WebApi
             request.Properties[WebApiExtensions.__webApi_outputcache_response_builder] = builder;
 
             var cacheItem = await cacheStore.GetAsync(storedKey).ConfigureAwait(false) as WebApiCacheItem;
-            if (cacheItem != null && cacheItem.Age > cacheItem.MaxAge)
+            if (cacheItem != null && cacheItem.IsStale())
             {
                 if (!Global.Cache.PhoenixFireCage.ContainsKey(storedKey))
                 {

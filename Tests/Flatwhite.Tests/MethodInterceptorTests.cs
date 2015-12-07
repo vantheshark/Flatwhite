@@ -17,7 +17,7 @@ namespace Flatwhite.Tests
         [SetUp]
         public void SetUp()
         {
-            Global.Cache = new MethodInfoCache();
+            Global.Init();
             Global.CacheStoreProvider.RegisterStore(new NoneExpireCacheStore());
         }
 

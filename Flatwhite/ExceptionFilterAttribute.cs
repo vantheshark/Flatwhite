@@ -33,7 +33,7 @@ namespace Flatwhite
             }
             catch (Exception ex)
             {
-                TaskHelpers.FromError(ex);
+                return TaskHelpers.FromError(ex);
             }
 
             return TaskHelpers.DefaultCompleted;

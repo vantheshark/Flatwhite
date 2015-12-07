@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -75,13 +76,13 @@ namespace Flatwhite.Strategy
         {
             var att = invocationContext.TryGetByKey<ICacheSettings>(Global.__flatwhite_outputcache_attribute, OutputCacheAttribute.Default);
             ICacheStore cacheStore = null;
-            if (att.CacheStoreId > 0)
-            {
-                cacheStore = Global.CacheStoreProvider.GetCacheStore(att.CacheStoreId);
-            }
-
             try
             {
+                if (att.CacheStoreId > 0)
+                {
+                    cacheStore = Global.CacheStoreProvider.GetCacheStore(att.CacheStoreId); 
+                }
+            
                 if (cacheStore == null && att.CacheStoreType != null && typeof (ICacheStore).IsAssignableFrom(att.CacheStoreType))
                 {
                     cacheStore = Global.CacheStoreProvider.GetCacheStore(att.CacheStoreType);
@@ -104,8 +105,14 @@ namespace Flatwhite.Strategy
             var att = invocationContext.TryGetByKey<ICacheSettings>(Global.__flatwhite_outputcache_attribute, OutputCacheAttribute.Default);
             if (att.CacheStoreId > 0)
             {
-                var asyncCacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(att.CacheStoreId);
-                if (asyncCacheStore != null) return asyncCacheStore;
+                try
+                {
+                    var asyncCacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(att.CacheStoreId);
+                    if (asyncCacheStore != null) return asyncCacheStore;
+                }
+                catch (KeyNotFoundException)
+                {
+                }
             }
 
             if (att.CacheStoreType != null && typeof(IAsyncCacheStore).IsAssignableFrom(att.CacheStoreType))
