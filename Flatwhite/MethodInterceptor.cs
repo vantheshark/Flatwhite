@@ -45,8 +45,14 @@ namespace Flatwhite
                 MethodInfo = invocation.Method,
                 Invocation = invocation
             };
-            
-            var attributes = _attributeProvider.GetAttributes(invocation.Method, methodExecutingContext.InvocationContext);
+
+            var attributes = _attributeProvider.GetAttributes(invocation.Method, methodExecutingContext.InvocationContext).ToList();
+            if (attributes.Any(a => a is NoInterceptAttribute))
+            {
+                invocation.Proceed();
+                return;
+            }
+
             var filterAttributes = attributes.OfType<MethodFilterAttribute>().OrderBy(x => x.Order).ToList();
             var isAsync = typeof (Task).IsAssignableFrom(invocation.Method.ReturnType);
 

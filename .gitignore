@@ -14,3 +14,9 @@ obj
 *.bak
 opencoverCoverage.xml
 /TestResult.xml
+/nuget/Flatwhite/lib/net45/Flatwhite.dll
+/nuget/Flatwhite/lib/net45/Flatwhite.xml
+/nuget/Flatwhite.Autofac/lib/net45/Flatwhite.Autofac.xml
+/nuget/Flatwhite.Autofac/lib/net45/Flatwhite.Autofac.dll
+/nuget/Flatwhite.WebApi/lib/net45/Flatwhite.WebApi.dll
+/nuget/Flatwhite.WebApi/lib/net45/Flatwhite.WebApi.xml

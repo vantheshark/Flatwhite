@@ -84,21 +84,24 @@ namespace Flatwhite.Tests.Autofac.Strategy
             var cachedService = container.Resolve<IBlogService>();
 
             var id = Guid.NewGuid();
-            for (var i = 0; i < 1000; i++)
+            for (var i = 0; i < 100; i++)
             {
                 var result = cachedService.GetById(id);
             }
 
             dynamic blogSvc = cachedService;
             Assert.AreEqual(1, blogSvc.__target.InvokeCount);
-            
+
+            //NOTE: After this, the cache item should be refreshed by Phoenix
             mon.OnChanged(null);
-            //NOTE: After this, the cache item should be removed
-            for (var i = 0; i < 1000; i++)
+            
+            for (var i = 0; i < 10000; i++)
             {
                 var result = cachedService.GetById(id);
             }
+            //NOTE: Because the phoenix reborn is none-blocking (on a background thread), it may need time to let the Task finish.
             Assert.AreEqual(2, blogSvc.__target.InvokeCount);
+            mon.Dispose();
         }
 
         [Test]

@@ -94,6 +94,27 @@ namespace Flatwhite.Tests
         }
 
         [Test]
+        public void Should_throw_if_no_exception_filter_attribute_found()
+        {
+            var mockObj = Substitute.For<IUserService>();
+            mockObj
+                .When(x => x.GetById(Arg.Any<Guid>()))
+                .Do(c => { throw new Exception(); });
+
+            var builder = new ContainerBuilder().EnableFlatwhite();
+            builder
+                .RegisterInstance(mockObj)
+                .As<IUserService>()
+                .EnableInterceptors();
+
+            var container = builder.Build();
+
+            var interceptedSvc = container.Resolve<IUserService>();
+
+            Assert.Throws<Exception>(() => interceptedSvc.GetById(Guid.NewGuid()));
+        }
+
+        [Test]
         public void Test_error_handler()
         {
             var mockObj = Substitute.For<IUserService>();

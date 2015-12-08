@@ -47,7 +47,7 @@ namespace Flatwhite.Strategy
                 if (possible)
                 {
                     var atts = Global.AttributeProvider.GetAttributes(invocation.Method, invocationContext);
-                    possible = !atts.Any(a => a is NoInterceptAttribute);
+                    possible = !atts.Any(a => a is NoInterceptAttribute || a is NoCacheAttribute);
                 }
                 Global.Cache.InterceptableCache[invocation.Method] = possible;
             }

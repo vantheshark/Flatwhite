@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Reflection;
@@ -25,6 +26,13 @@ namespace Flatwhite.Tests.WebApi
         };
 
         private static readonly Type controllerType = typeof (DummyController);
+
+        [SetUp]
+        public void SetUp()
+        {
+            Global.Init();
+            WebApiExtensions._dependencyResolverActivator = new ServiceActivator();
+        }
 
         [TestCase(nameof(DummyController.HttpActionResult), 4)]
         [TestCase(nameof(DummyController.HttpResponseMessageAsync), 4)]
@@ -60,6 +68,34 @@ namespace Flatwhite.Tests.WebApi
             {
                 Assert.AreEqual(contentLength, cacheItem.Content.Length);
             }
+        }
+
+        [Test]
+        public void GetTargetInstance_should_set_the_request()
+        {
+            // Arrange
+            var currentCacheItem = new WebApiCacheItem();
+            var invocation = Substitute.For<_IInvocation>();
+            invocation.Arguments.Returns(new object[0]);
+            invocation.Method.Returns(controllerType.GetMethod(nameof(DummyController.Object), BindingFlags.Instance | BindingFlags.Public));
+            var requestMsg = new HttpRequestMessage
+            {
+                Headers = { {"key", "Value"} },
+                Method = HttpMethod.Get,
+                Properties = { {"p1", "v1"} },
+                RequestUri = new Uri("http://localhost/api")
+            };
+            var phoenix = new WebApiPhoenix(invocation, CacheInfo, currentCacheItem, requestMsg, new JsonMediaTypeFormatter());
+
+            // Action
+            MethodInfo dynMethod = typeof(WebApiPhoenix).GetMethod("GetTargetInstance", BindingFlags.NonPublic | BindingFlags.Instance);
+            var controller = dynMethod.Invoke(phoenix, new object[] { }) as ApiController;
+
+            // Assert
+            Assert.IsNotNull(controller);
+            Assert.IsNotNull(controller.Request);
+            Assert.AreEqual(1, controller.Request.Headers.Count());
+            Assert.AreEqual(2, controller.Request.Properties.Count()); // 1 created by the Phoenix
         }
     }
 

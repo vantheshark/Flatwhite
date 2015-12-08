@@ -112,10 +112,7 @@ namespace Flatwhite
                         //If this is the first request but the "cacheItem" (Possibly distributed cache item" has the cache
                         CreatePhoenix(methodExecutingContext.Invocation, cacheItem);
                     }
-                    if (!AutoRefresh)
-                    {
-                        RefreshCache(key);
-                    }
+                    RefreshCache(key);
                 }
 
                 return;
@@ -166,9 +163,13 @@ namespace Flatwhite
             }
         }
 
+        /// <summary>
+        /// Refresh cache cake by phoenix if StaleWhileRevalidate > 0 when AutoRefresh is not enabled
+        /// </summary>
+        /// <param name="storedKey"></param>
         private void RefreshCache(string storedKey)
         {
-            if (Global.Cache.PhoenixFireCage.ContainsKey(storedKey))
+            if (Global.Cache.PhoenixFireCage.ContainsKey(storedKey) && !AutoRefresh && StaleWhileRevalidate > 0)
             {
                 Global.Cache.PhoenixFireCage[storedKey].Reborn();
             }

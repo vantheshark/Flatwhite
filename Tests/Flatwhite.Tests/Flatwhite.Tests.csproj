@@ -79,11 +79,14 @@
     <Compile Include="Autofac\Strategy\CacheSelectedMethodsInvocationStrategyTests.cs" />
     <Compile Include="Core\CacheStoreAdaptorTests.cs" />
     <Compile Include="Core\ExceptionFilterAttributeTests.cs" />
+    <Compile Include="Core\ExtensionMethodsTests.cs" />
     <Compile Include="Core\FlatwhiteCacheEntryChangeMonitorTests.cs" />
+    <Compile Include="Core\GlobalTests.cs" />
     <Compile Include="Core\Hot\AlivePhoenixTests.cs" />
     <Compile Include="Core\Hot\RaisingPhoenixTests.cs" />
     <Compile Include="Core\MethodFilterAttributeTests.cs" />
     <Compile Include="Core\MethodInterceptorTests.cs" />
+    <Compile Include="Core\OutputCacheAttributeTests.cs" />
     <Compile Include="Core\Strategy\DefaultCacheStrategyTests.cs" />
     <Compile Include="Core\ToStringHashCodeGeneratorTests.cs" />
     <Compile Include="Core\DefaultHashCodeGeneratorTests.cs" />
@@ -97,11 +100,27 @@
     <Compile Include="IUserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stubs\NoneExpireCacheStore.cs" />
+    <Compile Include="WebApi\CacheControl\CachControlHeaderHandlerProviderTests.cs" />
     <Compile Include="WebApi\CacheMessageHandlerTests.cs" />
     <Compile Include="WebApi\CacheResponseBuilderTests.cs" />
     <Compile Include="WebApi\CacheControl\EtagHeaderHandlerTests.cs" />
+    <Compile Include="WebApi\ExtensionMethodsTests.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\OutputCacheAttributeWithPublicMethods.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodApplyCacheHeaders.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodCreatePhoenix.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodOnActionExecutingAsync.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetInvocationContext.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetInvocation.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodHashCacheKey.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetAllVaryCustomKey.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodShouldIgnoreCache.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetCacheResponseBuilder.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetCacheStrategy.cs" />
+    <Compile Include="WebApi\RevalidateAttributeTests.cs" />
+    <Compile Include="WebApi\WebApiCacheStrategyProviderTests.cs" />
+    <Compile Include="WebApi\WebApiCacheStrategyTests.cs" />
     <Compile Include="WebApi\WebApiContextProviderTests.cs" />
+    <Compile Include="WebApi\WebApiDependencyResolverActivatorTests.cs" />
     <Compile Include="WebApi\WebApiPhoenixTests.cs" />
   </ItemGroup>
   <ItemGroup>

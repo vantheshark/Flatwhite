@@ -41,6 +41,38 @@ namespace Flatwhite.Tests.WebApi
         }
 
         [Test]
+        public void Should_return_null_if_stale_and_no_phoenix_created()
+        {
+            // Arrange
+            var cacheControl = new CacheControlHeaderValue
+            {
+                MaxStale = true,
+                MaxStaleLimit = TimeSpan.FromSeconds(15)
+            };
+
+            var cacheItem = new WebApiCacheItem
+            {
+                CreatedTime = DateTime.UtcNow.AddSeconds(-10).AddMilliseconds(-1), // should stale just by 1 milisecond
+                MaxAge = 10,
+                StaleWhileRevalidate = 5,
+                IgnoreRevalidationRequest = false,
+                ResponseCharSet = "UTF8",
+                ResponseMediaType = "text/json",
+                Content = new byte[0],
+                Key = "CacheKey" + Guid.NewGuid()
+            };
+
+            var request = new HttpRequestMessage();
+            var svc = new CacheResponseBuilder { };
+
+            // Action
+            var response = svc.GetResponse(cacheControl, cacheItem, request);
+
+            // Assert
+            Assert.IsNull(response);
+        }
+
+        [Test]
         public void Should_return_null_if_stale()
         {
             // Arrange

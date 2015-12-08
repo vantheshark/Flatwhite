@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Flatwhite.WebApi.CacheControl;
-using Microsoft.Owin.Logging;
 
 namespace Flatwhite.WebApi
 {

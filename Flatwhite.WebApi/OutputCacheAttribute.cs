@@ -244,17 +244,10 @@ namespace Flatwhite.WebApi
                     //If this is the first request but the "cacheItem" (Possibly distributed cache item" has the cache
                     CreatePhoenix(invocation, cacheItem, actionContext.Request, null);
                 }
-                else
-                {
-                    if (!AutoRefresh)
-                    {
-                        RefreshCache(storedKey);
-                    }
-                }
-                
+                RefreshCache(storedKey);
             }
 
-            actionContext.Response = builder.GetResponse(cacheControl, cacheItem, actionContext.Request); ;
+            actionContext.Response = builder.GetResponse(cacheControl, cacheItem, actionContext.Request);
         }
 
         /// <summary>
@@ -357,7 +350,7 @@ namespace Flatwhite.WebApi
 
         private void RefreshCache(string storedKey)
         {
-            if (Global.Cache.PhoenixFireCage.ContainsKey(storedKey))
+            if (Global.Cache.PhoenixFireCage.ContainsKey(storedKey) && !AutoRefresh && StaleWhileRevalidate > 0)
             {
                 Global.Cache.PhoenixFireCage[storedKey].Reborn();
             }

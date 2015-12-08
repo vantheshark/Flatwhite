@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Flatwhite.Hot;
 using Flatwhite.WebApi;
 using Flatwhite.WebApi.CacheControl;
+using Newtonsoft.Json.Serialization;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -20,6 +21,13 @@ namespace Flatwhite.Tests.WebApi.CacheControl
         public void SetUp()
         {
             Global.Init();
+        }
+
+        [Test]
+        public void Should_throw_if_ICacheResponseBuilder_is_null()
+        {
+            // Arrange
+            Assert.Throws<ArgumentNullException>(() => new EtagHeaderHandler(null));
         }
 
         [Test]

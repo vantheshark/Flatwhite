@@ -1,13 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Flatwhite.WebApi;
+using Flatwhite.WebApi.CacheControl;
+using NSubstitute;
+using NUnit.Framework;
 
 namespace Flatwhite.Tests.WebApi
 {
     public class CacheMessageHandlerTests
     {
-        //TODO:
+        [Test]
+        public void Should_throw_if_ICachControlHeaderHandlerProvider_is_null()
+        {
+            // Arrange
+            Assert.Throws<ArgumentNullException>(() => new CacheMessageHandler(null));
+
+            // NOTE: Should be fine
+            new CacheMessageHandler(Substitute.For<ICachControlHeaderHandlerProvider>());
+        }
     }
 }

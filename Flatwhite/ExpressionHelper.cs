@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -6,6 +7,7 @@ namespace Flatwhite
 {
     internal static class ExpressionHelper
     {
+        [ExcludeFromCodeCoverage]
         public static MethodInfo ToMethodInfo<T>(Expression<Func<T, object>> method) where T : class
         {
             MethodInfo mInfo;

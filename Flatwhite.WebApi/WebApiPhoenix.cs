@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
@@ -129,6 +130,7 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// Write cache updated for request
         /// </summary>
+        [ExcludeFromCodeCoverage]
         protected override void WriteCacheUpdatedLog()
         {
             Global.Logger.Info($"Updated key \"{_info.CacheKey}\", store \"{_info.CacheStoreId}\" for request {_clonedRequestMessage.RequestUri.PathAndQuery}");
