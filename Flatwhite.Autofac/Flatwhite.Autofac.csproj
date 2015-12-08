@@ -75,7 +75,10 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' == 'Windows_NT' ">
+IF NOT EXIST "$(SolutionDir)nuget\Flatwhite.Autofac\lib\net45\" MD "$(SolutionDir)nuget\Flatwhite.Autofac\lib\net45\"
+
 COPY /Y "$(TargetPath)" "$(SolutionDir)nuget\Flatwhite.Autofac\lib\net45\"
+
 COPY /Y "$(TargetDir)$(TargetName).xml" "$(SolutionDir)nuget\Flatwhite.Autofac\lib\net45\"
     </PostBuildEvent>
   </PropertyGroup>
