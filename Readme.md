@@ -2,7 +2,7 @@
 
 # Flatwhite (Nov 27 2015) 
 
-[![Latest version](https://img.shields.io/nuget/v/Flatwhite.svg)](https://www.nuget.org/packages?q=flatwhite) [![Build Status](https://api.travis-ci.org/vanthoainguyen/Flatwhite.svg)](https://travis-ci.org/vanthoainguyen/Flatwhite) [![Build status](https://ci.appveyor.com/api/projects/status/rsognbyobn8fbasj?svg=true)](https://ci.appveyor.com/project/vanthoainguyen/flatwhite) [![Coverage Status](https://coveralls.io/repos/vanthoainguyen/Flatwhite/badge.svg?branch=master&service=github&svg=true&build=8)](https://coveralls.io/github/vanthoainguyen/Flatwhite?branch=master) [![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING)
+[![Latest version](https://img.shields.io/nuget/v/Flatwhite.svg)](https://www.nuget.org/packages?q=flatwhite) [![Build Status](https://api.travis-ci.org/vanthoainguyen/Flatwhite.svg)](https://travis-ci.org/vanthoainguyen/Flatwhite) [![Build status](https://ci.appveyor.com/api/projects/status/rsognbyobn8fbasj?svg=true)](https://ci.appveyor.com/project/vanthoainguyen/flatwhite) [![Coverage Status](https://coveralls.io/repos/vanthoainguyen/Flatwhite/badge.svg?branch=master&service=github&svg=true&build=9)](https://coveralls.io/github/vanthoainguyen/Flatwhite?branch=master) [![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING)
 
 ## What is Flatwhite?
 
