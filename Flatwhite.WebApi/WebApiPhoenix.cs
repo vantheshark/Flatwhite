@@ -4,6 +4,7 @@ using System.Net.Http.Formatting;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Hosting;
 using Flatwhite.Hot;
 
 namespace Flatwhite.WebApi
@@ -95,13 +96,18 @@ namespace Flatwhite.WebApi
             if (controller != null)
             {
                 controller.ControllerContext.Request = _clonedRequestMessage;
-                // Not support other stuff for now
+                //NOTE: Logic from System.Web.Http.HttpServer.SendAsync
+                if (SynchronizationContext.Current != null)
+                {
+                    controller.ControllerContext.Request.Properties[HttpPropertyKeys.SynchronizationContextKey] = SynchronizationContext.Current;
+                }
+                // Not support other stuff for now, IDependencyScope will be resolved by WebApi if needed
             }
             return controller;
         }
 
         /// <summary>
-        /// Clone a HttpRequestMessage
+        /// Clone a HttpRequestMessage but keys such as DependencyScope, SynchronizationContextKey
         /// </summary>
         /// <param name="original"></param>
         /// <returns></returns>
@@ -111,7 +117,7 @@ namespace Flatwhite.WebApi
             {
                 Version = original.Version,
                 Headers = { },
-                Properties = { {"__created_by", "Flatwhite.Api"} }
+                Properties = { {"__created_by", "Flatwhite.WebApi" } }
             };
             foreach (var k in original.Headers)
             {
@@ -124,6 +130,12 @@ namespace Flatwhite.WebApi
                     clonedRequestMessage.Properties.Add(k.Key, k.Value);
                 }
             }
+
+            //NOTE: HttpRequestContext seems to be a safe object to keep, well except IPrincipal. We don't suppose to cache data for Authorized request right?
+            clonedRequestMessage.Properties.Remove(HttpPropertyKeys.DependencyScope);
+            clonedRequestMessage.Properties.Remove(HttpPropertyKeys.DisposableRequestResourcesKey);
+            clonedRequestMessage.Properties.Remove(HttpPropertyKeys.SynchronizationContextKey);
+
             return clonedRequestMessage;
         }
 

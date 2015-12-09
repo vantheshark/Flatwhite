@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
@@ -6,6 +7,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Dependencies;
+using System.Web.Http.Hosting;
 using Flatwhite.WebApi;
 using NSubstitute;
 using NUnit.Framework;
@@ -74,6 +77,7 @@ namespace Flatwhite.Tests.WebApi
         public void GetTargetInstance_should_set_the_request()
         {
             // Arrange
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
             var currentCacheItem = new WebApiCacheItem();
             var invocation = Substitute.For<_IInvocation>();
             invocation.Arguments.Returns(new object[0]);
@@ -82,7 +86,13 @@ namespace Flatwhite.Tests.WebApi
             {
                 Headers = { {"key", "Value"} },
                 Method = HttpMethod.Get,
-                Properties = { {"p1", "v1"} },
+                Properties =
+                {
+                    {"p1", "v1"},
+                    { HttpPropertyKeys.DependencyScope, Substitute.For<IDependencyScope>()},
+                    { HttpPropertyKeys.DisposableRequestResourcesKey, new List<IDisposable>() },
+                    { HttpPropertyKeys.SynchronizationContextKey, SynchronizationContext.Current }
+                },
                 RequestUri = new Uri("http://localhost/api")
             };
             var phoenix = new WebApiPhoenix(invocation, CacheInfo, currentCacheItem, requestMsg, new JsonMediaTypeFormatter());
@@ -95,7 +105,7 @@ namespace Flatwhite.Tests.WebApi
             Assert.IsNotNull(controller);
             Assert.IsNotNull(controller.Request);
             Assert.AreEqual(1, controller.Request.Headers.Count());
-            Assert.AreEqual(2, controller.Request.Properties.Count()); // 1 created by the Phoenix
+            Assert.AreEqual(3, controller.Request.Properties.Count()); // 1 created by the Phoenix, 1 is the 
         }
     }
 
