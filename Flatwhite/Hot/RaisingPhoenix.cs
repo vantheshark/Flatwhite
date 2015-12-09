@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Flatwhite.Hot
 {
     /// <summary>
-    /// Represent a raising phoenix. Calling reborn many time will not actually do anything until the method reborn complete and it will return <see cref="AlivePhoenix"/>
+    /// Represent a raising phoenix. Calling reborn many time will not actually do anything until the method reborn complete and it will return the value returned from rebornAction
     /// </summary>
     internal class RaisingPhoenix : IPhoenixState
     {
@@ -12,23 +12,37 @@ namespace Flatwhite.Hot
         /// true if the phoenix is executing rebornAction. This is to avoid many call on method Reborn many time
         ///  </summary>
 
-        private Task<IPhoenixState> _backGround;
+        private Task<IPhoenixState> _backGroundTask;
+
         public IPhoenixState Reborn(Func<IPhoenixState> rebornAction)
         {
-            if (_backGround == null || _backGround.Status == TaskStatus.Faulted || _backGround.Status == TaskStatus.Canceled)
+            if (_backGroundTask == null || 
+                _backGroundTask.Status == TaskStatus.Faulted || 
+                _backGroundTask.Status == TaskStatus.Canceled || 
+                _backGroundTask.Status == TaskStatus.RanToCompletion && _backGroundTask.Result == null)
             {
-                _backGround = Task.Run(rebornAction);
-                _backGround.ContinueWith(t => { /* To not make it bubble up the exception */}, TaskContinuationOptions.OnlyOnFaulted); 
+                _backGroundTask?.Dispose();
+                _backGroundTask = Task.Run(rebornAction);
+                _backGroundTask.ContinueWith(t =>
+                {
+                    if (t.Exception?.InnerExceptions == null)
+                    {
+                        return;
+                    }
+                    var aggExceptions = t.Exception.InnerExceptions;
+                    foreach (var ex in aggExceptions)
+                    {
+                        Global.Logger.Error(ex);
+                    }
+                }, TaskContinuationOptions.OnlyOnFaulted); 
             }
             
-            if (_backGround.Status == TaskStatus.RanToCompletion && _backGround.Result != null)
+            if (_backGroundTask.Status == TaskStatus.RanToCompletion && _backGroundTask.Result != null)
             {
-                return _backGround.Result.Reborn(rebornAction);
+                return _backGroundTask.Result;
             }
-            
 
             return this;
-            
         }
     }
 }

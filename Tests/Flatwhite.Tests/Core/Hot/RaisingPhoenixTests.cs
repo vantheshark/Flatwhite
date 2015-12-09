@@ -45,19 +45,20 @@ namespace Flatwhite.Tests.Core.Hot
             }
         }
 
-
         [Test]
-        public void Reborn_should_call_reborn_on_result_if_task_completed()
+        public void Reborn_should_not_call_reborn_on_result_if_task_completed_and_just_return_the_returned_phoenix()
         {
             var reborn = Substitute.For<IPhoenixState>();
             Func<IPhoenixState> action = () => reborn;
             var state = new RaisingPhoenix();
-            var rebornState = state.Reborn(action);
-            while (Object.ReferenceEquals(rebornState, state))
+            IPhoenixState rebornState;
+            do
             {
                 rebornState = state.Reborn(action);
-            }
-            reborn.Received(1).Reborn(Arg.Any<Func<IPhoenixState>>());
+            } while (object.ReferenceEquals(rebornState, state));
+
+            reborn.Received(0).Reborn(Arg.Any<Func<IPhoenixState>>());
+
         }
     }
 }
