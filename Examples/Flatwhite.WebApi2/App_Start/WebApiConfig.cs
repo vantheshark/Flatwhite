@@ -1,6 +1,6 @@
 ﻿using System.Web.Http;
 
-namespace Flatwhite.WebApi.Owin
+namespace Flatwhite.WebApi2
 {
     public static class WebApiConfig
     {
@@ -11,7 +11,7 @@ namespace Flatwhite.WebApi.Owin
             //config.SuppressDefaultHostAuthentication();
             //config.Filters.Add(new HostAuthenticationFilter(OAuthDefaults.AuthenticationType));
 
-            
+
             // Web API routes
             config.MapHttpAttributeRoutes();
 

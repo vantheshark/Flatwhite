@@ -34,7 +34,7 @@ namespace Flatwhite
         }
 
         public int StoreId => _syncCacheStore.StoreId;
-        Task<List<KeyValuePair<string, object>>> IAsyncCacheStore.GetAll()
+        public Task<List<KeyValuePair<string, object>>> GetAllAsync()
         {
             return Task.FromResult(_syncCacheStore.GetAll());
         }

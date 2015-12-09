@@ -18,6 +18,7 @@ namespace Flatwhite.WebApi
         internal static readonly string __webApi_etag_matched = "__flatwhite_webApi_etag_matched";
         internal static readonly string __webApi_outputcache_response_builder = "__flatwhite_webApi_outputcache_response_builder";
         internal static readonly string __webApi_cache_is_stale = "__flatwhite_webApi_cache_is_stale";
+
         /// <summary>
         /// __flatwhite_dont_cache_
         /// </summary>
@@ -28,41 +29,56 @@ namespace Flatwhite.WebApi
         /// This will be used by Phoenix to create Controller instance on the fly when cache is refreshing
         /// </summary>
         internal static IServiceActivator _dependencyResolverActivator;
-        
+
         /// <summary>
         /// Create required components to use Flatwhite cache for WebApi
         /// </summary>
         /// <param name="app"></param>
         /// <param name="config"></param>
-        public static IAppBuilder UseFlatwhiteCache(this IAppBuilder app, HttpConfiguration config)
+        /// <param name="enableStatusController">If true, Flatwhite will register route /_flatwhite/store/{storeId} to allow checking cache item status</param>
+        public static IAppBuilder UseFlatwhiteCache(this IAppBuilder app, HttpConfiguration config, bool enableStatusController = true)
+        {
+            config.UseFlatwhiteCache(enableStatusController);
+            return app;
+        }
+
+        /// <summary>
+        /// Create required components to use Flatwhite cache for WebApi
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="enableStatusController">If true, Flatwhite will register route /_flatwhite/store/{storeId} to allow checking cache item status</param>
+        public static HttpConfiguration UseFlatwhiteCache(this HttpConfiguration config, bool enableStatusController = true)
         {
             Global.CacheStrategyProvider = new WebApiCacheStrategyProvider();
             _dependencyResolverActivator = new WebApiDependencyResolverActivator(() => config.DependencyResolver);
 
             var allHandlers = config.DependencyResolver
-                .GetServices(typeof (ICachControlHeaderHandler))
+                .GetServices(typeof(ICachControlHeaderHandler))
                 .OfType<ICachControlHeaderHandler>()
                 .ToList();
 
-            if (allHandlers.All(h => h.GetType() != typeof (EtagHeaderHandler)))
+            if (allHandlers.All(h => h.GetType() != typeof(EtagHeaderHandler)))
             {
-                var cacheResponseBuilder = config.DependencyResolver.GetService(typeof(ICacheResponseBuilder)) as ICacheResponseBuilder 
+                var cacheResponseBuilder = config.DependencyResolver.GetService(typeof(ICacheResponseBuilder)) as ICacheResponseBuilder
                                          ?? new CacheResponseBuilder();
                 var etagHeaderHandler = new EtagHeaderHandler(cacheResponseBuilder);
                 allHandlers.Add(etagHeaderHandler);
             }
 
-            var handlerProvider = config.DependencyResolver.GetService(typeof(ICachControlHeaderHandlerProvider)) as ICachControlHeaderHandlerProvider 
+            var handlerProvider = config.DependencyResolver.GetService(typeof(ICachControlHeaderHandlerProvider)) as ICachControlHeaderHandlerProvider
                                 ?? new CachControlHeaderHandlerProvider();
             allHandlers.ForEach(h => handlerProvider.Register(h));
-            
+
             config.MessageHandlers.Add(new CacheMessageHandler(handlerProvider));
-            config.Routes.MapHttpRoute(
-                name: "FlatwhiteStatus",
-                routeTemplate: "_flatwhite/{action}",
-                defaults: new { id = RouteParameter.Optional, controller = "FlatwhiteStatus" }
-            );
-            return app;
+            if (enableStatusController)
+            {
+                config.Routes.MapHttpRoute(
+                    name: "_FlatwhiteStatus",
+                    routeTemplate: "_flatwhite/{action}/{id}",
+                    defaults: new {id = RouteParameter.Optional, controller = "FlatwhiteStatus"}
+                    );
+            }
+            return config;
         }
     }
 }

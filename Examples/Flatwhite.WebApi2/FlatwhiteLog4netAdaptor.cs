@@ -1,7 +1,7 @@
 ﻿using System;
 using log4net;
 
-namespace Flatwhite.WebApi.Owin
+namespace Flatwhite.WebApi2
 {
     public class FlatwhiteLog4netAdaptor : ILogger
     {

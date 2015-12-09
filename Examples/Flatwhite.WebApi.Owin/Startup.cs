@@ -5,6 +5,7 @@ using Autofac.Integration.WebApi;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
 using Flatwhite.WebApi.CacheControl;
+using Flatwhite.WebApi2;
 using log4net;
 using Owin;
 
@@ -24,8 +25,9 @@ namespace Flatwhite.WebApi.Owin
             WebApiConfig.Register(config);
 
             app.UseWebApi(config)
-               .UseFlatwhiteCache(config)
-               ;
+               .UseFlatwhiteCache(config); // OR config.UseFlatwhiteCache();
+
+
         }
 
         private IContainer BuildAutofacContainer(HttpConfiguration config)

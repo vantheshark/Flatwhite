@@ -47,6 +47,6 @@ namespace Flatwhite
         /// Get all cache items
         /// </summary>
         /// <returns></returns>
-        Task<List<KeyValuePair<string, object>>> GetAll();
+        Task<List<KeyValuePair<string, object>>> GetAllAsync();
     }
 }

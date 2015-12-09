@@ -105,6 +105,7 @@
     <Compile Include="WebApi\CacheResponseBuilderTests.cs" />
     <Compile Include="WebApi\CacheControl\EtagHeaderHandlerTests.cs" />
     <Compile Include="WebApi\ExtensionMethodsTests.cs" />
+    <Compile Include="WebApi\FlatwhiteStatusControllerTests.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\OutputCacheAttributeWithPublicMethods.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodApplyCacheHeaders.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodCreatePhoenix.cs" />

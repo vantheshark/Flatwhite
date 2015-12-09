@@ -36,6 +36,9 @@ namespace Flatwhite.Tests.Core
             _adaptor.Contains("_key3");
             _cacheStore.Received(1).Contains("_key3");
 
+            _adaptor.GetAll();
+            _cacheStore.Received(1).GetAll();
+
             await _adaptor.SetAsync("key", "value", time);
             _cacheStore.Received(1).Set("key", "value", time);
 
@@ -47,6 +50,9 @@ namespace Flatwhite.Tests.Core
 
             await _adaptor.ContainsAsync("key3");
             _cacheStore.Received(1).Contains("key3");
+
+            await _adaptor.GetAllAsync();
+            _cacheStore.Received(2).GetAll();
         }
     }
 }

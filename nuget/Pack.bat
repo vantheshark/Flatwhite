@@ -1,7 +1,7 @@
 del Flatwhite.*.nupkg
 
 SETLOCAL
-SET VERSION=1.0.9
+SET VERSION=1.0.10
 
 nuget pack Flatwhite\Package.nuspec -Version %VERSION%
 nuget pack Flatwhite.Autofac\Package.nuspec -Version %VERSION%

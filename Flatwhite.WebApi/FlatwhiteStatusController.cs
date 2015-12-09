@@ -2,20 +2,38 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Flatwhite.Provider;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Flatwhite.WebApi
 {
     /// <summary>
     /// Status controller
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public class FlatwhiteStatusController : ApiController
     {
+        private readonly ICacheStoreProvider _cacheStoreProvider;
+
+        /// <summary>
+        /// Initialize an instance of FlatwhiteStatusController
+        /// </summary>
+        /// <param name="cacheStoreProvider"></param>
+        public FlatwhiteStatusController(ICacheStoreProvider cacheStoreProvider)
+        {
+            _cacheStoreProvider = cacheStoreProvider;
+        }
+
+        /// <summary>
+        /// Initialize an instance of FlatwhiteStatusController
+        /// </summary>
+        public FlatwhiteStatusController() : this (Global.CacheStoreProvider)
+        {
+        }
+
         /// <summary>
         /// Get all Flatwhite cache items in memory
         /// </summary>
@@ -23,20 +41,19 @@ namespace Flatwhite.WebApi
         /// <returns></returns>
         [HttpGet]
         [OutputCache(MaxAge = 1)]
-        public async Task<List<CacheItemStatus>> Store(int id = 0)
+        public async Task<IHttpActionResult> Store(int id = 0)
         {
             var all = new List<KeyValuePair<string, object>>();
-            
 
-            var syncStore = Global.CacheStoreProvider.GetCacheStore(id);
+            var syncStore = _cacheStoreProvider.GetCacheStore(id);
             if (syncStore != null)
             {
                 all.AddRange(syncStore.GetAll());
             }
-            var asyncStore = Global.CacheStoreProvider.GetAsyncCacheStore(id);
+            var asyncStore = _cacheStoreProvider.GetAsyncCacheStore(id);
             if (asyncStore != null && !(asyncStore is CacheStoreAdaptor))
             {
-                all.AddRange(await asyncStore.GetAll());
+                all.AddRange(await asyncStore.GetAllAsync());
             }
 
             var items = new List<CacheItemStatus>();
@@ -86,8 +103,13 @@ namespace Flatwhite.WebApi
                     });
                 }
             }
-            
-            return items.OrderBy(x => x.Type).ThenBy(x => x.Age).ThenBy(x => x.Size).ThenBy(x => x.StoreId).ToList();
+            return Json(items,
+                new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                    Formatting = Formatting.Indented
+                });
         }
 
         //http://stackoverflow.com/questions/605621/how-to-get-object-size-in-memory
@@ -97,7 +119,7 @@ namespace Flatwhite.WebApi
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        private int GetObjectSize(object obj)
+        private static int GetObjectSize(object obj)
         {
             var bf = new BinaryFormatter();
             using (var ms = new MemoryStream())
@@ -122,19 +144,12 @@ namespace Flatwhite.WebApi
             public int? StoreId { get; set; }
             public uint? Age { get; set; }
             public bool? IsStale { get; set; }
-
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string Checksum { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string ResponseMediaType { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public string ResponseCharSet { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public uint? StaleIfError { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
             public bool? IgnoreRevalidationRequest { get; set; }
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public bool AutoRefresh { get; set; }
+            public bool? AutoRefresh { get; set; }
         }
 #pragma warning restore 1591
     }

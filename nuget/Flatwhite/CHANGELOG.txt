@@ -1,3 +1,7 @@
+* 1.0.10 (2015-12-09 22:15:00 AEDT)
+- Fix minor bugs and add /_flatwhite/store/{storeId} for WebApi
+- Add an extension method to support WebApi2
+
 * 1.0.9 (2015-12-08 15:00:00 AEDT)
 - Fix minor bugs and add more unit tests
 
