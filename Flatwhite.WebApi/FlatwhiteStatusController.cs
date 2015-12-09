@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -121,13 +122,32 @@ namespace Flatwhite.WebApi
         /// <returns></returns>
         private static int GetObjectSize(object obj)
         {
-            var bf = new BinaryFormatter();
-            using (var ms = new MemoryStream())
+            if (obj == null)
             {
-                bf.Serialize(ms, obj);
-                var array = ms.ToArray();
-                return array.Length;
+                return 0;
             }
+            try
+            {
+                var bf = new BinaryFormatter();
+                using (var ms = new MemoryStream())
+                {
+                    bf.Serialize(ms, obj);
+                    var array = ms.ToArray();
+                    return array.Length;
+                }
+            }
+            catch (SerializationException)
+            {
+            }
+
+            try
+            {
+                return JsonConvert.SerializeObject(obj).Length;
+            }
+            catch
+            {
+            }
+            return -1;
         }
 
 #pragma warning disable 1591

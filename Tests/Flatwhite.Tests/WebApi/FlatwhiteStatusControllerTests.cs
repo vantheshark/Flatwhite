@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
 using Flatwhite.Provider;
@@ -18,8 +19,8 @@ namespace Flatwhite.Tests.WebApi
             syncStore.GetAll().Returns(new List<KeyValuePair<string, object>>
             {
                 new KeyValuePair<string, object>("item1", new CacheItem {Data = "data"}),
-                new KeyValuePair<string, object>("item2", new CacheItem {Data = "data2"}),
-                new KeyValuePair<string, object>("item2", new object()),
+                new KeyValuePair<string, object>("item2", new CacheItem {Data = new MediaTypeHeaderValue("text/json")}),
+                new KeyValuePair<string, object>("item2", new MediaTypeHeaderValue("application/xml")),
             });
 
             var asyncStore = Substitute.For<IAsyncCacheStore>();
@@ -27,7 +28,7 @@ namespace Flatwhite.Tests.WebApi
             {
                 new KeyValuePair<string, object>("item1", new WebApiCacheItem {Content = new byte[0]}),
                 new KeyValuePair<string, object>("item2", new WebApiCacheItem {Content = new byte[0]}),
-                new KeyValuePair<string, object>("item3", new object()),
+                new KeyValuePair<string, object>("item3", new MediaTypeHeaderValue("application/xml")),
             }));
 
             var provider = Substitute.For<ICacheStoreProvider>();

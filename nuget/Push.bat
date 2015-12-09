@@ -4,10 +4,10 @@
 DIR /B *.nupkg
 @echo:
 SETLOCAL
-SET VERSION=1.0.10
+SET VERSION=1.0.11
 pause
-nuget push Flatwhite.%VERSION%.nupkg
-nuget push Flatwhite.Autofac.%VERSION%.nupkg
-nuget push Flatwhite.WebApi.%VERSION%.nupkg
+nuget push Flatwhite.%VERSION%.nupkg -NonInteractive
+nuget push Flatwhite.Autofac.%VERSION%.nupkg -NonInteractive
+nuget push Flatwhite.WebApi.%VERSION%.nupkg -NonInteractive
 pause
 ENDLOCAL
