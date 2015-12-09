@@ -1,28 +1,28 @@
 <img alt="Flatwhite logo" src="https://dl.dropboxusercontent.com/u/81698224/nuget-logos/coffee-.png" title="Flatwhite" width="100px" height="100px"/>
 
-# Flatwhite (Nov 27 2015) 
+# Flatwhite
 
-[![Latest version](https://img.shields.io/nuget/v/Flatwhite.svg)](https://www.nuget.org/packages?q=flatwhite) [![Build Status](https://api.travis-ci.org/vanthoainguyen/Flatwhite.svg)](https://travis-ci.org/vanthoainguyen/Flatwhite) [![Build status](https://ci.appveyor.com/api/projects/status/rsognbyobn8fbasj?svg=true)](https://ci.appveyor.com/project/vanthoainguyen/flatwhite) [![Coverage Status](https://coveralls.io/repos/vanthoainguyen/Flatwhite/badge.svg?branch=master&service=github&svg=true&build=12)](https://coveralls.io/github/vanthoainguyen/Flatwhite?branch=master) [![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING)
+[![Latest version](https://img.shields.io/nuget/v/Flatwhite.svg)](https://www.nuget.org/packages?q=flatwhite) [![Build Status](https://api.travis-ci.org/vanthoainguyen/Flatwhite.svg)](https://travis-ci.org/vanthoainguyen/Flatwhite) [![Build status](https://ci.appveyor.com/api/projects/status/rsognbyobn8fbasj?svg=true)](https://ci.appveyor.com/project/vanthoainguyen/flatwhite) [![Coverage Status](https://coveralls.io/repos/vanthoainguyen/Flatwhite/badge.svg?branch=master&service=github&svg=true)](https://coveralls.io/github/vanthoainguyen/Flatwhite?branch=master) [![License WTFPL](https://img.shields.io/badge/licence-WTFPL-green.svg)](http://sam.zoy.org/wtfpl/COPYING)
 
 ## What is Flatwhite?
 
-Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy. There are many libraries out there to help you intercept a method call such as PostSharp, recently CodeCop and they're really cool tools. However, I've been using Castle dynamic proxy for a many years and I think it has enough needs for my projects. Therefore, Flatwhite is an opinionated library to facilitate usages of Castle dynamic proxy to intercept methods.
+Flatwhite is an AOP library with MVC and WebAPI ActionFilter style using Castle dynamic proxy. There are many libraries out there to help you intercept a method call such as PostSharp, recently CodeCop and they're really cool tools. However, I've been using Castle dynamic proxy for a many years and I think it offers enough needs for my projects. Therefore, Flatwhite is an opinionated library to facilitate usages of Castle dynamic proxy for method interceptions.
 
-Currently release only supports Autofac but I think other IOC containers also use Castle dynamic proxy when they come to interception so they will be supported in the future.
+Current release only supports Autofac but I think other IOC containers also use Castle dynamic proxy when they come to interception so they will be supported in the future.
 
-You can create MethodFilterAttribute to add custom logic to any methods as soon as it is interceptable by Castle Dynamic Proxy (virtual not final). Flatwhite has a built-in OutputCacheFilter to cache method result which can auto refresh stale content. You can use Flatwhite simply for caching or extending behavior of your methods such as profiling, logging by implement MethodFilterAttribute similar to MVC's ActionFilterAttribute
+You can create MethodFilterAttribute to add custom logic to any methods as soon as it is interceptable by Castle Dynamic Proxy (virtual not final). Flatwhite has a built-in OutputCacheFilter to cache method result which can auto refresh stale content. You can use Flatwhite simply for caching or extending behavior of your code such as profiling, logging by implement MethodFilterAttribute similar to MVC's ActionFilterAttribute
 
 ## When to use Flatwhite?
-You have classes implement interfaces and registered using Autofac (for now). You have a need to intercept methods call so you have 2 quick options:
-- Use Autofac.Extras and call EnableInterfaceInterceptor() on type registration then create/register custom IInterceptor.
-- Or use Flatwhite, implement an MethodFilterAttribute and decorate on the methods on your interface which you want to intercept.
+You have classes implemented interfaces and registered using Autofac (for now). You have a need to intercept method calls so you possibly have 2 quick options:
+- Use Autofac.Extras and call EnableInterfaceInterceptor() on type registrations then create/register custom IInterceptor.
+- Or use Flatwhite, implement an MethodFilterAttribute and decorate on the methods on your interfaces which you want to intercept.
 
-As mentioned above, Flatwhite has a built in OutputCacheFilter to cache method output. It works for methods that have a return value both sync and async methods. Beside caching, you can also implement MethodFilterAttribute and ExceptionFilterAttribute to add custom logic to your methods.
+As mentioned above, Flatwhite has a built-in OutputCacheFilter to cache method output. It works for methods that have a return value both sync and async methods. Beside caching, you can also implement MethodFilterAttribute and ExceptionFilterAttribute to add custom logic to your code.
 
 ## How to use Flatwhite?
 ** Required packages: [![Autofac](https://img.shields.io/badge/Autofac-3.5.2-yellow.svg)](https://www.nuget.org/packages/Autofac/3.5.2) [![Castle.Core](https://img.shields.io/badge/Castle.Core-3.3.3-yellow.svg)](https://www.nuget.org/packages/Castle.Core/3.3.3)
 
-For now, Flatwhite needs to be used with Autofac. It requires Castle Dynamic proxy to intercept method so you have to have public interface or your methods must be **virtual** and **not final** to be intercepted.
+For now, Flatwhite needs to be used with Autofac (except Flatwhite.WebApi package). It requires Castle Dynamic proxy to intercept methods so it's a requirement to have public interface or your methods must be **virtual** and **not final** to be intercepted.
 
 ### For caching:
 #### 1/ Enable class interceptor
@@ -74,12 +74,12 @@ builder.RegisterType<UserService>()
        .CacheWithStrategy(CacheStrategies
 			.AllMethods()
 			.Duration(5)
-			.VaryByParam("userId")
+			.VaryByParam("*")
 	    );
 ```
 
 #### 4/ Choose the method to cache without using Attribute filter
-If you want to cache on just some of the methods, you can selectively do like below. Again, it works only on virtual methods if you are registering class service, interface service is fine.
+If you want to cache on just some methods, you can selectively do like below. Again, it works only on virtual methods if you are registering class service; interface services are fine.
 
 ```C#
 var builder = new ContainerBuilder().EnableFlatwhite();
@@ -103,7 +103,7 @@ builder.RegisterType<BlogService>()
 ```
 
 #### 5/ Enable interceptors on all previous registrations
-If you're a fan of assembly scanning, you can decorate the *OutputCache* attribute on classes & interfaces you want to cache and enable them by registering **FlatwhiteBuilderInterceptModule** before building the container
+If you're a fan of assembly scanning, you can decorate the *OutputCache* attribute on classes & interfaces you want to cache and enable them by _RegisterModule_  **FlatwhiteBuilderInterceptModule** before building the container
 
 ```C#
 var builder = new ContainerBuilder();
@@ -124,7 +124,7 @@ Note that you don't have to call EnableFlatwhite() after creating ContainerBuild
 #### 6/ Auto refresh stale data
 Flatwhite can auto refresh the stale content if you set **StaleWhileRevalidate** with a value greater than 0.
 This should be used with Duration to indicates that caches MAY serve the cached result in which it appears after it becomes stale, up to the indicated number of seconds
-The first call comes to the service and gets a stale cache result will also make the cache system auto refresh once. So if the method is not called many times in a short period, it's better to turn on AutoRefresh to make the cache refresh as soon as it starts to be stale
+The first call comes to the service and gets a stale cache result will also make the cache system auto refresh once in the background. So if the method is not called many times in a short period, it's better to turn on AutoRefresh to make the cache alive and refreshed as soon as it starts to be stale
 		
 
 ```C#
@@ -147,7 +147,7 @@ public interface IBlogService
 ```
 
 #### 7/ Revalidate cache
-Even though you can use AutoRefresh or StaleWhileRevalidate to auto refresh cache data. Some time you want to remove the cache item after you call a certain method. You can use RevalidateAttribute to remove the cache item or some related cache items. Decorate the attribute on another method and the cache item will be removed once the method is invoked. On example below, when you call method DisableUser, because it has the Revalidate attribute decorated with "User" as the key, all related caches created for method with attribute OutputCache which has RevalidationKey = "User" will be reset.
+Even though you can use AutoRefresh or StaleWhileRevalidate to auto refresh cache data. Some time you want to remove the cache item after you call a certain method. You can use *RevalidateAttribute* to remove the cache item or some related cache items. Decorate the attribute on another method and the cache item will be removed once the method is invoked successfully. On example below, when you call method DisableUser, because it has the Revalidate attribute decorated with "User" as the key, all related caches created for method with attribute OutputCache which has RevalidationKey = "User" will be reset.
 
 ```C#
 public interface IUserService
@@ -202,10 +202,9 @@ public abstract class ExceptionFilterAttribute : Attribute
 
 ## TODO:
 
+Profile base for OutputCache attribute
 Better documents
-
 Support other IOC library
-
 
 
 ## LICENCE

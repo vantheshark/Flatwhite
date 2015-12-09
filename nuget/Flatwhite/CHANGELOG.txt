@@ -1,3 +1,6 @@
+* 1.0.11 (2015-12-10 09:15:00 AEDT)
+- Fix serialization problem on /_flatwhite/store
+
 * 1.0.10 (2015-12-09 22:15:00 AEDT)
 - Fix minor bugs and add /_flatwhite/store/{storeId} for WebApi
 - Add an extension method to support WebApi2
