@@ -147,7 +147,7 @@ public interface IBlogService
 ```
 
 #### 7/ Revalidate cache
-Even though you can use AutoRefresh or StaleWhileRevalidate to auto refresh cache data. Some time you want to remove the cache item after you call a certain method. You can use *RevalidateAttribute* to remove the cache item or some related cache items. Decorate the attribute on another method and the cache item will be removed once the method is invoked successfully. On example below, when you call method DisableUser, because it has the Revalidate attribute decorated with "User" as the key, all related caches created for method with attribute OutputCache which has RevalidationKey = "User" will be reset.
+Even though you can use _AutoRefresh_ or _StaleWhileRevalidate_ to auto refresh cache data. Some time you want to remove the cache item after you call a certain method. You can use *RevalidateAttribute* to remove the cache item or some related cache items. Decorate the attribute on another method and the cache item will be removed once the method is invoked successfully. On example below, when you call method DisableUser, because it has the Revalidate attribute decorated with "User" as the key, all related caches created for method with attribute OutputCache which has RevalidationKey = *"User"* will be reset.
 
 ```C#
 public interface IUserService
@@ -180,11 +180,11 @@ public abstract class MethodFilterAttribute : Attribute
 }
 ```
 
-If you decorate the filter on async methods, only OnMethodExecutingAsync and OnMethodExecutedAsync are called. During the filters are being executed, if the Result value is set to the MethodExecutingContext, the remaining filters will be ignored.
+If you decorate the filter on async methods, only _OnMethodExecutingAsync_ and _OnMethodExecutedAsync_ are called. During the filters are being executed, if the Result value is set to the MethodExecutingContext, the remaining filters will be ignored.
 
 
 ### For error handling
-Similar to MethodFilterAttribute, you can implement ExceptionFilterAttribute to provide custom error handling logic. If the property MethodExceptionContext.Handled is true, all remaining ExceptionFilter will be ignored.
+Similar to MethodFilterAttribute, you can implement *ExceptionFilterAttribute* to provide custom error handling logic. If the property _MethodExceptionContext.Handled_ is true, all remaining *ExceptionFilter* will be ignored.
 
 ```C#
 public abstract class ExceptionFilterAttribute : Attribute
@@ -202,9 +202,9 @@ public abstract class ExceptionFilterAttribute : Attribute
 
 ## TODO:
 
-Profile base for OutputCache attribute
-Better documents
-Support other IOC library
+- Profile base for OutputCache attribute
+- Better documents
+- Support other IOC library
 
 
 ## LICENCE
