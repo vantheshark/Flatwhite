@@ -11,7 +11,7 @@ namespace Flatwhite.Hot
     /// </summary>
     public class Phoenix : IDisposable
     {
-        private readonly CacheInfo _info;
+        private readonly CacheItem _info;
         private IPhoenixState _phoenixState;
         private static readonly object PhoenixCage = new object();
 
@@ -43,7 +43,7 @@ namespace Flatwhite.Hot
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="info"></param>
-        public Phoenix(_IInvocation invocation, CacheInfo info)
+        public Phoenix(_IInvocation invocation, CacheItem info)
         {
             _info = info;
             _phoenixState = _info.StaleWhileRevalidate > 0 ? (IPhoenixState)new RaisingPhoenix() : new DisposingPhoenix(Die);
@@ -88,8 +88,8 @@ namespace Flatwhite.Hot
                     return disposing.Reborn(null);
                 }
 
-                var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.CacheStoreId);
-                cacheStore.Set(_info.CacheKey, cacheItem, DateTime.UtcNow.AddSeconds(_info.CacheDuration + _info.StaleWhileRevalidate));
+                var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.StoreId);
+                cacheStore.Set(_info.Key, cacheItem, DateTime.UtcNow.AddSeconds(_info.MaxAge + _info.StaleWhileRevalidate));
 
                 WriteCacheUpdatedLog();
                 _timer.Change(_info.GetRefreshTime(), TimeSpan.Zero);
@@ -98,7 +98,7 @@ namespace Flatwhite.Hot
             }
             catch (Exception ex)
             {
-                Global.Logger.Error($"Error while refreshing key {_info.CacheKey}, store \"{_info.CacheStoreId}\". Will retry after 1 second.", ex);
+                Global.Logger.Error($"Error while refreshing key {_info.Key}, store \"{_info.StoreId}\". Will retry after 1 second.", ex);
                 _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.Zero);
                 throw;
             }
@@ -109,7 +109,7 @@ namespace Flatwhite.Hot
         /// </summary>
         protected virtual void WriteCacheUpdatedLog()
         {
-            Global.Logger.Info($"Updated key \"{_info.CacheKey}\", store \"{_info.CacheStoreId}\"");
+            Global.Logger.Info($"Updated key \"{_info.Key}\", store \"{_info.StoreId}\"");
         }
 
         /// <summary>
@@ -149,10 +149,11 @@ namespace Flatwhite.Hot
             {
                 CreatedTime = DateTime.UtcNow,
                 Data = invocationBareResult,
-                Key = _info.CacheKey,
-                MaxAge = _info.CacheDuration,
-                StoreId = _info.CacheStoreId,
-                StaleWhileRevalidate = _info.StaleWhileRevalidate
+                Key = _info.Key,
+                MaxAge = _info.MaxAge,
+                StoreId = _info.StoreId,
+                StaleWhileRevalidate = _info.StaleWhileRevalidate,
+                AutoRefresh = _info.AutoRefresh
             };
         }
 
@@ -178,20 +179,20 @@ namespace Flatwhite.Hot
         public void Dispose()
         {
             _timer.Dispose();
-            Global.Cache.PhoenixFireCage.Remove(_info.CacheKey);
+            Global.Cache.PhoenixFireCage.Remove(_info.Key);
         }
 
         private void Die()
         {
             try
             {
-                var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.CacheStoreId);
-                cacheStore.Remove(_info.CacheKey);
+                var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.StoreId);
+                cacheStore.Remove(_info.Key);
                 Dispose();
             }
             catch (Exception ex)
             {
-                Global.Logger.Error($"Error while deleting the cache key {_info.CacheKey}, store {_info.CacheStoreId}", ex);
+                Global.Logger.Error($"Error while deleting the cache key {_info.Key}, store {_info.StoreId}", ex);
             }
         }
     }

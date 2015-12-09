@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Flatwhite.Tests.Stubs
 {
@@ -42,5 +43,9 @@ namespace Flatwhite.Tests.Stubs
         }
 
         public int StoreId { get; }
+        public List<KeyValuePair<string, object>> GetAll()
+        {
+            return _cache.ToList();
+        }
     }
 }

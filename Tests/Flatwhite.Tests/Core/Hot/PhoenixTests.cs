@@ -16,11 +16,11 @@ namespace Flatwhite.Tests.Core.Hot
         private _IInvocation _invocation;
         private const int StoreId = 99999;
         private readonly Guid _id = Guid.NewGuid();
-        private static readonly CacheInfo CacheInfo = new CacheInfo
+        private static readonly CacheItem CacheInfo = new CacheItem
         {
-            CacheKey = "cacheKey",
-            CacheStoreId = StoreId,
-            CacheDuration = 5000,
+            Key = "cacheKey",
+            StoreId = StoreId,
+            MaxAge = 5000,
             StaleWhileRevalidate = 5000
         };
 
@@ -57,10 +57,10 @@ namespace Flatwhite.Tests.Core.Hot
             
             var cacheStore = Substitute.For<ICacheStore>();
             var autoResetEvent = new AutoResetEvent(false);
-            cacheStore.When(x => x.Set(CacheInfo.CacheKey, Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>()))
+            cacheStore.When(x => x.Set(CacheInfo.Key, Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>()))
                 .Do(c => autoResetEvent.Set());
 
-            cacheStore.When(x => x.Remove(CacheInfo.CacheKey))
+            cacheStore.When(x => x.Remove(CacheInfo.Key))
                 .Do(c => autoResetEvent.Set());
 
 

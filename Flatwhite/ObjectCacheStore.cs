@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.Caching;
 
 namespace Flatwhite
@@ -29,5 +31,9 @@ namespace Flatwhite
         }
 
         public int StoreId => 0;
+        public List<KeyValuePair<string, object>> GetAll()
+        {
+            return _cache.ToList();
+        }
     }
 }

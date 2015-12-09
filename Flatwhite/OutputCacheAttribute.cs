@@ -184,21 +184,11 @@ namespace Flatwhite
         /// <returns></returns>
         private void CreatePhoenix(_IInvocation invocation, CacheItem cacheItem)
         {
-            var cacheInfo = new CacheInfo
-            {
-                CacheKey = cacheItem.Key,
-                CacheStoreId = cacheItem.StoreId,
-                CacheDuration = Duration,
-                StaleWhileRevalidate = StaleWhileRevalidate,
-                AutoRefresh = AutoRefresh
-            };
-            
             if (Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
             {
                 Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();
             }
-
-            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(invocation, cacheInfo); ;
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(invocation, cacheItem); ;
         }
 
         /// <summary>

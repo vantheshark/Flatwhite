@@ -57,6 +57,11 @@ namespace Flatwhite.WebApi
             allHandlers.ForEach(h => handlerProvider.Register(h));
             
             config.MessageHandlers.Add(new CacheMessageHandler(handlerProvider));
+            config.Routes.MapHttpRoute(
+                name: "FlatwhiteStatus",
+                routeTemplate: "_flatwhite/{action}",
+                defaults: new { id = RouteParameter.Optional, controller = "FlatwhiteStatus" }
+            );
             return app;
         }
     }

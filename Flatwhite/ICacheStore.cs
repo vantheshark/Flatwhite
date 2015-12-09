@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Flatwhite
 {
@@ -40,5 +41,11 @@ namespace Flatwhite
         /// The unique number represent the <see cref="ICacheStore" />
         /// </summary>
         int StoreId { get; }
+
+        /// <summary>
+        /// Get all cache items
+        /// </summary>
+        /// <returns></returns>
+        List<KeyValuePair<string, object>> GetAll();
     }
 }

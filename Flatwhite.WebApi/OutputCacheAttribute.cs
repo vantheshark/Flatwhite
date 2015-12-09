@@ -447,21 +447,11 @@ namespace Flatwhite.WebApi
         /// <returns></returns>
         private void CreatePhoenix(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request, MediaTypeFormatter mediaTypeFormatter)
         {
-            var cacheInfo = new CacheInfo
-            {
-                CacheKey = cacheItem.Key,
-                CacheStoreId = cacheItem.StoreId,
-                CacheDuration = MaxAge,
-                StaleWhileRevalidate = StaleWhileRevalidate,
-                AutoRefresh = AutoRefresh
-            };
-
-            var phoenix = new WebApiPhoenix(invocation, cacheInfo, cacheItem, request, mediaTypeFormatter);
             if (Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
             {
                 Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();
             }
-            Global.Cache.PhoenixFireCage[cacheItem.Key] = phoenix;
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new WebApiPhoenix(invocation, cacheItem, request, mediaTypeFormatter);
         }
 
         /// <summary>

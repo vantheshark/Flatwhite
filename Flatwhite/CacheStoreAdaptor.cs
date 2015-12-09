@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Flatwhite
@@ -33,6 +34,15 @@ namespace Flatwhite
         }
 
         public int StoreId => _syncCacheStore.StoreId;
+        Task<List<KeyValuePair<string, object>>> IAsyncCacheStore.GetAll()
+        {
+            return Task.FromResult(_syncCacheStore.GetAll());
+        }
+
+        public List<KeyValuePair<string, object>> GetAll()
+        {
+            return _syncCacheStore.GetAll();
+        }
 
         public Task SetAsync(string key, object value, DateTimeOffset absoluteExpiration)
         {

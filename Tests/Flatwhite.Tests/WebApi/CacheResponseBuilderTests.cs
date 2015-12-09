@@ -94,7 +94,7 @@ namespace Flatwhite.Tests.WebApi
                 Key = "CacheKey" + Guid.NewGuid()
             };
 
-            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheInfo());
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheItem());
 
             var request = new HttpRequestMessage();
             var svc = new CacheResponseBuilder { };
@@ -156,7 +156,7 @@ namespace Flatwhite.Tests.WebApi
                 Key = "CacheKey" + Guid.NewGuid()
             };
 
-            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheInfo());
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheItem());
 
             var request = new HttpRequestMessage();
             var svc = new CacheResponseBuilder { };
@@ -197,7 +197,7 @@ namespace Flatwhite.Tests.WebApi
                 Key = "CacheKey" + Guid.NewGuid()
             };
 
-            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheInfo());
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheItem());
 
             var request = new HttpRequestMessage();
             request.Properties[WebApiExtensions.__webApi_etag_matched] = true;

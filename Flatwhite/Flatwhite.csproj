@@ -58,7 +58,6 @@
     <Compile Include="Hot\AlivePhoenix.cs" />
     <Compile Include="Hot\DisposingPhoenix.cs" />
     <Compile Include="Hot\RaisingPhoenix.cs" />
-    <Compile Include="CacheInfo.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="IChangeMonitor.cs" />
     <Compile Include="ILogger.cs" />
@@ -124,7 +123,7 @@ COPY /Y "$(TargetPath)" "$(SolutionDir)nuget\Flatwhite\lib\net45\"
 
 COPY /Y "$(TargetDir)$(TargetName).xml" "$(SolutionDir)nuget\Flatwhite\lib\net45\"
 	</PostBuildEvent>
-  </PropertyGroup>  
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

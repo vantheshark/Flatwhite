@@ -108,7 +108,7 @@ namespace Flatwhite.Tests.WebApi.CacheControl
 
 
             // Action
-            Global.Cache.PhoenixFireCage["fw-0-HASHEDKEY"] = new WebApiPhoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheInfo(), oldCacheItem, request);
+            Global.Cache.PhoenixFireCage["fw-0-HASHEDKEY"] = new WebApiPhoenix(NSubstitute.Substitute.For<_IInvocation>(), oldCacheItem, request);
             var response = await handler.HandleAsync(cacheControl, request, CancellationToken.None).ConfigureAwait(false);
 
             Assert.AreEqual(resultCode, response.StatusCode);

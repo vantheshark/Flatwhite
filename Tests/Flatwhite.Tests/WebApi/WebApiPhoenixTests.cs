@@ -19,15 +19,6 @@ namespace Flatwhite.Tests.WebApi
     public class WebApiPhoenixTests
     {
         private readonly DummyController _controllerIntance = new DummyController();
-        private readonly Flatwhite.WebApi.OutputCacheAttribute _cacheAttribute = new Flatwhite.WebApi.OutputCacheAttribute();
-        private static readonly CacheInfo CacheInfo = new CacheInfo
-        {
-            CacheKey = "cacheKey",
-            CacheStoreId = 0,
-            CacheDuration = 100000,
-            StaleWhileRevalidate = 100000
-        };
-
         private static readonly Type controllerType = typeof (DummyController);
 
         [SetUp]
@@ -52,7 +43,7 @@ namespace Flatwhite.Tests.WebApi
             invocation.Arguments.Returns(new object[0]);
             invocation.Method.Returns(controllerType.GetMethod(actionMethodName, BindingFlags.Instance | BindingFlags.Public));
 
-            var phoenix = new WebApiPhoenix(invocation, CacheInfo, currentCacheItem, new HttpRequestMessage(), new JsonMediaTypeFormatter());
+            var phoenix = new WebApiPhoenix(invocation, currentCacheItem, new HttpRequestMessage(), new JsonMediaTypeFormatter());
 
             // Action
             MethodInfo dynMethod = typeof(WebApiPhoenix).GetMethod("InvokeAndGetBareResult", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -95,7 +86,7 @@ namespace Flatwhite.Tests.WebApi
                 },
                 RequestUri = new Uri("http://localhost/api")
             };
-            var phoenix = new WebApiPhoenix(invocation, CacheInfo, currentCacheItem, requestMsg, new JsonMediaTypeFormatter());
+            var phoenix = new WebApiPhoenix(invocation, currentCacheItem, requestMsg, new JsonMediaTypeFormatter());
 
             // Action
             MethodInfo dynMethod = typeof(WebApiPhoenix).GetMethod("GetTargetInstance", BindingFlags.NonPublic | BindingFlags.Instance);

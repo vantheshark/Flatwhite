@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Flatwhite
@@ -41,5 +42,11 @@ namespace Flatwhite
         /// The unique number represent the <see cref="IAsyncCacheStore" />
         /// </summary>
         int StoreId { get; }
+
+        /// <summary>
+        /// Get all cache items
+        /// </summary>
+        /// <returns></returns>
+        Task<List<KeyValuePair<string, object>>> GetAll();
     }
 }

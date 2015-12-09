@@ -43,15 +43,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
                 Key = key
             };
 
-            var existingPhoenix = Substitute.For<WebApiPhoenix>(_invocation, 
-                new CacheInfo
-                {
-                    CacheStoreId = 1000,
-                    CacheKey = key,
-                    CacheDuration = 5,
-                    StaleWhileRevalidate = 5
-                }, 
-                objCacheItem, _request, null);
+            var existingPhoenix = Substitute.For<WebApiPhoenix>(_invocation, objCacheItem, _request, null);
 
             var att = new OutputCacheAttributeWithPublicMethods {MaxAge = 5, CacheStoreId = 1000, StaleWhileRevalidate = 5};
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace Flatwhite
 {
@@ -32,6 +33,11 @@ namespace Flatwhite
         public uint StaleWhileRevalidate { get; set; }
 
         /// <summary>
+        /// Auto refresh
+        /// </summary>
+        public bool AutoRefresh { get; set; }
+
+        /// <summary>
         /// The id of the <see cref="ICacheStore" /> where the cache item will be stored
         /// </summary>
         public int StoreId { get; set; }
@@ -47,6 +53,15 @@ namespace Flatwhite
         public bool IsStale()
         {
             return DateTime.UtcNow.Subtract(CreatedTime).TotalMilliseconds > MaxAge * 1000;
+        }
+
+        /// <summary>
+        /// Get next refresh time
+        /// </summary>
+        /// <returns></returns>
+        internal TimeSpan GetRefreshTime()
+        {
+            return AutoRefresh && MaxAge > 0 ? TimeSpan.FromSeconds(MaxAge) : Timeout.InfiniteTimeSpan;
         }
     }
 }

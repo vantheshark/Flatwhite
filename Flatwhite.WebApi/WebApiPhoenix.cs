@@ -22,7 +22,6 @@ namespace Flatwhite.WebApi
     /// </summary>
     public class WebApiPhoenix : Phoenix
     {
-        private readonly CacheInfo _info;
         private readonly WebApiCacheItem _cacheItem;
         private readonly MediaTypeFormatter _mediaTypeFormatter;
         private readonly HttpRequestMessage _clonedRequestMessage;
@@ -31,14 +30,12 @@ namespace Flatwhite.WebApi
         /// Initializes a WebApiPhoenix
         /// </summary>
         /// <param name="invocation"></param>
-        /// <param name="info"></param>
-        /// <param name="cacheItem">This should the the WebApiCacheItem isntance</param>
+        /// <param name="cacheItem">This should the the WebApiCacheItem instance</param>
         /// <param name="requestMessage"></param>
         /// <param name="mediaTypeFormatter">The formater used to create the HttpResponse if the return type of the action method is not a standard WebAPI action result</param>
-        public WebApiPhoenix(_IInvocation invocation, CacheInfo info , WebApiCacheItem cacheItem, HttpRequestMessage requestMessage, MediaTypeFormatter mediaTypeFormatter = null) 
-            : base(invocation, info)
+        public WebApiPhoenix(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage requestMessage, MediaTypeFormatter mediaTypeFormatter = null) 
+            : base(invocation, cacheItem)
         {
-            _info = info;
             _cacheItem = cacheItem;
             _mediaTypeFormatter = mediaTypeFormatter;
             _clonedRequestMessage = CloneRequest(requestMessage);
@@ -145,7 +142,7 @@ namespace Flatwhite.WebApi
         [ExcludeFromCodeCoverage]
         protected override void WriteCacheUpdatedLog()
         {
-            Global.Logger.Info($"Updated key \"{_info.CacheKey}\", store \"{_info.CacheStoreId}\" for request {_clonedRequestMessage.RequestUri.PathAndQuery}");
+            Global.Logger.Info($"Updated key \"{_cacheItem.Key}\", store \"{_cacheItem.StoreId}\" for request {_clonedRequestMessage.RequestUri.PathAndQuery}");
         }
     }
 }
