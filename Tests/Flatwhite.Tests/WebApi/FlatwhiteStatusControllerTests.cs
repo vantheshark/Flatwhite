@@ -52,7 +52,7 @@ namespace Flatwhite.Tests.WebApi
             asyncStore.GetAllAsync().Returns(Task.FromResult(new List<KeyValuePair<string, object>>
             {
                 new KeyValuePair<string, object>("item4", new BadObject()),
-                new KeyValuePair<string, object>("item5", new WebApiCacheItem {Content = new byte[0], Key = "item5"}),
+                new KeyValuePair<string, object>("item5", new WebApiCacheItem {Content = null, Key = "item5"}),
                 new KeyValuePair<string, object>("item6", new WebApiCacheItem {Content = new byte[0], Key = "item4"}),
                 new KeyValuePair<string, object>("item7", new MediaTypeHeaderValue("application/xml")),
             }));

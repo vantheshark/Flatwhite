@@ -4,10 +4,17 @@ using System.Threading.Tasks;
 namespace Flatwhite.Hot
 {
     /// <summary>
-    /// The state is alive, it can die or reborn
+    /// The state is inactive, it can die or reborn
     /// </summary>
-    internal class AlivePhoenix : IPhoenixState
+    internal class InActivePhoenix : IPhoenixState
     {
+        private readonly DateTime _createdTime;
+
+        public InActivePhoenix()
+        {
+            _createdTime = DateTime.UtcNow;
+        }
+
         /// <summary>
         /// Change the state to RaisingPhoenix and call methdo Reborn
         /// </summary>
@@ -21,7 +28,7 @@ namespace Flatwhite.Hot
 
         public string GetState()
         {
-            return "alive";
+            return $"inactive for {DateTime.UtcNow.Subtract(_createdTime).TotalSeconds:N1} seconds";
         }
     }
 }

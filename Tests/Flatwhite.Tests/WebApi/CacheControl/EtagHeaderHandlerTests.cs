@@ -4,10 +4,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Flatwhite.Hot;
 using Flatwhite.WebApi;
 using Flatwhite.WebApi.CacheControl;
-using Newtonsoft.Json.Serialization;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -95,12 +93,7 @@ namespace Flatwhite.Tests.WebApi.CacheControl
                 Checksum = cacheChecksum
             };
 
-            var request = new HttpRequestMessage
-            {
-                Method = new HttpMethod("GET"),
-                RequestUri = new Uri("http://localhost")
-            };
-
+            var request = UnitTestHelper.GetMessage();
             request.Headers.Add("If-None-Match", "\"fw-0-HASHEDKEY-OLDCHECKSUM\"");
             var builder = new CacheResponseBuilder();
             var handler = new EtagHeaderHandler(builder);
@@ -108,7 +101,7 @@ namespace Flatwhite.Tests.WebApi.CacheControl
 
 
             // Action
-            Global.Cache.PhoenixFireCage["fw-0-HASHEDKEY"] = new WebApiPhoenix(NSubstitute.Substitute.For<_IInvocation>(), oldCacheItem, request);
+            Global.Cache.PhoenixFireCage["fw-0-HASHEDKEY"] = new WebApiPhoenix(Substitute.For<_IInvocation>(), oldCacheItem, request);
             var response = await handler.HandleAsync(cacheControl, request, CancellationToken.None).ConfigureAwait(false);
 
             Assert.AreEqual(resultCode, response.StatusCode);

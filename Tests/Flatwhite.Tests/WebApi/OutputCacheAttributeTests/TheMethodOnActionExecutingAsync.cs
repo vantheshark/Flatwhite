@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using System.Web.Http.Dependencies;
 using System.Web.Http.Routing;
 using Flatwhite.WebApi;
 using NSubstitute;
@@ -23,15 +22,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
         public void SetUp()
         {
             _invocation.Method.Returns(typeof(DummyController).GetMethod(nameof(DummyController.Object)));
-            var dependencyScope = Substitute.For<IDependencyScope>();
-            _request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri("http://localhost/api"),
-                Properties = { { "MS_DependencyScope", dependencyScope } }, //https://github.com/ASP-NET-MVC/aspnetwebstack/blob/master/src/System.Web.Http/Hosting/HttpPropertyKeys.cs
-                Headers = { },
-                Content = new StringContent("Content...")
-            };
+            _request = UnitTestHelper.GetMessage();
             var discriptor = Substitute.For<ReflectedHttpActionDescriptor>();
             discriptor.MethodInfo = _invocation.Method;
             discriptor.ReturnType.Returns(typeof(object));

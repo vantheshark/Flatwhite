@@ -20,6 +20,11 @@ namespace Flatwhite.WebApi
         public string Checksum {
             get
             {
+                if (Content == null)
+                {
+                    return null;
+                }
+
                 if (string.IsNullOrWhiteSpace(_checkSum))
                 {
                     using (var md5Hash = MD5.Create())
@@ -69,13 +74,11 @@ namespace Flatwhite.WebApi
         /// Clone the WebApiCacheItem without the content and with a fresh CreatedTime
         /// </summary>
         /// <returns></returns>
-        public WebApiCacheItem Clone()
+        internal override CacheItem CloneWithoutData()
         {
-            var clone = (WebApiCacheItem) MemberwiseClone();
+            var clone = (WebApiCacheItem) base.CloneWithoutData();
             clone.Checksum = null;
-            clone.Data = null;
             clone.Content = null;
-            clone.CreatedTime = DateTime.UtcNow;
             return clone;
         }
     }

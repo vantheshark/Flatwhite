@@ -36,7 +36,14 @@ namespace Flatwhite.Hot
 
         public string GetState()
         {
-            return _backGroundTask == null ? "wait to raise" : "raising";
+            return 
+                _backGroundTask == null || 
+                _backGroundTask.Status == TaskStatus.WaitingForActivation ||
+                _backGroundTask.Status == TaskStatus.WaitingForChildrenToComplete ||
+                _backGroundTask.Status == TaskStatus.WaitingToRun
+                
+                ? "wait to raise" 
+                : "raising";
         }
     }
 }
