@@ -42,7 +42,7 @@ namespace Flatwhite.Tests
             {
                 var usr = interceptedSvc.GetById(Guid.Empty);
             }
-            Console.WriteLine($"Sync Total : {sw.ElapsedMilliseconds} ms");
+            Console.WriteLine($"{nameof(Test_intercept_sync_method)} : {sw.ElapsedMilliseconds} ms");
             mockObj.Received(1).GetById(Arg.Any<Guid>());
         }
 
@@ -66,7 +66,7 @@ namespace Flatwhite.Tests
             {
                 var usr = await interceptedSvc.GetByIdAsync(Guid.Empty).ConfigureAwait(false);
             }
-            Console.WriteLine($"Async Total : {sw.ElapsedMilliseconds} ms");
+            Console.WriteLine($"{nameof(Test_intercept_async_method)} : {sw.ElapsedMilliseconds} ms");
             mockObj.Received(1).GetByIdAsync(Arg.Any<Guid>());
         }
 
@@ -90,7 +90,7 @@ namespace Flatwhite.Tests
             {
                 await interceptedSvc.DisableUserAsync(Guid.Empty).ConfigureAwait(false);
             }
-            Console.WriteLine($"Async Total : {sw.ElapsedMilliseconds} ms");
+            Console.WriteLine($"{nameof(Test_intercept_async_void_method)} : {sw.ElapsedMilliseconds} ms");
         }
 
         [Test]

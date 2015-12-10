@@ -55,35 +55,27 @@ namespace Flatwhite.WebApi
                     continue;
                 }
 
-                var status = new CacheItemStatus
-                {
-                    Key = p.Key,
-                    PhoenixStatus = p.Value.GetPhoenixState()
-                };
+                var cacheItem = p.Value.GetCacheInfo();
+                object unknownCacheObject = null;
 
                 var asyncStore = _cacheStoreProvider.GetAsyncCacheStore(p.Value.GetCacheInfo().StoreId);
                 if (asyncStore != null)
                 {
-                    var obj = await asyncStore.GetAsync(p.Key);
-                    var cacheItem = obj as CacheItem;
-                    if (cacheItem != null)
+                    unknownCacheObject = await asyncStore.GetAsync(p.Key);
+                    if (unknownCacheObject is CacheItem)
                     {
-                        status = new CacheItemStatus(cacheItem)
-                        {
-                            Key = p.Key,
-                            PhoenixStatus = p.Value.GetPhoenixState()
-                        };
-                    }
-                    else
-                    {
-                        status = new CacheItemStatus (obj)
-                        {
-                            Key = p.Key,
-                            PhoenixStatus = p.Value.GetPhoenixState()
-                        };
+                        cacheItem = unknownCacheObject as CacheItem;
                     }
                 }
 
+                var status = cacheItem != null ? new CacheItemStatus(cacheItem) : new CacheItemStatus(unknownCacheObject);
+                status.Key = p.Key;
+                status.PhoenixStatus = p.Value.GetPhoenixState();
+                status.Type = p.Value.GetType().Name;
+                if (cacheItem == p.Value.GetCacheInfo())
+                {
+                    status = status.CacheItemNotFound();
+                }
                 items.Add(status);
             }
 
@@ -217,7 +209,7 @@ namespace Flatwhite.WebApi
 
                 if (webApiCacheItem != null)
                 {
-                    Size = webApiCacheItem.Content.Length;
+                    Size = webApiCacheItem.Content?.Length ?? -1;
                     Checksum = webApiCacheItem.Checksum;
                     ResponseCharSet = webApiCacheItem.ResponseCharSet;
                     ResponseMediaType = webApiCacheItem.ResponseMediaType;
@@ -230,10 +222,21 @@ namespace Flatwhite.WebApi
                 }
             }
 
+            public CacheItemStatus CacheItemNotFound()
+            {
+                CreatedTime = null;
+                Size = null;
+                StoreId = null;
+                ResponseCharSet = null;
+                ResponseMediaType = null;
+                Age = null;
+                return this;
+            }
+
             [JsonProperty("_type")]
             public string Type { get; set; }
             public string Key { get; set; }
-            public int Size { get; set; }
+            public int? Size { get; set; }
             public DateTime? CreatedTime { get; set; }
             public uint? MaxAge { get; set; }
             public uint? StaleWhileRevalidate { get; set; }

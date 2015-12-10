@@ -83,7 +83,7 @@
     <Compile Include="Core\FlatwhiteCacheEntryChangeMonitorTests.cs" />
     <Compile Include="Core\GlobalTests.cs" />
     <Compile Include="Core\Hot\DisposingPhoenixTests.cs" />
-    <Compile Include="Core\Hot\AlivePhoenixTests.cs" />
+    <Compile Include="Core\Hot\InActivePhoenixTests.cs" />
     <Compile Include="Core\Hot\RaisingPhoenixTests.cs" />
     <Compile Include="Core\MethodFilterAttributeTests.cs" />
     <Compile Include="Core\MethodInterceptorTests.cs" />
@@ -120,6 +120,7 @@
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetCacheResponseBuilder.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetCacheStrategy.cs" />
     <Compile Include="WebApi\RevalidateAttributeTests.cs" />
+    <Compile Include="WebApi\UnitTestHelper.cs" />
     <Compile Include="WebApi\WebApiCacheStrategyProviderTests.cs" />
     <Compile Include="WebApi\WebApiCacheStrategyTests.cs" />
     <Compile Include="WebApi\WebApiContextProviderTests.cs" />

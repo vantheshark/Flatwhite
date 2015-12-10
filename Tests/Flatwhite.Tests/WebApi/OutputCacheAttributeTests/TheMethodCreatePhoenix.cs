@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Http;
-using System.Web.Http.Dependencies;
 using Flatwhite.WebApi;
 using NSubstitute;
 using NUnit.Framework;
@@ -11,21 +10,12 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
     public class TheMethodCreatePhoenix
     {
         private readonly _IInvocation _invocation = Substitute.For<_IInvocation>();
-        private HttpRequestMessage _request;
+        private readonly HttpRequestMessage _request = UnitTestHelper.GetMessage();
 
         [SetUp]
         public void SetUp()
         {
             _invocation.Method.Returns(typeof(DummyController).GetMethod(nameof(DummyController.Object)));
-            var dependencyScope = Substitute.For<IDependencyScope>();
-            _request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri("http://localhost/api"),
-                Properties = { { "MS_DependencyScope", dependencyScope } }, //https://github.com/ASP-NET-MVC/aspnetwebstack/blob/master/src/System.Web.Http/Hosting/HttpPropertyKeys.cs
-                Headers = { },
-                Content = new StringContent("Content...")
-            };
             Global.Init();
         }
 

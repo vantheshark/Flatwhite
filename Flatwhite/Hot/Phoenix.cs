@@ -63,8 +63,8 @@ namespace Flatwhite.Hot
         /// <param name="info"></param>
         public Phoenix(_IInvocation invocation, CacheItem info)
         {
-            _info = info;
-            _phoenixState = _info.StaleWhileRevalidate > 0 ? (IPhoenixState)new RaisingPhoenix() : new DisposingPhoenix(DieAsync());
+            _info = info.CloneWithoutData();
+            _phoenixState = _info.StaleWhileRevalidate > 0 ? (IPhoenixState)new InActivePhoenix() : new DisposingPhoenix(DieAsync());
             if (invocation.Proxy != null)
             { 
                 // It is really a dynamic proxy
@@ -114,7 +114,8 @@ namespace Flatwhite.Hot
                 WriteCacheUpdatedLog();
                 _timer.Change(_info.GetRefreshTime(), TimeSpan.Zero);
 
-                return new AlivePhoenix();
+                _phoenixState = new InActivePhoenix();
+                return _phoenixState;
             }
             catch (Exception ex)
             {
@@ -180,16 +181,11 @@ namespace Flatwhite.Hot
                 return Task.FromResult((CacheItem)null);
             }
 
-            return Task.FromResult(new CacheItem
-            {
-                CreatedTime = DateTime.UtcNow,
-                Data = invocationBareResult,
-                Key = _info.Key,
-                MaxAge = _info.MaxAge,
-                StoreId = _info.StoreId,
-                StaleWhileRevalidate = _info.StaleWhileRevalidate,
-                AutoRefresh = _info.AutoRefresh
-            });
+            var newCacheItem = _info.CloneWithoutData();
+            newCacheItem.CreatedTime = DateTime.UtcNow;
+            newCacheItem.Data = invocationBareResult;
+
+            return Task.FromResult(newCacheItem);
         }
 
         /// <summary>

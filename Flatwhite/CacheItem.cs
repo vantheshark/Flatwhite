@@ -63,5 +63,12 @@ namespace Flatwhite
         {
             return AutoRefresh && MaxAge > 0 ? TimeSpan.FromSeconds(MaxAge) : Timeout.InfiniteTimeSpan;
         }
+
+        internal virtual CacheItem CloneWithoutData()
+        {
+            var clone = (CacheItem)MemberwiseClone();
+            clone.Data = null;
+            return clone;
+        }
     }
 }
