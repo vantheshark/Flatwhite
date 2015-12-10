@@ -1,5 +1,5 @@
 @echo OFF
-@echo Publishing following 2 packs:
+@echo Publishing following 3 packs:
 @echo:
 DIR /B *.nupkg
 @echo:
