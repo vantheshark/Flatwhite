@@ -14,5 +14,11 @@ namespace Flatwhite.Hot
         /// <param name="rebornAction"></param>
         /// <returns></returns>
         IPhoenixState Reborn(Func<Task<IPhoenixState>> rebornAction);
+
+        /// <summary>
+        /// Get state
+        /// </summary>
+        /// <returns></returns>
+        string GetState();
     }
 }

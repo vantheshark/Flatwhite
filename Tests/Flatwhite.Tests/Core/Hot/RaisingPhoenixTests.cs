@@ -63,5 +63,23 @@ namespace Flatwhite.Tests.Core.Hot
             reborn.Received(0).Reborn(Arg.Any<Func<Task<IPhoenixState>>>());
 
         }
+
+        [Test]
+        public void GetState_should_return_status()
+        {
+            var state = new RaisingPhoenix();
+            Assert.AreEqual("wait to raise", state.GetState());
+            
+            var wait = new AutoResetEvent(false);
+            Func<Task<IPhoenixState>> action = () =>
+            {
+                wait.Set();
+                IPhoenixState phoenixState = Substitute.For<IPhoenixState>();
+                return Task.FromResult(phoenixState);
+            };
+            state.Reborn(action);
+            Assert.AreEqual("raising", state.GetState());
+            Assert.IsTrue(wait.WaitOne(1000));
+        }
     }
 }

@@ -18,5 +18,10 @@ namespace Flatwhite.Hot
             IPhoenixState phoenixState = new RaisingPhoenix();
             return phoenixState.Reborn(rebornAction);
         }
+
+        public string GetState()
+        {
+            return "alive";
+        }
     }
 }

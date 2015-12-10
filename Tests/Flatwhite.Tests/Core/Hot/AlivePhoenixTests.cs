@@ -24,5 +24,12 @@ namespace Flatwhite.Tests.Core.Hot
             state.Reborn(action);
             Assert.IsTrue(wait.WaitOne(1000));
         }
+
+        [Test]
+        public void GetState_should_return_status()
+        {
+            var state = new AlivePhoenix();
+            Assert.AreEqual("alive", state.GetState());
+        }
     }
 }

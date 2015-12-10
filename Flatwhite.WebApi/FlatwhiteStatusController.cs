@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
@@ -37,6 +38,65 @@ namespace Flatwhite.WebApi
         }
 
         /// <summary>
+        /// Get all phoenix statuses
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [OutputCache(MaxAge = 1)]
+        public async Task<IHttpActionResult> Phoenix()
+        {
+            var all = Global.Cache.PhoenixFireCage.ToList();
+            var items = new List<CacheItemStatus>();
+
+            foreach (var p in all)
+            {
+                if (p.Key == null || p.Value == null)
+                {
+                    continue;
+                }
+
+                var status = new CacheItemStatus
+                {
+                    Key = p.Key,
+                    PhoenixStatus = p.Value.GetPhoenixState()
+                };
+
+                var asyncStore = _cacheStoreProvider.GetAsyncCacheStore(p.Value.GetCacheInfo().StoreId);
+                if (asyncStore != null)
+                {
+                    var obj = await asyncStore.GetAsync(p.Key);
+                    var cacheItem = obj as CacheItem;
+                    if (cacheItem != null)
+                    {
+                        status = new CacheItemStatus(cacheItem)
+                        {
+                            Key = p.Key,
+                            PhoenixStatus = p.Value.GetPhoenixState()
+                        };
+                    }
+                    else
+                    {
+                        status = new CacheItemStatus (obj)
+                        {
+                            Key = p.Key,
+                            PhoenixStatus = p.Value.GetPhoenixState()
+                        };
+                    }
+                }
+
+                items.Add(status);
+            }
+
+            return Json(items,
+               new JsonSerializerSettings
+               {
+                   NullValueHandling = NullValueHandling.Ignore,
+                   ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                   Formatting = Formatting.Indented
+               });
+        }
+
+        /// <summary>
         /// Get all Flatwhite cache items in memory
         /// </summary>
         /// <param name="id">StoreId</param>
@@ -64,47 +124,22 @@ namespace Flatwhite.WebApi
                 var cacheItem = k.Value as CacheItem;
                 if (cacheItem != null)
                 {
-                    var status = new CacheItemStatus
-                    {
-                        Type = cacheItem.GetType().Name,
-                        Key = cacheItem.Key,
-                        StaleWhileRevalidate = cacheItem.StaleWhileRevalidate,
-                        MaxAge = cacheItem.MaxAge,
-                        StoreId = cacheItem.StoreId,
-                        CreatedTime = cacheItem.CreatedTime,
-                        AutoRefresh = cacheItem.AutoRefresh,
-                        Age =  cacheItem.Age,
-                        IsStale = cacheItem.IsStale()
-                    };
-
-                    var webApiCacheItem = cacheItem as WebApiCacheItem;
-
-                    if (webApiCacheItem != null)
-                    {
-                        status.Size = webApiCacheItem.Content.Length;
-                        status.Checksum = webApiCacheItem.Checksum;
-                        status.ResponseCharSet = webApiCacheItem.ResponseCharSet;
-                        status.ResponseMediaType = webApiCacheItem.ResponseMediaType;
-                        status.StaleIfError = webApiCacheItem.StaleIfError;
-                        status.StaleWhileRevalidate = webApiCacheItem.StaleWhileRevalidate;
-                    }
-                    else
-                    {
-                        status.Size = GetObjectSize(cacheItem.Data);
-                    }
-                        
-                    items.Add(status);
+                    items.Add(new CacheItemStatus(cacheItem));
                 }
                 else
                 {
-                    items.Add(new CacheItemStatus
-                    {
-                        Type = "unknown",
-                        Key = k.Key,
-                        Size = GetObjectSize(k.Value)
-                    });
+                    items.Add(new CacheItemStatus(k.Value) { Key = k.Key });
                 }
             }
+
+            foreach (var i in items)
+            {
+                if (Global.Cache.PhoenixFireCage.ContainsKey(i.Key))
+                {
+                    i.PhoenixStatus = Global.Cache.PhoenixFireCage[i.Key].GetPhoenixState();
+                }
+            }
+
             return Json(items,
                 new JsonSerializerSettings
                 {
@@ -155,6 +190,46 @@ namespace Flatwhite.WebApi
         [ExcludeFromCodeCoverage]
         public class CacheItemStatus 
         {
+            public CacheItemStatus()
+            {
+            }
+
+            public CacheItemStatus(object unknownObject)
+            {
+                Type = "unknown";
+                Size = GetObjectSize(unknownObject);
+            }
+
+            public CacheItemStatus(CacheItem cacheItem)
+            {
+
+                Type = cacheItem.GetType().Name;
+                Key = cacheItem.Key;
+                StaleWhileRevalidate = cacheItem.StaleWhileRevalidate;
+                MaxAge = cacheItem.MaxAge;
+                StoreId = cacheItem.StoreId;
+                CreatedTime = cacheItem.CreatedTime;
+                AutoRefresh = cacheItem.AutoRefresh;
+                Age = cacheItem.Age;
+                IsStale = cacheItem.IsStale();
+                
+                var webApiCacheItem = cacheItem as WebApiCacheItem;
+
+                if (webApiCacheItem != null)
+                {
+                    Size = webApiCacheItem.Content.Length;
+                    Checksum = webApiCacheItem.Checksum;
+                    ResponseCharSet = webApiCacheItem.ResponseCharSet;
+                    ResponseMediaType = webApiCacheItem.ResponseMediaType;
+                    StaleIfError = webApiCacheItem.StaleIfError;
+                    StaleWhileRevalidate = webApiCacheItem.StaleWhileRevalidate;
+                }
+                else
+                {
+                    Size = GetObjectSize(cacheItem.Data);
+                }
+            }
+
             [JsonProperty("_type")]
             public string Type { get; set; }
             public string Key { get; set; }
@@ -171,6 +246,7 @@ namespace Flatwhite.WebApi
             public uint? StaleIfError { get; set; }
             public bool? IgnoreRevalidationRequest { get; set; }
             public bool? AutoRefresh { get; set; }
+            public string PhoenixStatus { get; set; }
         }
 #pragma warning restore 1591
     }

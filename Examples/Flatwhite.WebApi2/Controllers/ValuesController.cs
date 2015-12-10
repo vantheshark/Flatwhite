@@ -13,7 +13,8 @@ namespace Flatwhite.WebApi2.Controllers
     public class ValuesController : ApiController
     {
         private readonly ILog _logger;
-        private static string _hint = "<br /><br /> <strong>Go to <a href='/_flatwhite/store/0' target='_blank'>/_flatwhite/store/{storeId}</a> to see cache status</strong>";
+        private static string _hint = "<br /><br /> <strong>Go to <a href='/_flatwhite/store/0' target='_blank'>/_flatwhite/store/{storeId}</a> to see cache statuses</strong>" +
+                                      "<br /><br /> <strong>Go to <a href='/_flatwhite/phoenix' target='_blank'>/_flatwhite/phoenix</a> to see phoenix statuses</strong>";
         public ValuesController(ILog logger)
         {
             _logger = logger;

@@ -11,6 +11,24 @@ namespace Flatwhite.Hot
     /// </summary>
     public class Phoenix : IDisposable
     {
+        /// <summary>
+        /// Get the state of phoenix
+        /// </summary>
+        /// <returns></returns>
+        internal string GetPhoenixState()
+        {
+            return _phoenixState.GetState();
+        }
+
+        /// <summary>
+        /// Get information about the cache
+        /// </summary>
+        /// <returns></returns>
+        internal CacheItem GetCacheInfo()
+        {
+            return _info;
+        }
+
         private readonly CacheItem _info;
         private IPhoenixState _phoenixState;
         private static readonly object PhoenixCage = new object();
@@ -195,7 +213,7 @@ namespace Flatwhite.Hot
         /// </summary>
         public void Dispose()
         {
-            _timer.Dispose();
+            _timer?.Dispose();
             Global.Cache.PhoenixFireCage.Remove(_info.Key);
         }
 

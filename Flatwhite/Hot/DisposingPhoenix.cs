@@ -8,8 +8,11 @@ namespace Flatwhite.Hot
     /// </summary>
     internal class DisposingPhoenix : IPhoenixState
     {
+        private readonly Task _disposingTask;
+
         public DisposingPhoenix(Task disposingTask)
         {
+            _disposingTask = disposingTask;
             disposingTask.LogErrorOnFaulted();
         }
 
@@ -21,6 +24,11 @@ namespace Flatwhite.Hot
         public IPhoenixState Reborn(Func<Task<IPhoenixState>> rebornAction)
         {
             return this;
+        }
+
+        public string GetState()
+        {
+            return _disposingTask.IsCompleted ? "disposed" : "disposing";
         }
     }
 }
