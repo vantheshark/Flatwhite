@@ -14,7 +14,7 @@ namespace Flatwhite.Hot
 
         private Task<IPhoenixState> _backGroundTask;
 
-        public IPhoenixState Reborn(Func<IPhoenixState> rebornAction)
+        public IPhoenixState Reborn(Func<Task<IPhoenixState>> rebornAction)
         {
             if (_backGroundTask == null || 
                 _backGroundTask.Status == TaskStatus.Faulted || 
@@ -22,19 +22,8 @@ namespace Flatwhite.Hot
                 _backGroundTask.Status == TaskStatus.RanToCompletion && _backGroundTask.Result == null)
             {
                 _backGroundTask?.Dispose();
-                _backGroundTask = Task.Run(rebornAction);
-                _backGroundTask.ContinueWith(t =>
-                {
-                    if (t.Exception?.InnerExceptions == null)
-                    {
-                        return;
-                    }
-                    var aggExceptions = t.Exception.InnerExceptions;
-                    foreach (var ex in aggExceptions)
-                    {
-                        Global.Logger.Error(ex);
-                    }
-                }, TaskContinuationOptions.OnlyOnFaulted); 
+                _backGroundTask = rebornAction();
+                _backGroundTask.LogErrorOnFaulted();
             }
             
             if (_backGroundTask.Status == TaskStatus.RanToCompletion && _backGroundTask.Result != null)
@@ -43,6 +32,11 @@ namespace Flatwhite.Hot
             }
 
             return this;
+        }
+
+        public string GetState()
+        {
+            return _backGroundTask == null ? "wait to raise" : "raising";
         }
     }
 }

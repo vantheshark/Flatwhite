@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Flatwhite.Hot
 {
@@ -7,22 +8,27 @@ namespace Flatwhite.Hot
     /// </summary>
     internal class DisposingPhoenix : IPhoenixState
     {
-        private readonly Action _disposeAction;
+        private readonly Task _disposingTask;
 
-        public DisposingPhoenix(Action disposeAction)
+        public DisposingPhoenix(Task disposingTask)
         {
-            _disposeAction = disposeAction;
+            _disposingTask = disposingTask;
+            disposingTask.LogErrorOnFaulted();
         }
 
         /// <summary>
-        /// Will call dispose action when Reborn as it is disposing Phoenix
+        /// Do nothing here as the disposing action has been started
         /// </summary>
         /// <param name="rebornAction"></param>
         /// <returns></returns>
-        public IPhoenixState Reborn(Func<IPhoenixState> rebornAction)
+        public IPhoenixState Reborn(Func<Task<IPhoenixState>> rebornAction)
         {
-            _disposeAction();
             return this;
+        }
+
+        public string GetState()
+        {
+            return _disposingTask.IsCompleted ? "disposed" : "disposing";
         }
     }
 }

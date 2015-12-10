@@ -11,6 +11,24 @@ namespace Flatwhite.Hot
     /// </summary>
     public class Phoenix : IDisposable
     {
+        /// <summary>
+        /// Get the state of phoenix
+        /// </summary>
+        /// <returns></returns>
+        internal string GetPhoenixState()
+        {
+            return _phoenixState.GetState();
+        }
+
+        /// <summary>
+        /// Get information about the cache
+        /// </summary>
+        /// <returns></returns>
+        internal CacheItem GetCacheInfo()
+        {
+            return _info;
+        }
+
         private readonly CacheItem _info;
         private IPhoenixState _phoenixState;
         private static readonly object PhoenixCage = new object();
@@ -46,7 +64,7 @@ namespace Flatwhite.Hot
         public Phoenix(_IInvocation invocation, CacheItem info)
         {
             _info = info;
-            _phoenixState = _info.StaleWhileRevalidate > 0 ? (IPhoenixState)new RaisingPhoenix() : new DisposingPhoenix(Die);
+            _phoenixState = _info.StaleWhileRevalidate > 0 ? (IPhoenixState)new RaisingPhoenix() : new DisposingPhoenix(DieAsync());
             if (invocation.Proxy != null)
             { 
                 // It is really a dynamic proxy
@@ -68,7 +86,7 @@ namespace Flatwhite.Hot
         {
             lock (PhoenixCage)
             {
-                _phoenixState = _phoenixState.Reborn(Fire);
+                _phoenixState = _phoenixState.Reborn(FireAsync);
             }
         }
 
@@ -76,20 +94,22 @@ namespace Flatwhite.Hot
         /// Rebuild the cache and return the new <see cref="IPhoenixState"/>
         /// </summary>
         /// <returns></returns>
-        private IPhoenixState Fire()
+        private async Task<IPhoenixState> FireAsync()
         {
             try
             {
                 var target = GetTargetInstance();
-                var cacheItem = GetCacheItem(InvokeAndGetBareResult(target));
+                var invokedResult = await InvokeAndGetBareResult(target).ConfigureAwait(false);
+                var cacheItem = await GetCacheItem(invokedResult).ConfigureAwait(false);
                 if (cacheItem == null)
                 {
-                    var disposing = new DisposingPhoenix(Die);
+                    var disposing = new DisposingPhoenix(DieAsync());
                     return disposing.Reborn(null);
                 }
 
-                var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.StoreId);
-                cacheStore.Set(_info.Key, cacheItem, DateTime.UtcNow.AddSeconds(_info.MaxAge + _info.StaleWhileRevalidate));
+                var cacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(_info.StoreId);
+                //NOTE: Because the cacheItem was created before, the cacheStore cannot be null
+                await cacheStore.SetAsync(_info.Key, cacheItem, DateTime.UtcNow.AddSeconds(_info.MaxAge + _info.StaleWhileRevalidate)).ConfigureAwait(false);
 
                 WriteCacheUpdatedLog();
                 _timer.Change(_info.GetRefreshTime(), TimeSpan.Zero);
@@ -117,19 +137,34 @@ namespace Flatwhite.Hot
         /// </summary>
         /// <param name="serviceInstance"></param>
         /// <returns></returns>
-        protected virtual object InvokeAndGetBareResult(object serviceInstance)
+        protected virtual async Task<object> InvokeAndGetBareResult(object serviceInstance)
         {
+            if (MethodInfo.ReturnType == typeof (void))
+            {
+                throw new NotSupportedException("void method is not supported");
+            }
+            var isAsync = typeof(Task).IsAssignableFrom(MethodInfo.ReturnType);
+            if (isAsync &&(!MethodInfo.ReturnType.IsGenericType || MethodInfo.ReturnType.GetGenericTypeDefinition() != typeof (Task<>)))
+            {
+                throw new NotSupportedException("async void method is not supported");
+            }
+
             var invokeResult = MethodInfo.Invoke(serviceInstance, Arguments);
-            var result = invokeResult;
-            if (result == null)
+            if (invokeResult == null)
             {
                 return null;
             }
-            if (invokeResult is Task)
+
+            var result = invokeResult;
+            
+            if (isAsync)
             {
-                dynamic taskResult = invokeResult;
+                var resultTask = (Task)invokeResult;
+                await resultTask.ConfigureAwait(false);
+                dynamic taskResult = resultTask;
                 result = taskResult.Result;
             }
+
             return result;
         }
 
@@ -138,14 +173,14 @@ namespace Flatwhite.Hot
         /// </summary>
         /// <param name="invocationBareResult"></param>
         /// <returns></returns>
-        protected virtual CacheItem GetCacheItem(object invocationBareResult)
+        protected virtual Task<CacheItem> GetCacheItem(object invocationBareResult)
         {
             if (invocationBareResult == null)
             {
-                return null;
+                return Task.FromResult((CacheItem)null);
             }
 
-            return new CacheItem
+            return Task.FromResult(new CacheItem
             {
                 CreatedTime = DateTime.UtcNow,
                 Data = invocationBareResult,
@@ -154,7 +189,7 @@ namespace Flatwhite.Hot
                 StoreId = _info.StoreId,
                 StaleWhileRevalidate = _info.StaleWhileRevalidate,
                 AutoRefresh = _info.AutoRefresh
-            };
+            });
         }
 
         /// <summary>
@@ -178,16 +213,16 @@ namespace Flatwhite.Hot
         /// </summary>
         public void Dispose()
         {
-            _timer.Dispose();
+            _timer?.Dispose();
             Global.Cache.PhoenixFireCage.Remove(_info.Key);
         }
 
-        private void Die()
+        private async Task DieAsync()
         {
             try
             {
-                var cacheStore = Global.CacheStoreProvider.GetCacheStore(_info.StoreId);
-                cacheStore.Remove(_info.Key);
+                var cacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(_info.StoreId);
+                await cacheStore.RemoveAsync(_info.Key).ConfigureAwait(false);
                 Dispose();
             }
             catch (Exception ex)
