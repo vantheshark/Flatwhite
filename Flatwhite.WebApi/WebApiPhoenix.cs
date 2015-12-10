@@ -51,7 +51,7 @@ namespace Flatwhite.WebApi
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        protected override CacheItem GetCacheItem(object response)
+        protected override async Task<CacheItem> GetCacheItem(object response)
         {
             if (response == null)
             {
@@ -60,10 +60,7 @@ namespace Flatwhite.WebApi
 
             if (response is IHttpActionResult)
             {
-                Task.Run(async () =>
-                {
-                    response = await ((IHttpActionResult)response).ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
-                }).GetAwaiter().GetResult();
+                response = await ((IHttpActionResult)response).ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
             }
 
             var responseMsg = response as HttpResponseMessage;
@@ -76,7 +73,7 @@ namespace Flatwhite.WebApi
                 };
             }
 
-            var content = responseMsg.Content.ReadAsByteArrayAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            var content = await responseMsg.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
             var newCacheItem = _cacheItem.Clone();
             newCacheItem.Content = content;

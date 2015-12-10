@@ -23,5 +23,21 @@ namespace Flatwhite
             tcs.SetException(exception);
             return tcs.Task;
         }
+
+        internal static Task LogErrorOnFaulted(this Task task)
+        {
+            return task.ContinueWith(t =>
+             {
+                 if (t.Exception?.InnerExceptions == null)
+                 {
+                     return;
+                 }
+                 var aggExceptions = t.Exception.InnerExceptions;
+                 foreach (var ex in aggExceptions)
+                 {
+                     Global.Logger.Error(ex);
+                 }
+             }, TaskContinuationOptions.OnlyOnFaulted);
+        }
     }
 }

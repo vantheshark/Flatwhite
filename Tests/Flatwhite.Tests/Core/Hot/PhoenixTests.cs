@@ -55,17 +55,17 @@ namespace Flatwhite.Tests.Core.Hot
             _invocation.Proxy.Returns(proxy);
 
             
-            var cacheStore = Substitute.For<ICacheStore>();
+            var cacheStore = Substitute.For<IAsyncCacheStore>();
             var autoResetEvent = new AutoResetEvent(false);
-            cacheStore.When(x => x.Set(CacheInfo.Key, Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>()))
+            cacheStore.When(x => x.SetAsync(CacheInfo.Key, Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>()))
                 .Do(c => autoResetEvent.Set());
 
-            cacheStore.When(x => x.Remove(CacheInfo.Key))
+            cacheStore.When(x => x.RemoveAsync(CacheInfo.Key))
                 .Do(c => autoResetEvent.Set());
 
 
             cacheStore.StoreId.Returns(StoreId);
-            Global.CacheStoreProvider.RegisterStore(cacheStore);
+            Global.CacheStoreProvider.RegisterAsyncStore(cacheStore);
 
             return autoResetEvent;
         }
@@ -82,8 +82,8 @@ namespace Flatwhite.Tests.Core.Hot
 
             // Assert
             Assert.IsTrue(wait.WaitOne(2000));
-            Global.CacheStoreProvider.GetCacheStore(StoreId).Received(1)
-                .Set("cacheKey", Arg.Is<object>(obj => _id.Equals(((CacheItem) obj).Data)), Arg.Any<DateTimeOffset>());
+            Global.CacheStoreProvider.GetAsyncCacheStore(StoreId).Received(1)
+                .SetAsync("cacheKey", Arg.Is<object>(obj => _id.Equals(((CacheItem) obj).Data)), Arg.Any<DateTimeOffset>());
         }
 
         [Test]
@@ -98,8 +98,8 @@ namespace Flatwhite.Tests.Core.Hot
 
             // Assert
             Assert.IsTrue(wait.WaitOne(2000));
-            Global.CacheStoreProvider.GetCacheStore(StoreId).Received(1)
-                .Set("cacheKey", Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>());
+            Global.CacheStoreProvider.GetAsyncCacheStore(StoreId).Received(1)
+                .SetAsync("cacheKey", Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>());
         }
 
         [Test]
@@ -115,8 +115,8 @@ namespace Flatwhite.Tests.Core.Hot
             phoenix.Reborn();
             Assert.IsTrue(wait.WaitOne(2000));
             // Assert
-            var storeId = Global.CacheStoreProvider.GetCacheStore(StoreId);
-            storeId.Received(1).Remove("cacheKey");
+            var storeId = Global.CacheStoreProvider.GetAsyncCacheStore(StoreId);
+            storeId.Received(1).RemoveAsync("cacheKey");
         }
 
         [Test]

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Flatwhite.Hot
 {
@@ -12,6 +13,6 @@ namespace Flatwhite.Hot
         /// </summary>
         /// <param name="rebornAction"></param>
         /// <returns></returns>
-        IPhoenixState Reborn(Func<IPhoenixState> rebornAction);
+        IPhoenixState Reborn(Func<Task<IPhoenixState>> rebornAction);
     }
 }

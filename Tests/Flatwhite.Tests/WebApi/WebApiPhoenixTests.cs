@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Formatting;
@@ -34,8 +35,9 @@ namespace Flatwhite.Tests.WebApi
         [TestCase(nameof(DummyController.Object), 36)]
         [TestCase(nameof(DummyController.String), 6)]
         [TestCase(nameof(DummyController.StringAsync), 6)]
-        [TestCase(nameof(DummyController.Void), 6)]
-        public void should_execute_the_controller_method_and_return_CacheItem(string actionMethodName, int contentLength)
+        [TestCase(nameof(DummyController.Void), -1, ExpectedException = typeof(NotSupportedException), ExpectedMessage = "void method is not supported")]
+        [TestCase(nameof(DummyController.VoidAsync), -1, ExpectedException = typeof(NotSupportedException), ExpectedMessage = "async void method is not supported")]
+        public async Task should_execute_the_controller_method_and_return_CacheItem(string actionMethodName, int contentLength)
         {
             // Arrange
             var currentCacheItem = new WebApiCacheItem();
@@ -43,15 +45,11 @@ namespace Flatwhite.Tests.WebApi
             invocation.Arguments.Returns(new object[0]);
             invocation.Method.Returns(controllerType.GetMethod(actionMethodName, BindingFlags.Instance | BindingFlags.Public));
 
-            var phoenix = new WebApiPhoenix(invocation, currentCacheItem, new HttpRequestMessage(), new JsonMediaTypeFormatter());
+            var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, new HttpRequestMessage(), new JsonMediaTypeFormatter());
 
             // Action
-            MethodInfo dynMethod = typeof(WebApiPhoenix).GetMethod("InvokeAndGetBareResult", BindingFlags.NonPublic | BindingFlags.Instance);
-            var result = dynMethod.Invoke(phoenix, new object[] { _controllerIntance });
-
-            dynMethod = typeof(WebApiPhoenix).GetMethod("GetCacheItem", BindingFlags.NonPublic | BindingFlags.Instance);
-            var cacheItem = (WebApiCacheItem)dynMethod.Invoke(phoenix, new[] { result });
-
+            var result = await phoenix.InvokeAndGetBareResultPublic(_controllerIntance).ConfigureAwait(false);
+            var cacheItem = await phoenix.GetCacheItemPublic(result).ConfigureAwait(false) as WebApiCacheItem;
 
             // Assert
             if (result == null)
@@ -60,6 +58,7 @@ namespace Flatwhite.Tests.WebApi
             }
             else
             {
+                Assert.IsNotNull(cacheItem);
                 Assert.AreEqual(contentLength, cacheItem.Content.Length);
             }
         }
@@ -98,56 +97,23 @@ namespace Flatwhite.Tests.WebApi
             Assert.AreEqual(1, controller.Request.Headers.Count());
             Assert.AreEqual(3, controller.Request.Properties.Count()); // 1 created by the Phoenix, 1 is the 
         }
-    }
 
-    public class DummyController : ApiController
-    {
-        public void Void() { }
-
-        public Task VoidAsync() { return Task.Delay(0); }
-
-        public string String()
+        [DebuggerStepThrough]
+        private class WebApiPhoenixWithPublicMethods : WebApiPhoenix
         {
-            return "data";
-        }
-
-        public object Object()
-        {
-            return new
+            public WebApiPhoenixWithPublicMethods(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage requestMessage, MediaTypeFormatter mediaTypeFormatter = null)
+                : base(invocation, cacheItem, requestMessage, mediaTypeFormatter)
             {
-                Name = "Van",
-                Project = "Flatwhite"
-            };
-        }
+            }
 
-        public Task<string> StringAsync()
-        {
-            return Task.FromResult("data");
-        }
-
-        public HttpResponseMessage HttpResponseMessage()
-        {
-            return new HttpResponseMessage
+            public Task<CacheItem> GetCacheItemPublic(object response)
             {
-                Content = new StringContent("data")
-            };
-        }
+                return GetCacheItem(response);
+            }
 
-        public Task<HttpResponseMessage> HttpResponseMessageAsync()
-        {
-            return Task.FromResult(new HttpResponseMessage { Content = new StringContent("data") });
-        }
-
-        public IHttpActionResult HttpActionResult()
-        {
-            return new CustomHttpActionResult();
-        }
-
-        private class CustomHttpActionResult : IHttpActionResult
-        {
-            public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+            public Task<object> InvokeAndGetBareResultPublic(object serviceInstance)
             {
-                return Task.FromResult(new HttpResponseMessage { Content = new StringContent("data") });
+                return InvokeAndGetBareResult(serviceInstance);
             }
         }
     }

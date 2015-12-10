@@ -1,7 +1,7 @@
 del Flatwhite.*.nupkg
 
 SETLOCAL
-SET VERSION=1.0.11
+SET VERSION=1.0.12
 powershell -Command "(gc Flatwhite\Package.nuspec) -replace '__OLD_VERSION__', '%VERSION%' | Out-File -encoding ASCII Flatwhite\Package.nuspec"
 powershell -Command "(gc Flatwhite.Autofac\Package.nuspec) -replace '__OLD_VERSION__', '%VERSION%' | Out-File -encoding ASCII Flatwhite.Autofac\Package.nuspec"
 powershell -Command "(gc Flatwhite.WebApi\Package.nuspec) -replace '__OLD_VERSION__', '%VERSION%' | Out-File -encoding ASCII Flatwhite.WebApi\Package.nuspec"

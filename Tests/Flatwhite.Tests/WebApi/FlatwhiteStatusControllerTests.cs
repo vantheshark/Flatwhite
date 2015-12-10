@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
@@ -12,12 +13,24 @@ namespace Flatwhite.Tests.WebApi
     [TestFixture]
     public class FlatwhiteStatusControllerTests
     {
+        public class BadObject
+        {
+            public string BadProperty
+            {
+                get
+                {
+                    throw new InvalidOperationException("Cannot be serialized");
+                }
+            }
+        }
+
         [Test]
         public async Task Store_action_should_get_all_cache_item_from_stores_that_matched_the_id()
         {
             var syncStore = Substitute.For<ICacheStore>();
             syncStore.GetAll().Returns(new List<KeyValuePair<string, object>>
             {
+                new KeyValuePair<string, object>("item0", null),
                 new KeyValuePair<string, object>("item1", new CacheItem {Data = "data"}),
                 new KeyValuePair<string, object>("item2", new CacheItem {Data = new MediaTypeHeaderValue("text/json")}),
                 new KeyValuePair<string, object>("item2", new MediaTypeHeaderValue("application/xml")),
@@ -26,6 +39,7 @@ namespace Flatwhite.Tests.WebApi
             var asyncStore = Substitute.For<IAsyncCacheStore>();
             asyncStore.GetAllAsync().Returns(Task.FromResult(new List<KeyValuePair<string, object>>
             {
+                new KeyValuePair<string, object>("item0", new BadObject()),
                 new KeyValuePair<string, object>("item1", new WebApiCacheItem {Content = new byte[0]}),
                 new KeyValuePair<string, object>("item2", new WebApiCacheItem {Content = new byte[0]}),
                 new KeyValuePair<string, object>("item3", new MediaTypeHeaderValue("application/xml")),
@@ -41,7 +55,7 @@ namespace Flatwhite.Tests.WebApi
             var jsonResult = (JsonResult<List<FlatwhiteStatusController.CacheItemStatus>>) result;
 
             // Assert
-            Assert.AreEqual(6, jsonResult.Content.Count);
+            Assert.AreEqual(8, jsonResult.Content.Count);
         }
     }
 }

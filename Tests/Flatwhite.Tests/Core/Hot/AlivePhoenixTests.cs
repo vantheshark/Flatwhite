@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Flatwhite.Hot;
 using NUnit.Framework;
 
@@ -12,10 +13,11 @@ namespace Flatwhite.Tests.Core.Hot
         public void Should_create_RaisingPhoenix()
         {
             var wait = new AutoResetEvent(false);
-            Func<IPhoenixState> action = () =>
+            Func<Task<IPhoenixState>> action = () =>
             {
                 wait.Set();
-                return new AlivePhoenix();
+                IPhoenixState phoenixState = new AlivePhoenix();
+                return Task.FromResult(phoenixState);
             };
 
             var state = new AlivePhoenix();

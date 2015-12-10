@@ -31,6 +31,7 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// Initialize an instance of FlatwhiteStatusController
         /// </summary>
+        [ExcludeFromCodeCoverage]
         public FlatwhiteStatusController() : this (Global.CacheStoreProvider)
         {
         }
