@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Web.Hosting;
 
 namespace Flatwhite.Hot
 {
@@ -8,6 +9,7 @@ namespace Flatwhite.Hot
     /// </summary>
     internal class RaisingPhoenix : IPhoenixState
     {
+        private static readonly RegisteredTasks _registeredTask = new RegisteredTasks();
         /// <summary>
         /// true if the phoenix is executing rebornAction. This is to avoid many call on method Reborn many time
         ///  </summary>
@@ -22,11 +24,12 @@ namespace Flatwhite.Hot
                 _backGroundTask.Status == TaskStatus.RanToCompletion && _backGroundTask.Result == null)
             {
                 _backGroundTask?.Dispose();
-                _backGroundTask = rebornAction();
-                _backGroundTask.LogErrorOnFaulted();
+                //_backGroundTask = rebornAction();
+                _registeredTask.Run(rebornAction);
+                //_backGroundTask.LogErrorOnFaulted();
             }
             
-            if (_backGroundTask.Status == TaskStatus.RanToCompletion && _backGroundTask.Result != null)
+            if (_backGroundTask != null && _backGroundTask.Status == TaskStatus.RanToCompletion && _backGroundTask.Result != null)
             {
                 return _backGroundTask.Result;
             }
@@ -44,6 +47,10 @@ namespace Flatwhite.Hot
                 
                 ? "wait to raise" 
                 : "raising";
+        }
+
+        public void Stop(bool immediate)
+        {
         }
     }
 }

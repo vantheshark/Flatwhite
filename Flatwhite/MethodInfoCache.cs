@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using Flatwhite.Hot;
@@ -47,11 +48,11 @@ namespace Flatwhite
             });
         }
 
-        public readonly IDictionary<MethodInfo, List<Attribute>> AttributeCache = new Dictionary<MethodInfo, List<Attribute>>();
-        public readonly IDictionary<MethodInfo, OutputCacheAttribute> OutputCacheAttributeCache = new Dictionary<MethodInfo, OutputCacheAttribute>();
-        public readonly IDictionary<MethodInfo, Tuple<string[], string[]>> VaryParamsCache = new Dictionary<MethodInfo, Tuple<string[], string[]>>();
-        public readonly IDictionary<MethodInfo, bool> InterceptableCache = new Dictionary<MethodInfo, bool>();
-        public readonly IDictionary<Type, IHashCodeGenerator> HashCodeGeneratorCache = new Dictionary<Type, IHashCodeGenerator>();
-        public readonly Dictionary<string, Phoenix> PhoenixFireCage = new Dictionary<string, Phoenix>();
+        public readonly IDictionary<MethodInfo, List<Attribute>> AttributeCache = new ConcurrentDictionary<MethodInfo, List<Attribute>>();
+        public readonly IDictionary<MethodInfo, OutputCacheAttribute> OutputCacheAttributeCache = new ConcurrentDictionary<MethodInfo, OutputCacheAttribute>();
+        public readonly IDictionary<MethodInfo, Tuple<string[], string[]>> VaryParamsCache = new ConcurrentDictionary<MethodInfo, Tuple<string[], string[]>>();
+        public readonly IDictionary<MethodInfo, bool> InterceptableCache = new ConcurrentDictionary<MethodInfo, bool>();
+        public readonly IDictionary<Type, IHashCodeGenerator> HashCodeGeneratorCache = new ConcurrentDictionary<Type, IHashCodeGenerator>();
+        public readonly IDictionary<string, Phoenix> PhoenixFireCage = new ConcurrentDictionary<string, Phoenix>();
     }
 }

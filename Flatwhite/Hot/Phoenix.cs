@@ -138,7 +138,7 @@ namespace Flatwhite.Hot
         /// </summary>
         /// <param name="serviceInstance"></param>
         /// <returns></returns>
-        protected virtual async Task<object> InvokeAndGetBareResult(object serviceInstance)
+        protected virtual Task<object> InvokeAndGetBareResult(object serviceInstance)
         {
             if (MethodInfo.ReturnType == typeof (void))
             {
@@ -160,14 +160,13 @@ namespace Flatwhite.Hot
             
             if (isAsync)
             {
-                var resultTask = (Task)invokeResult;
-                await resultTask.ConfigureAwait(false);
-                dynamic taskResult = resultTask;
-                result = taskResult.Result;
+                return Task.Run(() => invokeResult);
             }
 
-            return result;
+            return Task.FromResult(result);
         }
+
+        
 
         /// <summary>
         /// Build the cache item object for the result of the method

@@ -184,6 +184,11 @@ namespace Flatwhite
         /// <returns></returns>
         private void CreatePhoenix(_IInvocation invocation, CacheItem cacheItem)
         {
+            if (cacheItem.StaleWhileRevalidate <= 0)
+            {
+                return;
+            }
+
             if (Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
             {
                 Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();

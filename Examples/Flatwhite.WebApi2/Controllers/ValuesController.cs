@@ -29,8 +29,7 @@ namespace Flatwhite.WebApi2.Controllers
             StaleWhileRevalidate = 5,
             VaryByParam = "packageId",
             RevalidationKey = "VaryByParamMethod",
-            IgnoreRevalidationRequest = true,
-            AutoRefresh = true)]
+            IgnoreRevalidationRequest = true)]
         public virtual async Task<IEnumerable<string>> Get()
         {
             await Task.Delay(2000);
@@ -42,16 +41,15 @@ namespace Flatwhite.WebApi2.Controllers
         [HttpGet]
         [Route("api/vary-by-param-async/{packageId}")]
         [WebApi.OutputCache(
-            MaxAge = 3,
-            StaleWhileRevalidate = 5,
+            MaxAge = 2,
+            StaleWhileRevalidate = 10,
             VaryByParam = "packageId",
             RevalidationKey = "VaryByParamMethod",
-            IgnoreRevalidationRequest = true,
-            AutoRefresh = true)]
+            IgnoreRevalidationRequest = true)]
         public async Task<HttpResponseMessage> VaryByParamAsync(string packageId)
         {
             var sw = Stopwatch.StartNew();
-            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"https://www.nuget.org/packages/" + packageId));
+            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"http://localhost:58712/_flatwhite/store"));
             sw.Stop();
             _logger.Info($"{nameof(VaryByParam)} Elapsed {sw.ElapsedMilliseconds} milliseconds");
             return new HttpResponseMessage()
@@ -60,17 +58,16 @@ namespace Flatwhite.WebApi2.Controllers
             };
         }
 
-
+        
 
         [HttpGet]
         [Route("api/vary-by-param/{packageId}")]
         [WebApi.OutputCache(
-            MaxAge = 3, 
-            StaleWhileRevalidate = 5, 
+            MaxAge = 2, 
+            StaleWhileRevalidate = 10, 
             VaryByParam = "packageId", 
             RevalidationKey = "VaryByParamMethod",
-            IgnoreRevalidationRequest = true,
-            AutoRefresh = true)]
+            IgnoreRevalidationRequest = true)]
         public HttpResponseMessage VaryByParam(string packageId)
         {
             var sw = Stopwatch.StartNew();

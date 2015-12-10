@@ -61,20 +61,27 @@ namespace Flatwhite.WebApi
             {
                 return null;
             }
-
+            HttpResponseMessage responseMsg = null;
             if (response is IHttpActionResult)
             {
                 response = await ((IHttpActionResult)response).ExecuteAsync(CancellationToken.None).ConfigureAwait(false);
             }
-
-            var responseMsg = response as HttpResponseMessage;
+            else if (response is Task<HttpResponseMessage>)
+            {
+                responseMsg = await (Task<HttpResponseMessage>) response;
+            }
+            else
+            {
+                responseMsg = response as HttpResponseMessage;
+            }
 
             if (responseMsg == null)
             {
-                responseMsg = new HttpResponseMessage
-                {
-                    Content = new ObjectContent(response.GetType(), response, _mediaTypeFormatter)
-                };
+                var httpContent = _mediaTypeFormatter != null
+                    ? new ObjectContent(response.GetType(), response, _mediaTypeFormatter)
+                    : (HttpContent) new StringContent((string)response);
+                
+                responseMsg = new HttpResponseMessage { Content = httpContent };
             }
 
             var content = await responseMsg.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
@@ -82,7 +89,7 @@ namespace Flatwhite.WebApi
             var newCacheItem = (WebApiCacheItem)_cacheItem.CloneWithoutData();
             newCacheItem.Content = content;
             newCacheItem.CreatedTime = DateTime.UtcNow;
-
+            
             return newCacheItem;
         }
 
@@ -107,7 +114,7 @@ namespace Flatwhite.WebApi
             apiController.ControllerContext = CreateControllerContext(_clonedRequestMessage, _controllerDescriptor, apiController);
 
             _clonedRequestMessage.Properties[HttpPropertyKeys.RequestContextKey] = apiController.RequestContext;
-
+            _clonedRequestMessage.Properties[HttpPropertyKeys.SynchronizationContextKey] = SynchronizationContext.Current;
             apiController.Configuration = _controllerDescriptor.Configuration;
             apiController.Url = new UrlHelper(_clonedRequestMessage);
             apiController.Request = _clonedRequestMessage;

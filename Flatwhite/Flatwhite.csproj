@@ -48,6 +48,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
       <Private>True</Private>
@@ -55,10 +56,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheItem.cs" />
+    <Compile Include="Hot\AsyncCountdownEvent.cs" />
     <Compile Include="Hot\DisposingPhoenix.cs" />
     <Compile Include="Hot\InActivePhoenix.cs" />
     <Compile Include="Hot\RaisingPhoenix.cs" />
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="Hot\RegisteredTasks.cs" />
     <Compile Include="IChangeMonitor.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="Hot\IPhoenixState.cs" />

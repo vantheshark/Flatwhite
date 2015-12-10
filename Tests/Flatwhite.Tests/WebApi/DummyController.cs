@@ -1,7 +1,10 @@
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Newtonsoft.Json;
 
 namespace Flatwhite.Tests.WebApi
 {
@@ -25,9 +28,13 @@ namespace Flatwhite.Tests.WebApi
             };
         }
 
-        public Task<string> StringAsync()
+        public async Task<string> StringAsync()
         {
-            return Task.FromResult("data");
+            using (var httpClient = new WebClient())
+            {
+                var content = await httpClient.DownloadStringTaskAsync("https://www.nuget.org/");
+                return content;
+            }
         }
 
         public HttpResponseMessage HttpResponseMessage()
@@ -38,9 +45,13 @@ namespace Flatwhite.Tests.WebApi
             };
         }
 
-        public Task<HttpResponseMessage> HttpResponseMessageAsync()
+        public async Task<HttpResponseMessage> HttpResponseMessageAsync()
         {
-            return Task.FromResult(new HttpResponseMessage { Content = new StringContent("data") });
+            using (var httpClient = new WebClient())
+            {
+                var content = await httpClient.DownloadStringTaskAsync("https://www.nuget.org/");
+                return new HttpResponseMessage {Content = new StringContent(content)};
+            }
         }
 
         public IHttpActionResult HttpActionResult()
@@ -50,9 +61,13 @@ namespace Flatwhite.Tests.WebApi
 
         private class CustomHttpActionResult : IHttpActionResult
         {
-            public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+            public async Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
             {
-                return Task.FromResult(new HttpResponseMessage { Content = new StringContent("data") });
+                using (var httpClient = new WebClient())
+                {
+                    var content = await httpClient.DownloadStringTaskAsync("https://www.nuget.org/");
+                    return new HttpResponseMessage {Content = new StringContent(content) };
+                }
             }
         }
     }
