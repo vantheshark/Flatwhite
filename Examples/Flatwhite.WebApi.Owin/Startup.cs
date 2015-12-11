@@ -6,8 +6,10 @@ using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
 using Flatwhite.WebApi.CacheControl;
 using Flatwhite.WebApi2;
+using Flatwhite.WebApi2.Controllers;
 using log4net;
 using Owin;
+using Module = Autofac.Module;
 
 namespace Flatwhite.WebApi.Owin
 {
@@ -35,31 +37,39 @@ namespace Flatwhite.WebApi.Owin
         private IContainer BuildAutofacContainer(HttpConfiguration config)
         {
             var builder = new ContainerBuilder().EnableFlatwhite();
+            builder.RegisterModule(new FlatwhiteOptionalModule());
 
-            // This will also be set to Global.CacheStrategyProvider in UseFlatwhiteCache method
-            builder.RegisterType<WebApiCacheStrategyProvider>().As<ICacheStrategyProvider>().SingleInstance();
-
-            // This is required by EtagHeaderHandler and OutputCacheAttribute when it builds the response
-            builder.RegisterType<CacheResponseBuilder>().As<ICacheResponseBuilder>().SingleInstance();
-
-            // This is required by CachControlHeaderHandlerProvider
-            // NOTE: Register more instances of ICachControlHeaderHandler here
-            builder.RegisterType<EtagHeaderHandler>().As<ICachControlHeaderHandler>().SingleInstance();
-            
-            
-
-
+            builder.RegisterType<FlatwhiteCoffeeService>().AsImplementedInterfaces().EnableInterceptors();
 
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
             // OPTIONAL: Register the Autofac filter provider.
             builder.RegisterWebApiFilterProvider(config);
-
-
-            // OPTIONAL: I'm using log4net to debug
-            builder.RegisterInstance(LogManager.GetLogger("Flatwhite")).As<ILog>();
+            
             var container = builder.Build();
             config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
             return container;
+        }
+
+        /// <summary>
+        /// This is optional, it should still work without below components
+        /// </summary>
+        public class FlatwhiteOptionalModule : Module
+        {
+            protected override void Load(ContainerBuilder builder)
+            {
+                // OPTIONAL: I'm using log4net to debug
+                builder.RegisterInstance(LogManager.GetLogger("Flatwhite")).As<ILog>();
+
+                // This will also be set to Global.CacheStrategyProvider in UseFlatwhiteCache method
+                builder.RegisterType<WebApiCacheStrategyProvider>().As<ICacheStrategyProvider>().SingleInstance();
+
+                // This is required by EtagHeaderHandler and OutputCacheAttribute when it builds the response
+                builder.RegisterType<CacheResponseBuilder>().As<ICacheResponseBuilder>().SingleInstance();
+
+                // This is required by CachControlHeaderHandlerProvider
+                // NOTE: Register more instances of ICachControlHeaderHandler here
+                builder.RegisterType<EtagHeaderHandler>().As<ICachControlHeaderHandler>().SingleInstance();
+            }
         }
     }
 }

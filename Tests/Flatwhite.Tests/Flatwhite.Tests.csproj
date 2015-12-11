@@ -85,6 +85,7 @@
     <Compile Include="Core\Hot\DisposingPhoenixTests.cs" />
     <Compile Include="Core\Hot\InActivePhoenixTests.cs" />
     <Compile Include="Core\Hot\RaisingPhoenixTests.cs" />
+    <Compile Include="Core\InvocationAttributeTests.cs" />
     <Compile Include="Core\MethodFilterAttributeTests.cs" />
     <Compile Include="Core\MethodInterceptorTests.cs" />
     <Compile Include="Core\OutputCacheAttributeTests.cs" />

@@ -138,9 +138,7 @@ namespace Flatwhite.Hot
             if (_isAsync)
             {
                 var task = (Task) invokeResult;
-                await task;
-                dynamic taskWithResult = task;
-                return taskWithResult.Result;
+                return await task.TryGetTaskResult();
             }
 
             return result;

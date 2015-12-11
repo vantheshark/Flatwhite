@@ -55,5 +55,17 @@ namespace Flatwhite
                 }
             }
         }
+
+        /// <summary>
+        /// Try to get a result of a Task when we don't know it's generic argument type
+        /// </summary>
+        /// <param name="unknownGenericArgumentTypeTaskWithResult"></param>
+        /// <returns></returns>
+        internal static async Task<object> TryGetTaskResult(this Task unknownGenericArgumentTypeTaskWithResult)
+        {
+            await unknownGenericArgumentTypeTaskWithResult;
+            dynamic taskWithResult = unknownGenericArgumentTypeTaskWithResult;
+            return taskWithResult.Result;
+        }
     }
 }

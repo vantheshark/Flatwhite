@@ -86,10 +86,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
+    <Content Include="README.txt" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\ICoffeeService.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="FlatwhiteLog4netAdaptor.cs" />
     <Compile Include="Global.asax.cs">

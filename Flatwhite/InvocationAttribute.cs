@@ -20,7 +20,7 @@ namespace Flatwhite
             methodExecutingContext.Result = _invocation.ReturnValue;
         }
 
-        public override Task OnMethodExecutingAsync(MethodExecutingContext actionContext)
+        public override async Task OnMethodExecutingAsync(MethodExecutingContext actionContext)
         {
             _invocation.Proceed();
 
@@ -28,11 +28,12 @@ namespace Flatwhite
 
             if (taskResult != null && _taskGenericReturnType != null)
             {
-                var result = _invocation.Method.ReturnType.GetProperty("Result").GetValue(taskResult, null);
-                actionContext.Result = result;
+                actionContext.Result = await taskResult.TryGetTaskResult();
             }
-
-            return taskResult;
+            else
+            {
+                actionContext.Result = _invocation.ReturnValue;
+            }
         }
     }
 }

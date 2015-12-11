@@ -12,15 +12,17 @@ namespace Flatwhite.WebApi2.Controllers
 {
     public class ValuesController : ApiController
     {
+        private readonly ICoffeeService _coffeeService;
         private readonly ILog _logger;
         private static string _hint = "<br /><br /> <strong>Go to <a href='/_flatwhite/store/0' target='_blank'>/_flatwhite/store/{storeId}</a> to see cache statuses</strong>" +
                                       "<br /><br /> <strong>Go to <a href='/_flatwhite/phoenix' target='_blank'>/_flatwhite/phoenix</a> to see phoenix statuses</strong>";
-        public ValuesController(ILog logger)
+        public ValuesController(ICoffeeService coffeeService, ILog logger)
         {
+            _coffeeService = coffeeService;
             _logger = logger;
         }
 
-        public ValuesController() : this (LogManager.GetLogger(typeof(ValuesController)))
+        public ValuesController() : this (new FlatwhiteCoffeeService(), LogManager.GetLogger(typeof(ValuesController)))
         {
         }
 
@@ -49,16 +51,15 @@ namespace Flatwhite.WebApi2.Controllers
         public async Task<HttpResponseMessage> VaryByParamAsync(string packageId)
         {
             var sw = Stopwatch.StartNew();
-            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"http://flatwhitecafe.com.au/"));
-            //await Task.Delay(2000);
+
+            await _coffeeService.OrderCoffeeAsync();
             sw.Stop();
-            _logger.Info($"ActionMethod {nameof(VaryByParam)} elapsed {sw.ElapsedMilliseconds} ms");
+            _logger.Info($"ActionMethod {nameof(VaryByParamAsync)} elapsed {sw.ElapsedMilliseconds} ms");
             return new HttpResponseMessage()
             {
-                Content = new StringContent($"elapsed {sw.ElapsedMilliseconds} milliseconds.{_hint}", Encoding.UTF8, "text/html")
+                Content = new StringContent($"Download elapsed {sw.ElapsedMilliseconds} milliseconds.{_hint}", Encoding.UTF8, "text/html")
             };
         }
-
         
 
         [HttpGet]
@@ -72,7 +73,7 @@ namespace Flatwhite.WebApi2.Controllers
         public HttpResponseMessage VaryByParam(string packageId)
         {
             var sw = Stopwatch.StartNew();
-            var content = new WebClient().DownloadString(new Uri($"http://flatwhitecafe.com.au/?" + packageId));
+            _coffeeService.OrderCoffee();
             sw.Stop();
             _logger.Info($"ActionMethod {nameof(VaryByParam)} elapsed {sw.ElapsedMilliseconds} ms");
             return new HttpResponseMessage()
@@ -102,9 +103,9 @@ namespace Flatwhite.WebApi2.Controllers
         public virtual async Task<HttpResponseMessage> VaryByCustom()
         {
             var sw = Stopwatch.StartNew();
-            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"http://flatwhitecafe.com.au/"));
+            await _coffeeService.OrderCoffeeAsync();
             sw.Stop();
-            _logger.Info($"ActionMethod {nameof(VaryByParam)} elapsed {sw.ElapsedMilliseconds} ms.{_hint}");
+            _logger.Info($"ActionMethod {nameof(VaryByCustom)} elapsed {sw.ElapsedMilliseconds} ms.{_hint}");
             return new HttpResponseMessage()
             {
                 Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} milliseconds", Encoding.UTF8, "text/html")
