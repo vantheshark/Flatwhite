@@ -17,17 +17,19 @@ namespace Flatwhite.WebApi.Owin
         {
             // OPTIONAL: I'm using log4net to debug, just implement your own log adaptor
             log4net.Config.XmlConfigurator.Configure();
-            Global.Logger = new FlatwhiteLog4netAdaptor(LogManager.GetLogger(typeof (Global)));
+            Global.Logger = new FlatwhiteLog4netAdaptor(LogManager.GetLogger("Flatwhite"));
 
             var config = new HttpConfiguration();
             var container = BuildAutofacContainer(config);
             
             WebApiConfig.Register(config);
+            config.UseFlatwhiteCache(new FlatwhiteWebApiConfiguration
+            {
+                EnableStatusController = true,
+                LoopbackAddress = null // Set it to web server loopback address if server is behind firewall
+            });
 
-            app.UseWebApi(config)
-               .UseFlatwhiteCache(config); // OR config.UseFlatwhiteCache();
-
-
+            app.UseWebApi(config);
         }
 
         private IContainer BuildAutofacContainer(HttpConfiguration config)

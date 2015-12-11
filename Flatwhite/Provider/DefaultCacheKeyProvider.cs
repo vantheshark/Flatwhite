@@ -62,7 +62,7 @@ namespace Flatwhite.Provider
                     key.Append(", ");
                 }
             }
-            return key.ToString();
+            return key.ToString().TrimEnd(' ', ':', ',');
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 
 namespace Flatwhite.WebApi
 {
@@ -61,22 +60,13 @@ namespace Flatwhite.WebApi
         public bool IgnoreRevalidationRequest { get; set; }
 
         /// <summary>
-        /// If set to true, the cache will be auto refreshed every <see cref="OutputCacheAttribute.MaxAge"/> second(s).
-        /// <para>It's a trade-off to turn this on as you don't want too many Timers trying to refresh your cache data very small amout of seconds especially when you have <see cref="OutputCacheAttribute.MaxAge"/> too small
-        /// and there is so many variaties of the cache (because of VaryByParam). 
-        /// </para>
-        /// <para>If the api endpoint is an busy endpoint with small value of <see cref="OutputCacheAttribute.MaxAge"/>, it's better to keep this off and use <see cref="OutputCacheAttribute.StaleWhileRevalidate"/></para>
-        /// <para>If the endpoint is not busy but you want to keep the cache always available, turn this on and specify the <see cref="OutputCacheAttribute.StaleWhileRevalidate"/> with a value greater than 0</para>
-        /// </summary>
-        public bool AutoRefresh { get; set; }
-
-        /// <summary>
         /// Clone the WebApiCacheItem without the content and with a fresh CreatedTime
         /// </summary>
         /// <returns></returns>
         internal override CacheItem CloneWithoutData()
         {
-            var clone = (WebApiCacheItem) base.CloneWithoutData();
+            var clone = (WebApiCacheItem) MemberwiseClone();
+            clone.Data = null;
             clone.Checksum = null;
             clone.Content = null;
             return clone;

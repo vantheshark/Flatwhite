@@ -1,18 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Flatwhite.Hot
+namespace Flatwhite.WebApi
 {
     /// <summary>
     /// An async-compatible countdown event.
+    /// https://github.com/StephenCleary/AspNetBackgroundTasks/blob/master/src/AspNetBackgroundTasks/Internal/AsyncCountdownEvent.cs
     /// </summary>
     [DebuggerDisplay("CurrentCount = {_count}")]
     [DebuggerTypeProxy(typeof(DebugView))]
+    [ExcludeFromCodeCoverage]
     public sealed class AsyncCountdownEvent
     {
         /// <summary>
@@ -71,6 +71,7 @@ namespace Flatwhite.Hot
 
         // ReSharper disable UnusedMember.Local
         [DebuggerNonUserCode]
+        [ExcludeFromCodeCoverage]
         private sealed class DebugView
         {
             private readonly AsyncCountdownEvent _ce;
@@ -80,9 +81,9 @@ namespace Flatwhite.Hot
                 _ce = ce;
             }
 
-            public int CurrentCount { get { return _ce._count; } }
+            public int CurrentCount => _ce._count;
 
-            public Task Task { get { return _ce._tcs.Task; } }
+            public Task Task => _ce._tcs.Task;
         }
         // ReSharper restore UnusedMember.Local
     }

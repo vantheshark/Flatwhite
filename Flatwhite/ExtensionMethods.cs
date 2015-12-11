@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Flatwhite
 {
@@ -28,6 +31,29 @@ namespace Flatwhite
                 return default(T);
             }
             return (T)obj;
+        }
+
+        internal static void CheckMethodForCacheSupported(this MethodInfo method, out bool isAsync)
+        {
+            if (method.ReturnType == typeof(void))
+            {
+                throw new NotSupportedException("void method is not supported");
+            }
+            isAsync = typeof(Task).IsAssignableFrom(method.ReturnType);
+
+            if (isAsync && (!method.ReturnType.IsGenericType || method.ReturnType.GetGenericTypeDefinition() != typeof(Task<>)))
+            {
+                throw new NotSupportedException("async void method is not supported");
+            }
+
+            if (isAsync)
+            {
+                var args = method.ReturnType.GetGenericArguments();
+                if (args.Length == 1 && typeof (Task).IsAssignableFrom(args[0]))
+                {
+                    throw new NotSupportedException("method with return type \"Task<Task>\" does not supported");
+                }
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace Flatwhite.Tests.Core.Hot
     public class PhoenixTests
     {
         private _IInvocation _invocation;
+        private int _waitTime = 2000;
+
         private const int StoreId = 99999;
         private readonly Guid _id = Guid.NewGuid();
         private static readonly CacheItem CacheInfo = new CacheItem
@@ -24,8 +27,14 @@ namespace Flatwhite.Tests.Core.Hot
             StaleWhileRevalidate = 5000
         };
 
-        public AutoResetEvent SetUp(string method, IUserService svc = null)
+        private AutoResetEvent SetUp(string method, IUserService svc = null)
         {
+#if DEBUG
+            if (Debugger.IsAttached)
+            {
+                _waitTime = int.MaxValue;
+            }
+#endif
             Global.Init();
             if (svc == null)
             {
@@ -74,14 +83,14 @@ namespace Flatwhite.Tests.Core.Hot
         public void The_method_Reborn_should_try_to_refresh_the_cache()
         {
             // Arrange
-            var wait = SetUp("GetById");
+            var wait = SetUp(nameof(IUserService.GetById));
             var phoenix = new Phoenix(_invocation, CacheInfo);
 
             // Action
             phoenix.Reborn();
 
             // Assert
-            Assert.IsTrue(wait.WaitOne(2000));
+            Assert.IsTrue(wait.WaitOne(_waitTime));
             Global.CacheStoreProvider.GetAsyncCacheStore(StoreId).Received(1)
                 .SetAsync("cacheKey", Arg.Is<object>(obj => _id.Equals(((CacheItem) obj).Data)), Arg.Any<DateTimeOffset>());
         }
@@ -90,14 +99,14 @@ namespace Flatwhite.Tests.Core.Hot
         public void The_method_Reborn_should_work_with_async_method()
         {
             // Arrange
-            var wait = SetUp("GetByIdAsync");
+            var wait = SetUp(nameof(IUserService.GetByIdAsync));
             var phoenix = new Phoenix(_invocation, CacheInfo);
 
             // Action
             phoenix.Reborn();
 
             // Assert
-            Assert.IsTrue(wait.WaitOne(2000));
+            Assert.IsTrue(wait.WaitOne(_waitTime));
             Global.CacheStoreProvider.GetAsyncCacheStore(StoreId).Received(1)
                 .SetAsync("cacheKey", Arg.Is<object>(obj => _id.Equals(((CacheItem)obj).Data)), Arg.Any<DateTimeOffset>());
         }
@@ -108,12 +117,12 @@ namespace Flatwhite.Tests.Core.Hot
             // Arrange
             var svc = Substitute.For<IUserService>();
             svc.GetById(Arg.Any<Guid>()).Returns(null);
-            var wait = SetUp("GetById", svc);
+            var wait = SetUp(nameof(IUserService.GetById), svc);
             var phoenix = new Phoenix(_invocation, CacheInfo);
 
             // Action
             phoenix.Reborn();
-            Assert.IsTrue(wait.WaitOne(2000));
+            Assert.IsTrue(wait.WaitOne(_waitTime));
             // Assert
             var storeId = Global.CacheStoreProvider.GetAsyncCacheStore(StoreId);
             storeId.Received(1).RemoveAsync("cacheKey");
@@ -124,7 +133,7 @@ namespace Flatwhite.Tests.Core.Hot
         {
             // Arrange
             var svc = Substitute.For<IUserService>();
-            var wait = SetUp("GetById", svc);
+            var wait = SetUp(nameof(IUserService.GetById), svc);
             svc.When(x => x.GetById(Arg.Any<Guid>())).Do(c =>
             {
                 wait.Set();
@@ -135,9 +144,9 @@ namespace Flatwhite.Tests.Core.Hot
 
             // Action
             phoenix.Reborn();
-            Assert.IsTrue(wait.WaitOne(2000));
+            Assert.IsTrue(wait.WaitOne(_waitTime));
             wait.Reset();
-            Assert.IsTrue(wait.WaitOne(2000));
+            Assert.IsTrue(wait.WaitOne(_waitTime));
 
             // Assert
             svc.Received(2).GetById(Arg.Any<Guid>());

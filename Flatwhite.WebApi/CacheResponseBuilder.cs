@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -16,6 +17,14 @@ namespace Flatwhite.WebApi
         /// </summary>
         public virtual HttpResponseMessage GetResponse(CacheControlHeaderValue cacheControl, WebApiCacheItem cacheItem, HttpRequestMessage request)
         {
+            if (cacheControl != null &&
+                cacheControl.Extensions != null &&
+                cacheControl.Extensions.Any(x => x.Name == WebApiExtensions.__cacheControl_flatwhite_force_refresh) &&
+                request.IsLocal())
+            {
+                return null;
+            }
+
             if (cacheControl != null && cacheControl.OnlyIfCached && cacheItem == null)
             {
                 var errorResponse = new HttpResponseMessage {StatusCode = HttpStatusCode.GatewayTimeout};
@@ -41,6 +50,7 @@ namespace Flatwhite.WebApi
             if (cacheItem.IsStale())
             {
                 stale = true;
+                Global.Logger.Info($"Stale key \"{cacheItem.Key}\", age: \"{ageInSeconds}\", store: \"{cacheItem.StoreId}\", request: {request.RequestUri.PathAndQuery}");
 
                 if (cacheItem.StaleWhileRevalidate > 0 &&
                     cacheControl != null &&
@@ -82,7 +92,6 @@ namespace Flatwhite.WebApi
                 response.Headers.Add("X-Flatwhite-Warning", "Response is Stale");
                 //https://tools.ietf.org/html/rfc7234#page-31
                 response.Headers.Add("Warning", $"110 - \"Response is Stale\"");
-                Global.Logger.Info($"Stale, age: {ageInSeconds}");
             }
             
             response.Headers.Age = TimeSpan.FromSeconds(ageInSeconds);

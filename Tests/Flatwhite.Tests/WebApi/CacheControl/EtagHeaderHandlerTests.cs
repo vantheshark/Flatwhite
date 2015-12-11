@@ -72,7 +72,6 @@ namespace Flatwhite.Tests.WebApi.CacheControl
         public async Task Should_return_new_etag_if_cache_item_found_but_doesnt_match_checksum(string cacheChecksum, HttpStatusCode resultCode)
         {
             // Arrange
-            
             var cacheControl = new CacheControlHeaderValue
             {
                 MaxStale = true,

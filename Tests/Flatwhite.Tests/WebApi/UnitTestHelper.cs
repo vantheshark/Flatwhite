@@ -35,7 +35,7 @@ namespace Flatwhite.Tests.WebApi
                     {HttpPropertyKeys.SynchronizationContextKey, SynchronizationContext.Current},
                     {HttpPropertyKeys.HttpActionDescriptorKey, new ReflectedHttpActionDescriptor { ControllerDescriptor = mockControlerDescriptor}}
                 },
-                RequestUri = new Uri("http://localhost/api")
+                RequestUri = new Uri("http://localhost/api/method/id")
             };
         }
     }

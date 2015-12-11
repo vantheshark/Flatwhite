@@ -109,8 +109,6 @@ namespace Flatwhite.Tests.Autofac.Strategy
         public void Test_cache_on_selected_method_with_custom_cache_store_type()
         {
             var cacheStore = Substitute.For<ICacheStore>();
-            
-            FlatwhiteCacheEntryChangeMonitor mon = null;
             var builder = new ContainerBuilder().EnableFlatwhite();
             builder
                 .RegisterType<BlogService>()

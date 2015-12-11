@@ -56,8 +56,6 @@ namespace Flatwhite.Tests
         {
             InvokeCount++;
             throw new Exception();
-            //Console.WriteLine($"{DateTime.Now} {nameof(BlogService)} IOAync");
-            return "Hello";
         }
 
         [OutputCache(Duration = 2)]  // This should be applied if EnableClassInterceptors

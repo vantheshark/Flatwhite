@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Web.Http.Controllers;
@@ -48,10 +47,10 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
             return GetInvocationContext(actionContext);
         }
 
-        public void CreatePhoenixPublic(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request, MediaTypeFormatter mediaTypeFormatter)
+        public void CreatePhoenixPublic(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request)
         {
             var methodInfo = typeof(Flatwhite.WebApi.OutputCacheAttribute).GetMethod("CreatePhoenix", BindingFlags.Instance | BindingFlags.NonPublic);
-            methodInfo.Invoke(this, new object[] { invocation, cacheItem, request, mediaTypeFormatter });
+            methodInfo.Invoke(this, new object[] { invocation, cacheItem, request });
         }
     }
 }

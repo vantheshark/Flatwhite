@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using System.Web.Hosting;
 
 namespace Flatwhite.Hot
 {
@@ -9,48 +8,50 @@ namespace Flatwhite.Hot
     /// </summary>
     internal class RaisingPhoenix : IPhoenixState
     {
-        private static readonly RegisteredTasks _registeredTask = new RegisteredTasks();
+        private IPhoenixState _newPhoenixState;
+        private bool _startable = true;
         /// <summary>
         /// true if the phoenix is executing rebornAction. This is to avoid many call on method Reborn many time
         ///  </summary>
 
-        private Task<IPhoenixState> _backGroundTask;
 
         public IPhoenixState Reborn(Func<Task<IPhoenixState>> rebornAction)
         {
-            if (_backGroundTask == null || 
-                _backGroundTask.Status == TaskStatus.Faulted || 
-                _backGroundTask.Status == TaskStatus.Canceled || 
-                _backGroundTask.Status == TaskStatus.RanToCompletion && _backGroundTask.Result == null)
+            if (_newPhoenixState != null)
             {
-                _backGroundTask?.Dispose();
-                //_backGroundTask = rebornAction();
-                _registeredTask.Run(rebornAction);
-                //_backGroundTask.LogErrorOnFaulted();
-            }
-            
-            if (_backGroundTask != null && _backGroundTask.Status == TaskStatus.RanToCompletion && _backGroundTask.Result != null)
-            {
-                return _backGroundTask.Result;
+                return _newPhoenixState;
             }
 
+            if (!_startable)
+            {
+                return this;
+            }
+
+            _startable = false;
+            Func<Task<IPhoenixState>> wrapper = async () =>
+            {
+                try
+                {
+                    var t = rebornAction();
+                    _newPhoenixState = await t;
+                }
+                catch
+                {
+                    _startable = true;
+                }
+
+                return _newPhoenixState;
+            };
+            Global.BackgroundTaskManager.Run(wrapper);
+            
             return this;
         }
 
         public string GetState()
         {
-            return 
-                _backGroundTask == null || 
-                _backGroundTask.Status == TaskStatus.WaitingForActivation ||
-                _backGroundTask.Status == TaskStatus.WaitingForChildrenToComplete ||
-                _backGroundTask.Status == TaskStatus.WaitingToRun
-                
-                ? "wait to raise" 
+            return _startable 
+                ? "wait to raise"
                 : "raising";
-        }
-
-        public void Stop(bool immediate)
-        {
         }
     }
 }

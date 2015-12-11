@@ -193,7 +193,7 @@ namespace Flatwhite
             {
                 Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();
             }
-            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(invocation, cacheItem); ;
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(invocation, cacheItem);
         }
 
         /// <summary>

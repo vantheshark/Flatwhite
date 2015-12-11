@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 using Flatwhite.Provider;
 
@@ -73,6 +72,7 @@ namespace Flatwhite
             CacheStoreProvider = new DefaultCacheStoreProvider();
             ServiceActivator = new ServiceActivator();
             Logger = new NullLogger();
+            BackgroundTaskManager = new DefaultBackgroundTaskManager();
         }
 
         /// <summary>
@@ -111,5 +111,10 @@ namespace Flatwhite
         /// Logger
         /// </summary>
         public static ILogger Logger { get; set; }
+
+        /// <summary>
+        /// Background task manager
+        /// </summary>
+        internal static IBackgroundTaskManager BackgroundTaskManager { get; set; }
     }
 }

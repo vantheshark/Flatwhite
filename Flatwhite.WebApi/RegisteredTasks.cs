@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Hosting;
 
-namespace Flatwhite.Hot
+namespace Flatwhite.WebApi
 {
-    internal sealed class RegisteredTasks : IRegisteredObject
+    /// https://github.com/StephenCleary/AspNetBackgroundTasks/blob/master/src/AspNetBackgroundTasks/Internal/RegisteredTasks.cs
+    [ExcludeFromCodeCoverage]
+    internal sealed class RegisteredTasks : IRegisteredObject, IBackgroundTaskManager
     {
         /// <summary>
         /// A cancellation token that is set when ASP.NET is shutting down the app domain.

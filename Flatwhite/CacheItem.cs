@@ -33,7 +33,12 @@ namespace Flatwhite
         public uint StaleWhileRevalidate { get; set; }
 
         /// <summary>
-        /// Auto refresh
+        /// If set to true, the cache will be auto refreshed every <see cref="MaxAge"/> second(s).
+        /// <para>It's a trade-off to turn this on as you don't want too many Timers trying to refresh your cache data very small amout of seconds especially when you have <see cref="MaxAge"/> too small
+        /// and there is so many variaties of the cache (because of VaryByParam). 
+        /// </para>
+        /// <para>If the api endpoint is an busy endpoint with small value of <see cref="MaxAge"/>, it's better to keep this off and use <see cref="StaleWhileRevalidate"/></para>
+        /// <para>If the endpoint is not busy but you want to keep the cache always available, turn this on and specify the <see cref="StaleWhileRevalidate"/> with a value greater than 0</para>
         /// </summary>
         public bool AutoRefresh { get; set; }
 

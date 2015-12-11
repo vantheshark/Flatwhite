@@ -2,13 +2,8 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Formatting;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Controllers;
-using System.Web.Http.Hosting;
+using Flatwhite.Hot;
 using Flatwhite.WebApi;
 using NSubstitute;
 using NUnit.Framework;
@@ -18,173 +13,241 @@ namespace Flatwhite.Tests.WebApi
     [TestFixture]
     public class WebApiPhoenixTests
     {
-        private readonly DummyController _controllerIntance = new DummyController();
-        private static readonly Type ControllerType = typeof (DummyController);
         private HttpRequestMessage _requestMessage = UnitTestHelper.GetMessage();
+        private IHttpClient _client;
 
         [SetUp]
         public void SetUp()
         {
             Global.Init();
+            WebApiExtensions._fwConfig = new FlatwhiteWebApiConfiguration();
             WebApiExtensions._dependencyResolverActivator = new ServiceActivator();
             _requestMessage = UnitTestHelper.GetMessage();
-        }
-
-        //[TestCase(nameof(DummyController.HttpActionResult), 4)]
-        [TestCase(nameof(DummyController.HttpResponseMessageAsync), 4)]
-        //[TestCase(nameof(DummyController.HttpResponseMessage), 4)]
-        //[TestCase(nameof(DummyController.Object), 36)]
-        //[TestCase(nameof(DummyController.String), 6)]
-        //[TestCase(nameof(DummyController.StringAsync), 6)]
-        //[TestCase(nameof(DummyController.Void), -1, ExpectedException = typeof(NotSupportedException), ExpectedMessage = "void method is not supported")]
-        //[TestCase(nameof(DummyController.VoidAsync), -1, ExpectedException = typeof(NotSupportedException), ExpectedMessage = "async void method is not supported")]
-        public async Task should_execute_the_controller_method_and_return_CacheItem(string actionMethodName, int contentLength)
-        {
-            // Arrange
-            var currentCacheItem = new WebApiCacheItem();
-            var invocation = Substitute.For<_IInvocation>();
-            invocation.Arguments.Returns(new object[0]);
-            invocation.Method.Returns(ControllerType.GetMethod(actionMethodName, BindingFlags.Instance | BindingFlags.Public));
-
-            var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage, new JsonMediaTypeFormatter());
-
-            // Action
-            var result = await phoenix.InvokeAndGetBareResultPublic(_controllerIntance).ConfigureAwait(false);
-            var cacheItem = await phoenix.GetCacheItemPublic(result).ConfigureAwait(false) as WebApiCacheItem;
-
-            // Assert
-            if (result == null)
-            {
-                Assert.IsTrue(actionMethodName == "Void" || actionMethodName == "VoidAsync");
-            }
-            else
-            {
-                Assert.IsNotNull(cacheItem);
-                Assert.That(cacheItem.Content.Length > 1000);
-            }
+            _client = Substitute.For<IHttpClient>();
+            _client
+                .SendAsync(Arg.Any<HttpRequestMessage>(), HttpCompletionOption.ResponseHeadersRead)
+                .Returns(Task.FromResult(new HttpResponseMessage {StatusCode = System.Net.HttpStatusCode.OK}));
         }
 
         [Test]
-        public void GetTargetInstance_should_set_the_request_properties_but_HttpConfiguration()
+        public async Task FireAsync_should_send_a_request_to_original_endpoint_when_loopback_is_not_set()
         {
-            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
-            var currentCacheItem = new WebApiCacheItem();
+            // Arrange
+            var currentCacheItem = new WebApiCacheItem
+            {
+                CreatedTime = DateTime.UtcNow,
+                MaxAge = 2,
+                StaleWhileRevalidate = 3,
+                StaleIfError = 4,
+                Key = "1"
+            };
             var invocation = Substitute.For<_IInvocation>();
-            invocation.Arguments.Returns(new object[0]);
-            invocation.Method.Returns(ControllerType.GetMethod(nameof(DummyController.Object), BindingFlags.Instance | BindingFlags.Public));
+
+
+            using (var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage))
+            { 
+                phoenix.HttpClient = _client;
             
-            var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage, new JsonMediaTypeFormatter());
 
-            // Action
-            var controller = phoenix.GetTargetInstancePublic() as ApiController;
+                // Action
+                var state = await phoenix.FireAsyncPublic();
 
-            // Assert
-            Assert.IsNotNull(controller);
-            Assert.IsNotNull(controller.Request);
-            Assert.AreEqual(1, controller.Request.Headers.Count());
-            Assert.AreEqual(4, controller.Request.Properties.Count()); // __created_by, ActionDescriptor, RequestContext, HttpConfiguration
+                // Assert
+                Assert.IsTrue(state is InActivePhoenix);
+                _client.Received(1).Timeout = Arg.Is<TimeSpan>(x => x.TotalSeconds > 4);
+                await _client
+                    .Received(1)
+                    .SendAsync(Arg.Is<HttpRequestMessage>(msg => msg.Properties.Count == 0 && 
+                                                                 msg.Headers.CacheControl.Extensions.Any(e => e.Name == WebApiExtensions.__cacheControl_flatwhite_force_refresh) &&
+                                                                 msg.RequestUri.ToString() == "http://localhost/api/method/id")
+                                , HttpCompletionOption.ResponseHeadersRead);
+            }
         }
 
         [Test]
-        public void GetTargetInstance_should_set_the_HttpConfiguration_if_different_to_the_one_from_controller_descriptor()
+        public async Task FireAsync_should_send_a_request_to_loopback_address()
         {
             // Arrange
-            var requestContext = Substitute.For<HttpRequestContext>();
-            requestContext.Configuration.Returns(Substitute.For<HttpConfiguration>());
-            _requestMessage.Properties[HttpPropertyKeys.RequestContextKey] = requestContext;
-            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
-            var currentCacheItem = new WebApiCacheItem();
-            var invocation = Substitute.For<_IInvocation>();
-            invocation.Arguments.Returns(new object[0]);
-            invocation.Method.Returns(ControllerType.GetMethod(nameof(DummyController.Object), BindingFlags.Instance | BindingFlags.Public));
+            WebApiExtensions._fwConfig = new FlatwhiteWebApiConfiguration
+            {
+                LoopbackAddress = "http://192.188.2.1:8080"
+            };
+            using (var phoenix = new WebApiPhoenixWithPublicMethods(Substitute.For<_IInvocation>(), new WebApiCacheItem { Key = "1" }, _requestMessage))
+            {
+                phoenix.HttpClient = _client;
 
-            var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage, new JsonMediaTypeFormatter());
+                // Action
+                await phoenix.FireAsyncPublic();
 
-            // Action
-            var controller = phoenix.GetTargetInstancePublic() as ApiController;
-
-            // Assert
-            Assert.IsNotNull(controller);
-            Assert.IsNotNull(controller.Request);
-            Assert.AreEqual(1, controller.Request.Headers.Count());
-            Assert.AreEqual(5, controller.Request.Properties.Count()); // __created_by, ActionDescriptor, RequestContext, HttpConfiguration
+                // Assert
+                await _client
+                    .Received(1)
+                    .SendAsync(Arg.Is<HttpRequestMessage>(msg => msg.Properties.Count == 0 &&
+                                                                 msg.Headers.CacheControl.Extensions.Any(e => e.Name == WebApiExtensions.__cacheControl_flatwhite_force_refresh) &&
+                                                                 msg.RequestUri.ToString() == "http://192.188.2.1:8080/api/method/id")
+                                , HttpCompletionOption.ResponseHeadersRead);
+            }
         }
 
         [Test]
-        public void GetTargetInstance_should_set_the_HttpConfiguration_if_null()
+        public void FireAsync_should_throw_if_request_failed()
         {
             // Arrange
-            var requestContext = Substitute.For<HttpRequestContext>();
-            requestContext.Configuration.Returns((HttpConfiguration)null);
-            _requestMessage.Properties[HttpPropertyKeys.RequestContextKey] = requestContext;
-            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
-            var currentCacheItem = new WebApiCacheItem();
-            var invocation = Substitute.For<_IInvocation>();
-            invocation.Arguments.Returns(new object[0]);
-            invocation.Method.Returns(ControllerType.GetMethod(nameof(DummyController.Object), BindingFlags.Instance | BindingFlags.Public));
+            _client
+                .SendAsync(Arg.Any<HttpRequestMessage>(), HttpCompletionOption.ResponseHeadersRead)
+                .Returns(Task.FromResult(new HttpResponseMessage { StatusCode = System.Net.HttpStatusCode.InternalServerError }));
 
-            var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage, new JsonMediaTypeFormatter());
+            using (var phoenix = new WebApiPhoenixWithPublicMethods(Substitute.For<_IInvocation>(), new WebApiCacheItem {Key = "1"}, _requestMessage))
+            { 
+                phoenix.HttpClient = _client;
 
-            // Action
-            var controller = phoenix.GetTargetInstancePublic() as ApiController;
-
-            // Assert
-            Assert.IsNotNull(controller);
-            Assert.IsNotNull(controller.Request);
-            Assert.AreEqual(1, controller.Request.Headers.Count());
-            Assert.AreEqual(5, controller.Request.Properties.Count()); // __created_by, ActionDescriptor, RequestContext, HttpConfiguration
-        }
-
-
-        [TestCase(null)]
-        [TestCase(typeof(IHttpController))]
-        public void GetTargetInstance_should_throw_if_cannot_create_controller(Type controllerType)
-        {
-            // Arrange
-            var mockControlerDescriptor = Substitute.For<HttpControllerDescriptor>();
-            mockControlerDescriptor.CreateController(Arg.Any<HttpRequestMessage>()).Returns(controllerType == null ? null : Substitute.For<IHttpController>());
-            mockControlerDescriptor.Configuration = Substitute.For<HttpConfiguration>();
-
-            _requestMessage.Properties[HttpPropertyKeys.HttpActionDescriptorKey] = new ReflectedHttpActionDescriptor { ControllerDescriptor = mockControlerDescriptor };
-            var currentCacheItem = new WebApiCacheItem();
-            var invocation = Substitute.For<_IInvocation>();
-            invocation.Arguments.Returns(new object[0]);
-            invocation.Method.Returns(ControllerType.GetMethod(nameof(DummyController.Object), BindingFlags.Instance | BindingFlags.Public));
-
-            var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage, new JsonMediaTypeFormatter());
-
-            // Action
-            if (controllerType == null)
-            {
-                Assert.Throws<Exception>(() => phoenix.GetTargetInstancePublic(), "Cannot recreate controller");
-            }
-            else
-            {
-                Assert.Throws<NotSupportedException>(() => phoenix.GetTargetInstancePublic(), "controller must be ApiController");
+                // Action
+                Assert.Throws<HttpRequestException>(async () => { await phoenix.FireAsyncPublic(); });
             }
         }
+
+        //[Test]
+        //public void GetTargetInstance_should_set_the_request_properties_but_HttpConfiguration()
+        //{
+        //    SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        //    var currentCacheItem = new WebApiCacheItem();
+        //    var invocation = Substitute.For<_IInvocation>();
+        //    invocation.Arguments.Returns(new object[0]);
+        //    invocation.Method.Returns(ControllerType.GetMethod(nameof(DummyController.Object), BindingFlags.Instance | BindingFlags.Public));
+
+        //    var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage);
+
+        //    // Action
+        //    var controller = phoenix.GetTargetInstancePublic() as ApiController;
+
+        //    // Assert
+        //    Assert.IsNotNull(controller);
+        //    Assert.IsNotNull(controller.Request);
+        //    Assert.AreEqual(1, controller.Request.Headers.Count());
+        //    Assert.AreEqual(4, controller.Request.Properties.Count()); // __created_by, ActionDescriptor, RequestContext, HttpConfiguration
+        //}
+
+        //[Test]
+        //public void GetTargetInstance_should_set_the_HttpConfiguration_if_different_to_the_one_from_controller_descriptor()
+        //{
+        //    // Arrange
+        //    var requestContext = Substitute.For<HttpRequestContext>();
+        //    requestContext.Configuration.Returns(Substitute.For<HttpConfiguration>());
+        //    _requestMessage.Properties[HttpPropertyKeys.RequestContextKey] = requestContext;
+        //    SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        //    var currentCacheItem = new WebApiCacheItem();
+        //    var invocation = Substitute.For<_IInvocation>();
+        //    invocation.Arguments.Returns(new object[0]);
+        //    invocation.Method.Returns(ControllerType.GetMethod(nameof(DummyController.Object), BindingFlags.Instance | BindingFlags.Public));
+
+        //    var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage);
+
+        //    // Action
+        //    var controller = phoenix.GetTargetInstancePublic() as ApiController;
+
+        //    // Assert
+        //    Assert.IsNotNull(controller);
+        //    Assert.IsNotNull(controller.Request);
+        //    Assert.AreEqual(1, controller.Request.Headers.Count());
+        //    Assert.AreEqual(5, controller.Request.Properties.Count()); // __created_by, ActionDescriptor, RequestContext, HttpConfiguration
+        //}
+
+        //[Test]
+        //public void GetTargetInstance_should_set_the_HttpConfiguration_if_null()
+        //{
+        //    // Arrange
+        //    var requestContext = Substitute.For<HttpRequestContext>();
+        //    requestContext.Configuration.Returns((HttpConfiguration)null);
+        //    _requestMessage.Properties[HttpPropertyKeys.RequestContextKey] = requestContext;
+        //    SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        //    var currentCacheItem = new WebApiCacheItem();
+        //    var invocation = Substitute.For<_IInvocation>();
+        //    invocation.Arguments.Returns(new object[0]);
+        //    invocation.Method.Returns(ControllerType.GetMethod(nameof(DummyController.Object), BindingFlags.Instance | BindingFlags.Public));
+
+        //    var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage);
+
+        //    // Action
+        //    var controller = phoenix.GetTargetInstancePublic() as ApiController;
+
+        //    // Assert
+        //    Assert.IsNotNull(controller);
+        //    Assert.IsNotNull(controller.Request);
+        //    Assert.AreEqual(1, controller.Request.Headers.Count());
+        //    Assert.AreEqual(5, controller.Request.Properties.Count()); // __created_by, ActionDescriptor, RequestContext, HttpConfiguration
+        //}
+
+
+        //[TestCase(null)]
+        //[TestCase(typeof(IHttpController))]
+        //public void GetTargetInstance_should_throw_if_cannot_create_controller(Type controllerType)
+        //{
+        //    // Arrange
+        //    var mockControlerDescriptor = Substitute.For<HttpControllerDescriptor>();
+        //    mockControlerDescriptor.CreateController(Arg.Any<HttpRequestMessage>()).Returns(controllerType == null ? null : Substitute.For<IHttpController>());
+        //    mockControlerDescriptor.Configuration = Substitute.For<HttpConfiguration>();
+
+        //    _requestMessage.Properties[HttpPropertyKeys.HttpActionDescriptorKey] = new ReflectedHttpActionDescriptor { ControllerDescriptor = mockControlerDescriptor };
+        //    var currentCacheItem = new WebApiCacheItem();
+        //    var invocation = Substitute.For<_IInvocation>();
+        //    invocation.Arguments.Returns(new object[0]);
+        //    invocation.Method.Returns(ControllerType.GetMethod(nameof(DummyController.Object), BindingFlags.Instance | BindingFlags.Public));
+
+        //    var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage);
+
+        //    // Action
+        //    if (controllerType == null)
+        //    {
+        //        Assert.Throws<Exception>(() => phoenix.GetTargetInstancePublic(), "Cannot recreate controller");
+        //    }
+        //    else
+        //    {
+        //        Assert.Throws<NotSupportedException>(() => phoenix.GetTargetInstancePublic(), "controller must be ApiController");
+        //    }
+        //}
+
+        //[DebuggerStepThrough]
+        //private class WebApiPhoenixWithPublicMethods : WebApiPhoenix
+        //{
+        //    public WebApiPhoenixWithPublicMethods(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage requestMessage)
+        //        : base(invocation, cacheItem, requestMessage)
+        //    {
+        //    }
+
+        //    public Task<CacheItem> GetCacheItemPublic(object response)
+        //    {
+        //        return GetCacheItem(response);
+        //    }
+
+        //    public Task<object> InvokeAndGetBareResultPublic(object serviceInstance)
+        //    {
+        //        return InvokeAndGetBareResult(serviceInstance);
+        //    }
+
+        //    public object GetTargetInstancePublic()
+        //    {
+        //        return GetTargetInstance();
+        //    }
+        //}
 
         [DebuggerStepThrough]
         private class WebApiPhoenixWithPublicMethods : WebApiPhoenix
         {
-            public WebApiPhoenixWithPublicMethods(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage requestMessage, MediaTypeFormatter mediaTypeFormatter = null)
-                : base(invocation, cacheItem, requestMessage, mediaTypeFormatter)
+            public WebApiPhoenixWithPublicMethods(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage requestMessage)
+                : base(invocation, cacheItem, requestMessage)
             {
             }
 
-            public Task<CacheItem> GetCacheItemPublic(object response)
+            public IHttpClient HttpClient { get; set; }
+
+            protected override IHttpClient GetHttpClient()
             {
-                return GetCacheItem(response);
+                return HttpClient;
             }
 
-            public Task<object> InvokeAndGetBareResultPublic(object serviceInstance)
+            public Task<IPhoenixState> FireAsyncPublic()
             {
-                return InvokeAndGetBareResult(serviceInstance);
-            }
-
-            public object GetTargetInstancePublic()
-            {
-                return GetTargetInstance();
+                return FireAsync();
             }
         }
     }

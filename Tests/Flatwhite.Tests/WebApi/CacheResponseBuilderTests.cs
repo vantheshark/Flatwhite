@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Web.Http.Controllers;
+using System.Web.Http.Hosting;
 using Flatwhite.Hot;
 using Flatwhite.WebApi;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace Flatwhite.Tests.WebApi
@@ -13,6 +15,23 @@ namespace Flatwhite.Tests.WebApi
     public class CacheResponseBuilderTests
     {
         [Test]
+        public void Should_return_null_when_cache_control_is_flatwhite_force_request()
+        {
+            // Arrange
+            var svc = new CacheResponseBuilder();
+            var control = new CacheControlHeaderValue();
+            var request = UnitTestHelper.GetMessage();
+            ((HttpRequestContext) request.Properties[HttpPropertyKeys.RequestContextKey]).IsLocal.Returns(true);
+            control.Extensions.Add(new NameValueHeaderValue(WebApiExtensions.__cacheControl_flatwhite_force_refresh, "true"));
+
+            // Action
+            var result = svc.GetResponse(control, new WebApiCacheItem(), request);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
         public void Should_return_GatewayTimeout_when_no_cache_and_request_sent_OnlyIfCached_control()
         {
             // Arrange
@@ -20,7 +39,7 @@ namespace Flatwhite.Tests.WebApi
             var svc = new CacheResponseBuilder();
 
             // Action
-            var result = svc.GetResponse(cacheControl, null, new HttpRequestMessage());
+            var result = svc.GetResponse(cacheControl, null, UnitTestHelper.GetMessage());
 
             // Assert
             Assert.AreEqual(HttpStatusCode.GatewayTimeout, result.StatusCode);
@@ -34,7 +53,7 @@ namespace Flatwhite.Tests.WebApi
             var svc = new CacheResponseBuilder();
 
             // Action
-            var result = svc.GetResponse(new CacheControlHeaderValue { }, null, new HttpRequestMessage());
+            var result = svc.GetResponse(new CacheControlHeaderValue { }, null, UnitTestHelper.GetMessage());
 
             // Assert
             Assert.IsNull(result);
@@ -62,7 +81,7 @@ namespace Flatwhite.Tests.WebApi
                 Key = "CacheKey" + Guid.NewGuid()
             };
 
-            var request = new HttpRequestMessage();
+            var request = UnitTestHelper.GetMessage();
             var svc = new CacheResponseBuilder { };
 
             // Action
@@ -96,7 +115,7 @@ namespace Flatwhite.Tests.WebApi
 
             Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheItem());
 
-            var request = new HttpRequestMessage();
+            var request = UnitTestHelper.GetMessage();
             var svc = new CacheResponseBuilder { };
 
             // Action
@@ -123,7 +142,7 @@ namespace Flatwhite.Tests.WebApi
                 IgnoreRevalidationRequest = false
             };
 
-            var request = new HttpRequestMessage();
+            var request = UnitTestHelper.GetMessage();
             var svc = new CacheResponseBuilder { };
 
             // Action
@@ -158,7 +177,7 @@ namespace Flatwhite.Tests.WebApi
 
             Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheItem());
 
-            var request = new HttpRequestMessage();
+            var request = UnitTestHelper.GetMessage();
             var svc = new CacheResponseBuilder { };
 
             // Action
@@ -199,7 +218,7 @@ namespace Flatwhite.Tests.WebApi
 
             Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(NSubstitute.Substitute.For<_IInvocation>(), new CacheItem());
 
-            var request = new HttpRequestMessage();
+            var request = UnitTestHelper.GetMessage();
             request.Properties[WebApiExtensions.__webApi_etag_matched] = true;
             var svc = new CacheResponseBuilder { };
 

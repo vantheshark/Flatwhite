@@ -130,6 +130,7 @@
     <Content Include="packages.config" />
     <Content Include="..\Flatwhite.WebApi2\log4net.config">
       <Link>log4net.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

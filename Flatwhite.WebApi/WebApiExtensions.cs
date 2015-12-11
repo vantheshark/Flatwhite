@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Web.Http;
 using Flatwhite.WebApi.CacheControl;
-using Owin;
 
 namespace Flatwhite.WebApi
 {
@@ -18,7 +17,9 @@ namespace Flatwhite.WebApi
         internal static readonly string __webApi_etag_matched = "__flatwhite_webApi_etag_matched";
         internal static readonly string __webApi_outputcache_response_builder = "__flatwhite_webApi_outputcache_response_builder";
         internal static readonly string __webApi_cache_is_stale = "__flatwhite_webApi_cache_is_stale";
+        internal static readonly string __cacheControl_flatwhite_force_refresh = "flatwhite-force-refresh";
 
+        
         /// <summary>
         /// __flatwhite_dont_cache_
         /// </summary>
@@ -30,26 +31,18 @@ namespace Flatwhite.WebApi
         /// </summary>
         internal static IServiceActivator _dependencyResolverActivator;
 
-        /// <summary>
-        /// Create required components to use Flatwhite cache for WebApi
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="config"></param>
-        /// <param name="enableStatusController">If true, Flatwhite will register route /_flatwhite/store/{storeId} to allow checking cache item status</param>
-        public static IAppBuilder UseFlatwhiteCache(this IAppBuilder app, HttpConfiguration config, bool enableStatusController = true)
-        {
-            config.UseFlatwhiteCache(enableStatusController);
-            return app;
-        }
+        internal static FlatwhiteWebApiConfiguration _fwConfig = new FlatwhiteWebApiConfiguration();
 
         /// <summary>
         /// Create required components to use Flatwhite cache for WebApi
         /// </summary>
         /// <param name="config"></param>
-        /// <param name="enableStatusController">If true, Flatwhite will register route /_flatwhite/store/{storeId} to allow checking cache item status</param>
-        public static HttpConfiguration UseFlatwhiteCache(this HttpConfiguration config, bool enableStatusController = true)
+        /// <param name="flatwhiteConfig"></param>
+        public static HttpConfiguration UseFlatwhiteCache(this HttpConfiguration config, FlatwhiteWebApiConfiguration flatwhiteConfig = null)
         {
+            _fwConfig = flatwhiteConfig ?? new FlatwhiteWebApiConfiguration();
             Global.CacheStrategyProvider = new WebApiCacheStrategyProvider();
+            Global.BackgroundTaskManager = new RegisteredTasks();
             _dependencyResolverActivator = new WebApiDependencyResolverActivator(() => config.DependencyResolver);
 
             var allHandlers = config.DependencyResolver
@@ -70,7 +63,7 @@ namespace Flatwhite.WebApi
             allHandlers.ForEach(h => handlerProvider.Register(h));
 
             config.MessageHandlers.Add(new CacheMessageHandler(handlerProvider));
-            if (enableStatusController)
+            if (_fwConfig.EnableStatusController)
             {
                 config.Routes.MapHttpRoute(
                     name: "_FlatwhiteStatus",

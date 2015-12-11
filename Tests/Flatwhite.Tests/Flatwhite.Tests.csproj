@@ -88,6 +88,7 @@
     <Compile Include="Core\MethodFilterAttributeTests.cs" />
     <Compile Include="Core\MethodInterceptorTests.cs" />
     <Compile Include="Core\OutputCacheAttributeTests.cs" />
+    <Compile Include="Core\OutputCacheAttributeWithPublicMethods.cs" />
     <Compile Include="Core\Strategy\DefaultCacheStrategyTests.cs" />
     <Compile Include="Core\ToStringHashCodeGeneratorTests.cs" />
     <Compile Include="Core\DefaultHashCodeGeneratorTests.cs" />

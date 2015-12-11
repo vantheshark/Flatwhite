@@ -42,19 +42,20 @@ namespace Flatwhite.WebApi2.Controllers
         [Route("api/vary-by-param-async/{packageId}")]
         [WebApi.OutputCache(
             MaxAge = 2,
-            StaleWhileRevalidate = 10,
+            StaleWhileRevalidate = 5,
             VaryByParam = "packageId",
             RevalidationKey = "VaryByParamMethod",
-            IgnoreRevalidationRequest = true)]
+            IgnoreRevalidationRequest = true, AutoRefresh = true)]
         public async Task<HttpResponseMessage> VaryByParamAsync(string packageId)
         {
             var sw = Stopwatch.StartNew();
-            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"http://localhost:58712/_flatwhite/store"));
+            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"http://flatwhitecafe.com.au/"));
+            //await Task.Delay(2000);
             sw.Stop();
-            _logger.Info($"{nameof(VaryByParam)} Elapsed {sw.ElapsedMilliseconds} milliseconds");
+            _logger.Info($"ActionMethod {nameof(VaryByParam)} elapsed {sw.ElapsedMilliseconds} ms");
             return new HttpResponseMessage()
             {
-                Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} milliseconds.{_hint}", Encoding.UTF8, "text/html")
+                Content = new StringContent($"elapsed {sw.ElapsedMilliseconds} milliseconds.{_hint}", Encoding.UTF8, "text/html")
             };
         }
 
@@ -71,12 +72,12 @@ namespace Flatwhite.WebApi2.Controllers
         public HttpResponseMessage VaryByParam(string packageId)
         {
             var sw = Stopwatch.StartNew();
-            var content = new WebClient().DownloadString(new Uri($"https://www.nuget.org/packages/" + packageId));
+            var content = new WebClient().DownloadString(new Uri($"http://flatwhitecafe.com.au/?" + packageId));
             sw.Stop();
-            _logger.Info($"{nameof(VaryByParam)} Elapsed {sw.ElapsedMilliseconds} milliseconds");
+            _logger.Info($"ActionMethod {nameof(VaryByParam)} elapsed {sw.ElapsedMilliseconds} ms");
             return new HttpResponseMessage()
             {
-                Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} milliseconds.{_hint}", Encoding.UTF8,"text/html")
+                Content = new StringContent($"elapsed {sw.ElapsedMilliseconds} milliseconds.{_hint}", Encoding.UTF8,"text/html")
             };
         }
 
@@ -101,9 +102,9 @@ namespace Flatwhite.WebApi2.Controllers
         public virtual async Task<HttpResponseMessage> VaryByCustom()
         {
             var sw = Stopwatch.StartNew();
-            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"https://www.nuget.org/packages/Flatwhite"));
+            var content = await new WebClient().DownloadStringTaskAsync(new Uri($"http://flatwhitecafe.com.au/"));
             sw.Stop();
-            _logger.Info($"{nameof(VaryByParam)} Elapsed {sw.ElapsedMilliseconds} milliseconds.{_hint}");
+            _logger.Info($"ActionMethod {nameof(VaryByParam)} elapsed {sw.ElapsedMilliseconds} ms.{_hint}");
             return new HttpResponseMessage()
             {
                 Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} milliseconds", Encoding.UTF8, "text/html")

@@ -67,7 +67,7 @@ namespace Flatwhite.Tests
                 var usr = await interceptedSvc.GetByIdAsync(Guid.Empty).ConfigureAwait(false);
             }
             Console.WriteLine($"{nameof(Test_intercept_async_method)} : {sw.ElapsedMilliseconds} ms");
-            mockObj.Received(1).GetByIdAsync(Arg.Any<Guid>());
+            await mockObj.Received(1).GetByIdAsync(Arg.Any<Guid>());
         }
 
         [Test]
@@ -246,8 +246,8 @@ namespace Flatwhite.Tests
             }
         }
 
-        [Test, Explicit]
-        public void Test_async_cache_refresh()
+        [Test, Explicit("This is long running test to see the method is invoked every 2 seconds")]
+        public void Test_async_cache_refresh_after_stale()
         {
             Global.CacheStoreProvider.RegisterStore(new ObjectCacheStore());
             Global.Logger = new ConsoleLogger();

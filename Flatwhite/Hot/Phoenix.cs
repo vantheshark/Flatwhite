@@ -12,26 +12,17 @@ namespace Flatwhite.Hot
     public class Phoenix : IDisposable
     {
         /// <summary>
-        /// Get the state of phoenix
-        /// </summary>
-        /// <returns></returns>
-        internal string GetPhoenixState()
-        {
-            return _phoenixState.GetState();
-        }
-
-        /// <summary>
         /// Get information about the cache
         /// </summary>
         /// <returns></returns>
-        internal CacheItem GetCacheInfo()
-        {
-            return _info;
-        }
+        protected internal readonly CacheItem _info;
 
-        private readonly CacheItem _info;
-        private IPhoenixState _phoenixState;
-        private static readonly object PhoenixCage = new object();
+        /// <summary>
+        /// Phoenix state
+        /// </summary>
+        protected internal IPhoenixState _phoenixState;
+
+        private static readonly object _phoenixCage = new object();
 
         /// <summary>
         /// The timer to refresh the cache item. It will run every "Duration" seconds if "StaleWhileRevalidate" > 0
@@ -56,6 +47,8 @@ namespace Flatwhite.Hot
         [EditorBrowsable(EditorBrowsableState.Never)]
         public object[] Arguments { get; set; }
 
+        private bool _isAsync;
+
         /// <summary>
         /// Initialize a phoenix with provided cacheDuration and staleWhileRevalidate values
         /// </summary>
@@ -72,9 +65,8 @@ namespace Flatwhite.Hot
             }
 
             Arguments = invocation.Arguments;
+
             MethodInfo = invocation.Method;
-
-
             _timer = new Timer(_ => Reborn(), null, _info.GetRefreshTime(), TimeSpan.Zero);
         }
 
@@ -84,7 +76,7 @@ namespace Flatwhite.Hot
         /// </summary>
         public virtual void Reborn()
         {
-            lock (PhoenixCage)
+            lock (_phoenixCage)
             {
                 _phoenixState = _phoenixState.Reborn(FireAsync);
             }
@@ -94,13 +86,15 @@ namespace Flatwhite.Hot
         /// Rebuild the cache and return the new <see cref="IPhoenixState"/>
         /// </summary>
         /// <returns></returns>
-        private async Task<IPhoenixState> FireAsync()
+        protected virtual async Task<IPhoenixState> FireAsync()
         {
+            MethodInfo.CheckMethodForCacheSupported(out _isAsync);
+
             try
             {
                 var target = GetTargetInstance();
                 var invokedResult = await InvokeAndGetBareResult(target).ConfigureAwait(false);
-                var cacheItem = await GetCacheItem(invokedResult).ConfigureAwait(false);
+                var cacheItem = GetCacheItem(invokedResult);
                 if (cacheItem == null)
                 {
                     var disposing = new DisposingPhoenix(DieAsync());
@@ -111,26 +105,18 @@ namespace Flatwhite.Hot
                 //NOTE: Because the cacheItem was created before, the cacheStore cannot be null
                 await cacheStore.SetAsync(_info.Key, cacheItem, DateTime.UtcNow.AddSeconds(_info.MaxAge + _info.StaleWhileRevalidate)).ConfigureAwait(false);
 
-                WriteCacheUpdatedLog();
-                _timer.Change(_info.GetRefreshTime(), TimeSpan.Zero);
+                Global.Logger.Info($"Updated key \"{_info.Key}\", store \"{_info.StoreId}\"");
 
+                Retry(_info.GetRefreshTime());
                 _phoenixState = new InActivePhoenix();
                 return _phoenixState;
             }
             catch (Exception ex)
             {
                 Global.Logger.Error($"Error while refreshing key {_info.Key}, store \"{_info.StoreId}\". Will retry after 1 second.", ex);
-                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.Zero);
+                Retry(TimeSpan.FromSeconds(1));
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Write cache updated log
-        /// </summary>
-        protected virtual void WriteCacheUpdatedLog()
-        {
-            Global.Logger.Info($"Updated key \"{_info.Key}\", store \"{_info.StoreId}\"");
         }
 
         /// <summary>
@@ -138,18 +124,9 @@ namespace Flatwhite.Hot
         /// </summary>
         /// <param name="serviceInstance"></param>
         /// <returns></returns>
-        protected virtual Task<object> InvokeAndGetBareResult(object serviceInstance)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        protected virtual async Task<object> InvokeAndGetBareResult(object serviceInstance)
         {
-            if (MethodInfo.ReturnType == typeof (void))
-            {
-                throw new NotSupportedException("void method is not supported");
-            }
-            var isAsync = typeof(Task).IsAssignableFrom(MethodInfo.ReturnType);
-            if (isAsync &&(!MethodInfo.ReturnType.IsGenericType || MethodInfo.ReturnType.GetGenericTypeDefinition() != typeof (Task<>)))
-            {
-                throw new NotSupportedException("async void method is not supported");
-            }
-
             var invokeResult = MethodInfo.Invoke(serviceInstance, Arguments);
             if (invokeResult == null)
             {
@@ -158,39 +135,43 @@ namespace Flatwhite.Hot
 
             var result = invokeResult;
             
-            if (isAsync)
+            if (_isAsync)
             {
-                return Task.Run(() => invokeResult);
+                var task = (Task) invokeResult;
+                await task;
+                dynamic taskWithResult = task;
+                return taskWithResult.Result;
             }
 
-            return Task.FromResult(result);
+            return result;
         }
-
-        
 
         /// <summary>
         /// Build the cache item object for the result of the method
         /// </summary>
         /// <param name="invocationBareResult"></param>
         /// <returns></returns>
-        protected virtual Task<CacheItem> GetCacheItem(object invocationBareResult)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        protected virtual CacheItem GetCacheItem(object invocationBareResult)
         {
             if (invocationBareResult == null)
             {
-                return Task.FromResult((CacheItem)null);
+                return null;
             }
+            
 
             var newCacheItem = _info.CloneWithoutData();
             newCacheItem.CreatedTime = DateTime.UtcNow;
             newCacheItem.Data = invocationBareResult;
 
-            return Task.FromResult(newCacheItem);
+            return newCacheItem;
         }
 
         /// <summary>
         /// Using Activator to create an instance of the service to invoke and get result
         /// </summary>
         /// <returns></returns>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         protected virtual object GetTargetInstance()
         {
             var instance = Activator.CreateInstance(MethodInfo.DeclaringType);
@@ -201,15 +182,21 @@ namespace Flatwhite.Hot
         /// <summary>
         /// Service actvator
         /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         protected virtual IServiceActivator Activator => Global.ServiceActivator;
 
+        private volatile bool _disposed;
         /// <summary>
         /// Dispose the timer and remove it from <see cref="Global.Cache"/>
         /// </summary>
         public void Dispose()
         {
-            _timer?.Dispose();
-            Global.Cache.PhoenixFireCage.Remove(_info.Key);
+            if (!_disposed)
+            {
+                _disposed = true;
+                _timer?.Dispose();
+                Global.Cache.PhoenixFireCage.Remove(_info.Key);
+            }
         }
 
         private async Task DieAsync()
@@ -223,6 +210,18 @@ namespace Flatwhite.Hot
             catch (Exception ex)
             {
                 Global.Logger.Error($"Error while deleting the cache key {_info.Key}, store {_info.StoreId}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Retry phoenix reborn after a timespan
+        /// </summary>
+        /// <param name="timeSpan"></param>
+        protected void Retry(TimeSpan timeSpan)
+        {
+            if (!_disposed)
+            {
+                _timer.Change(timeSpan, TimeSpan.Zero);
             }
         }
     }

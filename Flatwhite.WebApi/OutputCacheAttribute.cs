@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
@@ -241,8 +240,7 @@ namespace Flatwhite.WebApi
             {
                 if (!Global.Cache.PhoenixFireCage.ContainsKey(storedKey))
                 {
-                    //If this is the first request but the "cacheItem" (Possibly distributed cache item" has the cache
-                    CreatePhoenix(invocation, cacheItem, actionContext.Request, null);
+                    CreatePhoenix(invocation, cacheItem, actionContext.Request);
                 }
                 RefreshCache(storedKey);
             }
@@ -283,7 +281,14 @@ namespace Flatwhite.WebApi
             {
                 return; // Early return
             }
-            
+
+            var cacheControl = actionExecutedContext.Request.Headers.CacheControl;
+            if (cacheControl?.Extensions != null && cacheControl.Extensions.Any(x => x.Name == WebApiExtensions.__cacheControl_flatwhite_force_refresh))
+            {
+                var entry = cacheControl.Extensions.First(x => x.Name == WebApiExtensions.__cacheControl_flatwhite_force_refresh);
+                cacheControl.Extensions.Remove(entry);
+            }
+
             ApplyCacheHeaders(actionExecutedContext.ActionContext.Response, actionExecutedContext.Request);
 
             var storedKey = (string)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_key];
@@ -330,8 +335,7 @@ namespace Flatwhite.WebApi
                 var context = GetInvocationContext(actionExecutedContext.ActionContext);
                 var changeMonitors = strategy.GetChangeMonitors(invocation, context);
 
-                var objectContent = responseContent as ObjectContent;
-                CreatePhoenix(invocation, cacheItem, actionExecutedContext.Request, objectContent?.Formatter);
+                CreatePhoenix(invocation, cacheItem, actionExecutedContext.Request);
                 
                 foreach (var mon in changeMonitors)
                 {
@@ -443,11 +447,10 @@ namespace Flatwhite.WebApi
         /// <param name="invocation"></param>
         /// <param name="cacheItem"></param>
         /// <param name="request"></param>
-        /// <param name="mediaTypeFormatter">The formater that was used to create the reasponse at the first invocation</param>
         /// <returns></returns>
-        private void CreatePhoenix(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request, MediaTypeFormatter mediaTypeFormatter)
+        private void CreatePhoenix(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request)
         {
-            if (cacheItem.StaleWhileRevalidate <= 0)
+            if (cacheItem.StaleWhileRevalidate <= 0 || request.Method != HttpMethod.Get)
             {
                 return;
             }
@@ -456,7 +459,7 @@ namespace Flatwhite.WebApi
             {
                 Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();
             }
-            Global.Cache.PhoenixFireCage[cacheItem.Key] = new WebApiPhoenix(invocation, cacheItem, request, mediaTypeFormatter);
+            Global.Cache.PhoenixFireCage[cacheItem.Key] = new WebApiPhoenix(invocation, cacheItem, request);
         }
 
         /// <summary>

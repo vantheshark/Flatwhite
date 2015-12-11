@@ -45,7 +45,7 @@ namespace Flatwhite.Tests.Core.Provider
             var key = provider.GetCacheKey(invocation, invocationContext);
 
             // Assert
-            Assert.AreEqual("Flatwhite::Flatwhite.Tests.IUserService.GetById(Guid:5e31d440-c9f8-4110-b94d-fdf8affdc675) ::  query.source:a,  headers.UserAgent:Flatwhite.UnitTest,  headers.CacheControl.Public:True, , ", key);
+            Assert.AreEqual("Flatwhite::Flatwhite.Tests.IUserService.GetById(Guid:5e31d440-c9f8-4110-b94d-fdf8affdc675) ::  query.source:a,  headers.UserAgent:Flatwhite.UnitTest,  headers.CacheControl.Public:True", key);
         }
 
         [Test]

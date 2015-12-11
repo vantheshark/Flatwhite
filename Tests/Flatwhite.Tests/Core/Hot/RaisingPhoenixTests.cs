@@ -49,7 +49,7 @@ namespace Flatwhite.Tests.Core.Hot
         }
 
         [Test]
-        public void Reborn_should_not_call_reborn_on_result_if_task_completed_and_just_return_the_returned_phoenix()
+        public void Reborn_should_not_call_reborn_on_result_if_task_completed_and_just_return_the_returned_phoenixState()
         {
             IPhoenixState reborn = Substitute.For<IPhoenixState>();
             Func<Task<IPhoenixState>> action = () => Task.FromResult(reborn);
@@ -61,25 +61,29 @@ namespace Flatwhite.Tests.Core.Hot
             } while (object.ReferenceEquals(rebornState, state));
 
             reborn.Received(0).Reborn(Arg.Any<Func<Task<IPhoenixState>>>());
-
         }
 
         [Test]
         public void GetState_should_return_status()
         {
-            var state = new RaisingPhoenix();
+            IPhoenixState state = new RaisingPhoenix();
             Assert.AreEqual("wait to raise", state.GetState());
             
             var wait = new AutoResetEvent(false);
+            var wait2 = new AutoResetEvent(false);
             Func<Task<IPhoenixState>> action = () =>
             {
-                wait.Set();
-                IPhoenixState phoenixState = Substitute.For<IPhoenixState>();
-                return Task.FromResult(phoenixState);
+                wait.WaitOne();
+                state = Substitute.For<IPhoenixState>();
+                state.GetState().Returns("some other state");
+                wait2.Set();
+                return Task.FromResult(state);
             };
             state.Reborn(action);
             Assert.AreEqual("raising", state.GetState());
-            Assert.IsTrue(wait.WaitOne(1000));
+            wait.Set();
+            wait2.WaitOne();
+            Assert.AreEqual("some other state", state.GetState());
         }
     }
 }

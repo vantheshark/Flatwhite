@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Flatwhite.Hot;
+using Flatwhite.Tests.WebApi.OutputCacheAttributeTests;
+using Flatwhite.WebApi;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -57,6 +60,35 @@ namespace Flatwhite.Tests.Core
             // Action
             att.OnMethodExecuting(executingContext);
             Assert.IsTrue(wait.WaitOne(2000));
+        }
+
+
+        [Test]
+        public void Should_dispose_existing_phoenix()
+        {
+            var key = "theCacheKey" + Guid.NewGuid();
+            // Arrange
+            var objCacheItem = new CacheItem
+            {
+                MaxAge = 5,
+                StaleWhileRevalidate = 5,
+                StoreId = 1000,
+                CreatedTime = DateTime.UtcNow.AddSeconds(-5).AddMilliseconds(-1),
+                Key = key
+            };
+
+            var existingPhoenix = Substitute.For<Phoenix>(Substitute.For<_IInvocation>(), objCacheItem);
+
+            var att = new OutputCacheAttributeWithPublicMethods { Duration = 5, CacheStoreId = 1000, StaleWhileRevalidate = 5 };
+
+            Global.Cache.PhoenixFireCage[key] = existingPhoenix;
+
+            // Action
+            att.CreatePhoenixPublic(Substitute.For<_IInvocation>(), objCacheItem);
+
+            // Assert
+            Assert.That(Global.Cache.PhoenixFireCage[key] is Phoenix);
+            existingPhoenix.Received(1).Dispose();
         }
     }
 }

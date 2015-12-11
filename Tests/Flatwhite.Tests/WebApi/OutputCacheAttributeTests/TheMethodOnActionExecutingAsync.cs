@@ -51,7 +51,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
                 CreatedTime = DateTime.UtcNow.AddSeconds(-5).AddMilliseconds(-1),
             };
 
-            var existingPhoenix = Substitute.For<WebApiPhoenix>(_invocation, objCacheItem, _request, null);
+            var existingPhoenix = Substitute.For<WebApiPhoenix>(_invocation, objCacheItem, _request);
             existingPhoenix.When(x => x.Reborn()).Do(c =>
             {
                 Global.Cache.PhoenixFireCage.Remove(objCacheItem.Key);
