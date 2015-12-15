@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Flatwhite.Hot;
+using Flatwhite.Provider;
 using Flatwhite.Tests.WebApi.OutputCacheAttributeTests;
 using Flatwhite.WebApi;
 using NSubstitute;

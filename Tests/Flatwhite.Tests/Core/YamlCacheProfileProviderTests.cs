@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Flatwhite.Provider;
 using NUnit.Framework;
 
 namespace Flatwhite.Tests.Core

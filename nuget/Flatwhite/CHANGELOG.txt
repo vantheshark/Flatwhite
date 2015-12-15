@@ -1,3 +1,6 @@
+* 1.0.15 (2015-12-16 09:20:00 AEDT)
+- Support CacheProfile yaml config
+
 * 1.0.14 (2015-12-11 20:00:00 AEDT)
 - Fix a bug when using Flatwhite interceptor services inside web process
 

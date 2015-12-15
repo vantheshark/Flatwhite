@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 
-namespace Flatwhite
+namespace Flatwhite.Provider
 {
     /// <summary>
     /// A cache profile provider from a file using simple yaml format

@@ -1,4 +1,4 @@
-﻿namespace Flatwhite
+﻿namespace Flatwhite.Provider
 {
     /// <summary>
     /// Output cache profile provider

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Flatwhite.Provider;
+using NUnit.Framework;
 using NSubstitute;
 
 namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
