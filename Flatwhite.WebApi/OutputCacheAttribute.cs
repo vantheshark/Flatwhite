@@ -162,6 +162,21 @@ namespace Flatwhite.WebApi
         /// </summary>
         public bool AutoRefresh { get; set; }
 
+        private string _cacheProfile;
+
+        /// <summary>
+        /// Configures the output cache profile that can be used by the application
+        /// </summary>
+        public string CacheProfile
+        {
+            get { return _cacheProfile; }
+            set
+            {
+                _cacheProfile = value;
+                Global.CacheProfileProvider.ApplyProfileSetting(this, value);
+            }
+        }
+
         #endregion
 
         /// <summary>

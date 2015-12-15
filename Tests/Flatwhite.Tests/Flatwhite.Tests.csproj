@@ -98,6 +98,7 @@
     <Compile Include="Core\Provider\DefaultCacheStoreProviderTests.cs" />
     <Compile Include="Core\Provider\DefaultHashCodeGeneratorProviderTests.cs" />
     <Compile Include="Core\RevalidateAttributeTests.cs" />
+    <Compile Include="Core\YamlCacheProfileProviderTests.cs" />
     <Compile Include="MethodInterceptorDemoTests.cs" />
     <Compile Include="IBlogService.cs" />
     <Compile Include="IUserService.cs" />
@@ -113,6 +114,7 @@
     <Compile Include="WebApi\OutputCacheAttributeTests\OutputCacheAttributeWithPublicMethods.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodApplyCacheHeaders.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodCreatePhoenix.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\ThePropertyCacheProfile.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodOnActionExecutingAsync.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetInvocationContext.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetInvocation.cs" />
@@ -147,6 +149,9 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="cacheProfile.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

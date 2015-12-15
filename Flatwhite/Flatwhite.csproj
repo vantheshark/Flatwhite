@@ -57,6 +57,7 @@
     <Compile Include="IServiceActivator.cs" />
     <Compile Include="ICacheSettings.cs" />
     <Compile Include="Hot\Phoenix.cs" />
+    <Compile Include="IOutputCacheProfileProvider.cs" />
     <Compile Include="Strategy\IDynamicCacheStrategy.cs" />
     <Compile Include="InvocationAttribute.cs" />
     <Compile Include="ExceptionFilterAttribute.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="Strategy\IMethodCacheStrategy.cs" />
     <Compile Include="Strategy\ITypeCacheRuleBuilder.cs" />
     <Compile Include="TaskHelpers.cs" />
+    <Compile Include="YamlCacheProfileProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

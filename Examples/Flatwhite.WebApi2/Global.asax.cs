@@ -11,12 +11,13 @@ namespace Flatwhite.WebApi2
             log4net.Config.XmlConfigurator.Configure();
             Global.Logger = new FlatwhiteLog4netAdaptor(LogManager.GetLogger("Flatwhite"));
 
-
             GlobalConfiguration.Configure(WebApiConfig.Register);
+
             //NOTE: This is what you need for WebApi2
             GlobalConfiguration.Configure(x => x.UseFlatwhiteCache(new FlatwhiteWebApiConfiguration
             {
-                EnableStatusController = true
+                EnableStatusController = true,
+                LoopbackAddress = null // Set it to web server loopback address if server is behind load balancer
             }));
         }
     }

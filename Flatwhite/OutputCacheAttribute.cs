@@ -13,6 +13,7 @@ namespace Flatwhite
         /// Default OutputCacheAttribute
         /// </summary>
         internal static readonly OutputCacheAttribute Default = new OutputCacheAttribute();
+
         private ICacheStrategy _cacheStrategy;
 
         /// <summary>
@@ -24,6 +25,7 @@ namespace Flatwhite
         }
 
         #region -- Cache params --
+
         /// <summary>
         /// Gets or sets the cache duration, in seconds.
         /// </summary>
@@ -71,6 +73,21 @@ namespace Flatwhite
         /// <para>If the method is not called quickly but you want to keep the cache always available, turn this on and specify the <see cref="StaleWhileRevalidate"/> with a value greater than 0</para>
         /// </summary>
         public bool AutoRefresh { get; set; }
+
+        private string _cacheProfile;
+
+        /// <summary>
+        /// Configures the output cache profile that can be used by the application
+        /// </summary>
+        public string CacheProfile
+        {
+            get { return _cacheProfile; }
+            set
+            {
+                _cacheProfile = value;
+                Global.CacheProfileProvider.ApplyProfileSetting(this, value);
+            }
+        }
 
         #endregion
 

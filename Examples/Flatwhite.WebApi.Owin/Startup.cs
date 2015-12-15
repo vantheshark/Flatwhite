@@ -28,7 +28,7 @@ namespace Flatwhite.WebApi.Owin
             config.UseFlatwhiteCache(new FlatwhiteWebApiConfiguration
             {
                 EnableStatusController = true,
-                LoopbackAddress = null // Set it to web server loopback address if server is behind firewall
+                LoopbackAddress = null // Set it to web server loopback address if server is behind load balancer
             });
 
             app.UseWebApi(config);

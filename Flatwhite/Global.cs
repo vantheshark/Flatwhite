@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Flatwhite.Provider;
@@ -73,6 +74,9 @@ namespace Flatwhite
             ServiceActivator = new ServiceActivator();
             Logger = new NullLogger();
             BackgroundTaskManager = new DefaultBackgroundTaskManager();
+
+            var configFolder = Path.GetDirectoryName(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+            CacheProfileProvider = new YamlCacheProfileProvider(Path.Combine(configFolder ?? "", "cacheProfile.yaml"));
         }
 
         /// <summary>
@@ -116,5 +120,10 @@ namespace Flatwhite
         /// Background task manager
         /// </summary>
         internal static IBackgroundTaskManager BackgroundTaskManager { get; set; }
+
+        /// <summary>
+        /// Cache profile provider
+        /// </summary>
+        public static IOutputCacheProfileProvider CacheProfileProvider { get; set; }
     }
 }

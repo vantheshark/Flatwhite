@@ -1,0 +1,24 @@
+﻿-- Cache profile settings, everything is case-sensitive
+-- Profile name
+Profile1-Two-Seconds
+	-- Profile propertyName:propertyValue, start with a tab or 4+ empty spaces
+	Duration:2
+	StaleWhileRevalidate:5
+	VaryByParam:packageId	
+	VaryByCustom:*
+	AutoRefresh:true
+	RevalidationKey:anything-about-user
+
+
+Web-Profile2-Three-Seconds	
+	MaxAge:3
+	StaleWhileRevalidate:6
+	VaryByParam:*
+	VaryByHeader:UserAgent
+	IgnoreRevalidationRequest:true	
+
+Profile3-With-Some-Bad-Settings
+	-- Profile propertyName:propertyValue, start with a tab or 4+ empty spaces
+	Duration:two
+	StaleWhileRevalidat3:5	
+	SomeStrangeKey:10

@@ -1,0 +1,9 @@
+﻿-- Cache profile settings, everything is case-sensitive
+-- Profile name
+Profile1-Two-Seconds
+	-- Profile propertyName:propertyValue, start with a tab or 4+ empty spaces
+	MaxAge:2
+	StaleWhileRevalidate:5
+	VaryByParam:packageId
+	IgnoreRevalidationRequest:true
+	AutoRefresh:true

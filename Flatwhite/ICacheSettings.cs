@@ -5,17 +5,12 @@ namespace Flatwhite
     /// <summary>
     /// Provided properties for vary settings which can be used to build the cache key
     /// </summary>
-    public interface ICacheSettings
+    internal interface ICacheSettings
     {
         /// <summary>
         /// Vary by method param
         /// </summary>
         string VaryByParam { get; set; }
-
-        /// <summary>
-        /// Gets or sets the vary-by-custom value which could be used to make the cache key
-        /// </summary>
-        string VaryByCustom { get; set; }
 
         /// <summary>
         /// A key to used to delete the cache when an method with relevant <see cref="RevalidateAttribute" /> is invoked

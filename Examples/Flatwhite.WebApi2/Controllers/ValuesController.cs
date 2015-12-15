@@ -42,12 +42,7 @@ namespace Flatwhite.WebApi2.Controllers
 
         [HttpGet]
         [Route("api/vary-by-param-async/{packageId}")]
-        [WebApi.OutputCache(
-            MaxAge = 2,
-            StaleWhileRevalidate = 5,
-            VaryByParam = "packageId",
-            RevalidationKey = "VaryByParamMethod",
-            IgnoreRevalidationRequest = true, AutoRefresh = true)]
+        [WebApi.OutputCache(CacheProfile = "Profile1-Two-Seconds")]
         public async Task<HttpResponseMessage> VaryByParamAsync(string packageId)
         {
             var sw = Stopwatch.StartNew();

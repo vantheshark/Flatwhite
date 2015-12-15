@@ -33,8 +33,11 @@ ______           _
 I/ Using with WebApi2
 
 	GlobalConfiguration.Configure(WebApiConfig.Register);
-	//NOTE: This is what you need for WebApi2
-	GlobalConfiguration.Configure(x => x.UseFlatwhiteCache());
+	GlobalConfiguration.Configure(x => x.UseFlatwhiteCache(new FlatwhiteWebApiConfiguration
+	{
+		EnableStatusController = true
+		LoopbackAddress = null // Set it to web server loopback address if server is behind firewall
+	}));
 
 II/ Using with Owin
 
@@ -42,10 +45,14 @@ In your Startup.cs class:
 
 	public void Configuration(IAppBuilder app)
 	{
-		var config = new HttpConfiguration();   
+		var config = new HttpConfiguration();            
 		WebApiConfig.Register(config);
-		app.UseWebApi(config)
-		   .UseFlatwhiteCache(config);
+		config.UseFlatwhiteCache(new FlatwhiteWebApiConfiguration
+		{
+			EnableStatusController = true,
+			LoopbackAddress = null // Set it to web server loopback address if server is behind load balancer
+		});
+		app.UseWebApi(config);
 	}
 
 III/ Using with Owin & Autofac
@@ -58,9 +65,12 @@ In your Startup.cs class:
 		var container = BuildAutofacContainer(config);
 
 		WebApiConfig.Register(config);
-
-		app.UseWebApi(config)
-		   .UseFlatwhiteCache(config);
+		config.UseFlatwhiteCache(new FlatwhiteWebApiConfiguration
+		{
+			EnableStatusController = true,
+			LoopbackAddress = null // Set it to web server loopback address if server is behind load balancer
+		});
+		app.UseWebApi(config);
 	}
 
 	private IContainer BuildAutofacContainer(HttpConfiguration config)
@@ -78,9 +88,11 @@ In your Startup.cs class:
 		builder.RegisterType<EtagHeaderHandler>().As<ICachControlHeaderHandler>().SingleInstance();
 
 
+
 		builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
 		// OPTIONAL: Register the Autofac filter provider.
 		builder.RegisterWebApiFilterProvider(config);
+
 
 
 		var container = builder.Build();
@@ -109,7 +121,10 @@ IV/ Decorate OutputCache attribute on your action method
                                      | |        
                                      |_|        
 
-Documentation can be found at github wiki page: https://github.com/vanthoainguyen/Flatwhite/wiki
+Documentation can be found at github wiki page: 
+
+- https://github.com/vanthoainguyen/Flatwhite/wiki/Flatwhite.WebApi
+- https://github.com/vanthoainguyen/Flatwhite/wiki
 
  _     _____ _____  _____ _   _ _____  _____ 
 | |   |_   _/  __ \|  ___| \ | /  __ \|  ___|
