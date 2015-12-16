@@ -146,7 +146,41 @@ public interface IBlogService
 }
 ```
 
-#### 7/ Revalidate cache
+#### 7/ Using CacheProfile
+
+```C#
+public interface IUserService
+{
+    [OutputCache(CacheProfile="profileName")]
+    object GetById(Guid userId);
+}
+```
+
+Profile setting default file name is cacheProfile.yaml located at the same folder of your app.config/web.config file and has a "yaml like" format:
+
+```yaml
+-- Cache profile settings, everything is case-sensitive
+-- Profile name
+Profile1-Two-Seconds
+	-- Profile propertyName:propertyValue, start with a tab or 4+ empty spaces
+	Duration:2
+	StaleWhileRevalidate:5
+	VaryByParam:packageId	
+	VaryByCustom:*
+	AutoRefresh:true
+	RevalidationKey:anything-about-user
+	
+Web-Profile2-Three-Seconds	
+	MaxAge:3
+	StaleWhileRevalidate:6
+	VaryByParam:*
+	VaryByHeader:UserAgent
+	IgnoreRevalidationRequest:true		
+```
+
+You can implement another **IOutputCacheProfileProvider** and set to Global.OutputCacheProfileProvider or simply change the location/name of the yaml file. At the moment, only yaml file is supported.
+
+#### 8/ Revalidate cache
 Even though you can use _AutoRefresh_ or _StaleWhileRevalidate_ to auto refresh cache data. Some time you want to remove the cache item after you call a certain method. You can use *RevalidateAttribute* to remove the cache item or some related cache items. Decorate the attribute on another method and the cache item will be removed once the method is invoked successfully. On example below, when you call method DisableUser, because it has the Revalidate attribute decorated with "User" as the key, all related caches created for method with attribute OutputCache which has RevalidationKey = *"User"* will be reset.
 
 ```C#
