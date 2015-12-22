@@ -61,7 +61,11 @@ namespace Flatwhite.Tests.Autofac.Strategy
         {
             var blogService = Substitute.For<IBlogService>();
             var wait = new CountdownEvent(2);
-            blogService.When(x => x.GetById(Arg.Any<Guid>())).Do(c => wait.Signal());
+            blogService.When(x => x.GetById(Arg.Any<Guid>())).Do(c =>
+            {
+                c.Returns(new object {});
+                wait.Signal();
+            });
 
             FlatwhiteCacheEntryChangeMonitor mon = null;
             var builder = new ContainerBuilder().EnableFlatwhite();
@@ -72,8 +76,8 @@ namespace Flatwhite.Tests.Autofac.Strategy
                 .CacheWithStrategy(
                     CacheStrategies.ForService<IBlogService>()
                         .ForMember(x => x.GetById(Argument.Any<Guid>()))
-                        .Duration(5)
-                        .StaleWhileRevalidate(5)
+                        .Duration(100000)
+                        .StaleWhileRevalidate(500)
                         .VaryByParam("postId")
                         .WithCacheStore(0)
                         .WithRevalidationKey("posts")

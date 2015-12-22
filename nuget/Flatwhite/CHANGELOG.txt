@@ -1,3 +1,6 @@
+* 1.0.16 (2015-12-23 11:00:00 AEDT)
+- Add LogExecutionTimeAttribute and fix bug on executing async filter on async void methods
+
 * 1.0.15 (2015-12-16 09:20:00 AEDT)
 - Support CacheProfile yaml config
 

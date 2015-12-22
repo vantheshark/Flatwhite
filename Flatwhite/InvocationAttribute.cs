@@ -26,9 +26,16 @@ namespace Flatwhite
 
             var taskResult = _invocation.ReturnValue as Task;
 
-            if (taskResult != null && _taskGenericReturnType != null)
+            if (taskResult != null)
             {
-                actionContext.Result = await taskResult.TryGetTaskResult();
+                if (_taskGenericReturnType != null)
+                {
+                    actionContext.Result = await taskResult.TryGetTaskResult();
+                }
+                else
+                {
+                    await taskResult;
+                }
             }
             else
             {

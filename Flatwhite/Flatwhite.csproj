@@ -58,6 +58,7 @@
     <Compile Include="ICacheSettings.cs" />
     <Compile Include="Hot\Phoenix.cs" />
     <Compile Include="Provider\IOutputCacheProfileProvider.cs" />
+    <Compile Include="LogExecutionTimeAttribute.cs" />
     <Compile Include="Strategy\IDynamicCacheStrategy.cs" />
     <Compile Include="InvocationAttribute.cs" />
     <Compile Include="ExceptionFilterAttribute.cs" />

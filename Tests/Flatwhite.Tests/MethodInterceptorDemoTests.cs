@@ -20,6 +20,7 @@ namespace Flatwhite.Tests
         {
             Global.Init();
             Global.CacheStoreProvider.RegisterStore(new NoneExpireCacheStore());
+            Global.Logger = new ConsoleLogger();
         }
 
         [Test]
@@ -250,7 +251,7 @@ namespace Flatwhite.Tests
         public void Test_async_cache_refresh_after_stale()
         {
             Global.CacheStoreProvider.RegisterStore(new ObjectCacheStore());
-            Global.Logger = new ConsoleLogger();
+
 
             var builder = new ContainerBuilder().EnableFlatwhite();
             builder

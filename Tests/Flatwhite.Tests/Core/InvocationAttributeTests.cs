@@ -54,6 +54,42 @@ namespace Flatwhite.Tests.Core
         }
 
         [Test]
+        public async Task OnMethodExecutingAsync_should_wait_on_async_void_TaskResult()
+        {
+            var wait = new ManualResetEvent(false);
+            var invocation = Substitute.For<_IInvocation>();
+            invocation.When(x => x.Proceed()).Do(c => wait.Set());
+            Task task = null;
+            invocation.ReturnValue.Returns(c =>
+            {
+                if (task == null)
+                {
+                    task = Task.Factory.StartNew(async () =>
+                    {
+                        await Task.Delay(100);
+                        Assert.IsTrue(wait.WaitOne(2000));
+                    });
+                }
+                return task;
+            });
+
+            var context = new MethodExecutingContext
+            {
+                Invocation = invocation,
+                InvocationContext = new Dictionary<string, object>(),
+            };
+
+            var filter = new InvocationAttribute(invocation);
+            await filter.OnMethodExecutingAsync(context);
+
+            // Assert
+            var taskResult = invocation.ReturnValue as Task;
+            Assert.IsNull(context.Result);
+            Assert.IsNotNull(taskResult);
+            Assert.AreEqual(TaskStatus.RanToCompletion, taskResult.Status);
+        }
+
+        [Test]
         public async Task OnMethodExecutingAsync_should_proceed_and_set_result_if_the_invocation_result_is_not_Task()
         {
             var wait = new ManualResetEvent(false);
