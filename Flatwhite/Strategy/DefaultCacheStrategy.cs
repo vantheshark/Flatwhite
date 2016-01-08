@@ -140,11 +140,13 @@ namespace Flatwhite.Strategy
         public virtual IEnumerable<IChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             var att = invocationContext.TryGetByKey<ICacheSettings>(Global.__flatwhite_outputcache_attribute, OutputCacheAttribute.Default);
-            if (string.IsNullOrWhiteSpace(att?.RevalidationKey))
+            if (string.IsNullOrWhiteSpace(att?.RevalidateKeyFormat))
             {
                 yield break;
             }
-            yield return new FlatwhiteCacheEntryChangeMonitor(att.RevalidationKey);
+
+            var revalidationKey = CacheKeyProvider.GetRevalidateKey(invocation, att.RevalidateKeyFormat);
+            yield return new FlatwhiteCacheEntryChangeMonitor(revalidationKey);
         }
         
         /// <summary>

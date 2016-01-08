@@ -168,7 +168,7 @@ Profile1-Two-Seconds
 	VaryByParam:packageId	
 	VaryByCustom:*
 	AutoRefresh:true
-	RevalidationKey:anything-about-user
+	RevalidateKeyFormat:anything-about-user{userId}
 	
 Web-Profile2-Three-Seconds	
 	MaxAge:3
@@ -181,24 +181,24 @@ Web-Profile2-Three-Seconds
 You can implement another **IOutputCacheProfileProvider** and set to Global.OutputCacheProfileProvider or simply change the location/name of the yaml file. At the moment, only yaml file is supported.
 
 #### 8/ Revalidate cache
-Even though you can use _AutoRefresh_ or _StaleWhileRevalidate_ to auto refresh cache data. Some time you want to remove the cache item after you call a certain method. You can use *RevalidateAttribute* to remove the cache item or some related cache items. Decorate the attribute on another method and the cache item will be removed once the method is invoked successfully. On example below, when you call method DisableUser, because it has the Revalidate attribute decorated with "User" as the key, all related caches created for method with attribute OutputCache which has RevalidationKey = *"User"* will be reset.
+Even though you can use _AutoRefresh_ or _StaleWhileRevalidate_ to auto refresh cache data. Some time you want to remove the cache item after you call a certain method. You can use *RevalidateAttribute* to remove the cache item or some related cache items. Decorate the attribute on another method and the cache item will be removed once the method is invoked successfully. On example below, when you call method DisableUser, because it has the Revalidate attribute decorated with "User_{userId}" as the key format, all related cache items created for method with attribute OutputCache which has RevalidateKeyFormat = *"User_{userId}"* will be reset.
 
 ```C#
 public interface IUserService
 {
-    [OutputCache(Duration = 2, StaleWhileRevalidate = 2, VaryByParam = "userId", RevalidationKey = "User")]
+    [OutputCache(Duration = 2, StaleWhileRevalidate = 2, VaryByParam = "userId", RevalidateKeyFormat = "User_{userId}")]
 	object GetById(Guid userId);
 
-	[OutputCache(Duration = 2, VaryByParam = "userId", RevalidationKey = "User")]
+	[OutputCache(Duration = 2, VaryByParam = "userId", RevalidateKeyFormat = "User_{userId}")]
 	Task<object> GetByIdAsync(Guid userId);	
 
-	[Revalidate("User")]
+	[Revalidate("User_{userId}")]
 	void DisableUser(Guid userId);  
 }
 ```
 
 Unfortunately, this is not working for distributed services. That means the method is called on one server cannot notify the other service instances on remote servers. 
-However, it's technically achievable to extend this filter using queueing or something like that to notify remote system.
+However, it's technically achievable to extend this filter using distributed messaging or something like that to notify remote system.
 
 ### For additional logic before/after calling methods
 Flatwhite is inspired by WebAPI and ASP.NET MVC ActionFilterAttribute, so it works quite similar. The base filter attribute has following methods. So simply implement your filter class and do whatever you want.
@@ -236,7 +236,6 @@ public abstract class ExceptionFilterAttribute : Attribute
 
 ## TODO:
 
-- Profile base for OutputCache attribute
 - Better documents
 - Support other IOC library
 

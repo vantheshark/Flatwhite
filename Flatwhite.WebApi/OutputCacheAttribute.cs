@@ -150,7 +150,7 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// A key to used to delete the cache when an method with relevant <see cref="RevalidateAttribute" /> is invoked
         /// </summary>
-        public string RevalidationKey { get; set; }
+        public string RevalidateKeyFormat { get; set; }
 
         /// <summary>
         /// If set to true, the cache will be auto refreshed every <see cref="MaxAge"/> second(s).
@@ -354,7 +354,7 @@ namespace Flatwhite.WebApi
                 
                 foreach (var mon in changeMonitors)
                 {
-                    mon.CacheMonitorChanged += x =>
+                    mon.CacheMonitorChanged += state =>
                     {
                         RefreshCache(storedKey);
                     };

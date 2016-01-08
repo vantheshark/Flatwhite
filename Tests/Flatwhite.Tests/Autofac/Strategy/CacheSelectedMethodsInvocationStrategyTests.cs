@@ -80,10 +80,10 @@ namespace Flatwhite.Tests.Autofac.Strategy
                         .StaleWhileRevalidate(500)
                         .VaryByParam("postId")
                         .WithCacheStore(0)
-                        .WithRevalidationKey("posts")
+                        .WithRevalidateKeyFormat("posts")
                         .WithChangeMonitors((i, context) =>
                         {
-                            mon = new FlatwhiteCacheEntryChangeMonitor("");
+                            mon = new FlatwhiteCacheEntryChangeMonitor("revalidationKey");
                             return new[] {mon};
                         })
                 );

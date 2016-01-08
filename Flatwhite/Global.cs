@@ -31,12 +31,12 @@ namespace Flatwhite
         /// <summary>
         /// Revalidate the caches with provided revalidateKeys
         /// </summary>
-        /// <param name="revalidateKeys"></param>
-        public static void RevalidateCaches(List<string> revalidateKeys)
+        /// <param name="revalidatedKeys"></param>
+        public static void RevalidateCaches(List<string> revalidatedKeys)
         {
             if (RevalidateEvent != null)
             {
-                revalidateKeys.ToList().ForEach(k => RevalidateEvent(k));
+                revalidatedKeys.ToList().ForEach(k => RevalidateEvent(k));
             }
         }
 

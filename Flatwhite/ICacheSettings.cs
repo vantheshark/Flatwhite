@@ -13,9 +13,9 @@ namespace Flatwhite
         string VaryByParam { get; set; }
 
         /// <summary>
-        /// A key to used to delete the cache when an method with relevant <see cref="RevalidateAttribute" /> is invoked
+        /// A key format to used to delete the cache when an method with relevant <see cref="RevalidateAttribute" /> is invoked
         /// </summary>
-        string RevalidationKey { get; set; }
+        string RevalidateKeyFormat { get; set; }
 
         /// <summary>
         /// The custom cache store type, if provided, the cache store will be resolved by the 

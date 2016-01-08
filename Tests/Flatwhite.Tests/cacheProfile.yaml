@@ -7,7 +7,7 @@ Profile1-Two-Seconds
 	VaryByParam:packageId	
 	VaryByCustom:*
 	AutoRefresh:true
-	RevalidationKey:anything-about-user
+	RevalidateKeyFormat:anything-about-{userId}
 
 
 Web-Profile2-Three-Seconds	

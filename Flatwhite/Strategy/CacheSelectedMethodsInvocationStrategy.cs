@@ -130,13 +130,13 @@ namespace Flatwhite.Strategy
 
 
         /// <summary>
-        /// Set revalidation key
+        /// Set revalidation key format
         /// </summary>
-        /// <param name="revalidationKey"></param>
+        /// <param name="revalidateKeyFormat"></param>
         /// <returns></returns>
-        public IMethodCacheStrategy<T> WithRevalidationKey(string revalidationKey)
+        public IMethodCacheStrategy<T> WithRevalidateKeyFormat(string revalidateKeyFormat)
         {
-            _currentExpression.CacheAttribute.RevalidationKey = revalidationKey;
+            _currentExpression.CacheAttribute.RevalidateKeyFormat = revalidateKeyFormat;
             return this;
         }
 

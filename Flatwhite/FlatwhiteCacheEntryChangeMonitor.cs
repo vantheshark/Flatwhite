@@ -1,30 +1,28 @@
-﻿using System.Collections.ObjectModel;
-
-namespace Flatwhite
+﻿namespace Flatwhite
 {
     /// <summary>
     /// An ChangeMonitor that response to GlobalRevalidateEvent and call OnChanged to reset the cache
     /// </summary>
     public class FlatwhiteCacheEntryChangeMonitor : IChangeMonitor
     {
+        private readonly string _revalidationKey;
         private bool _disposing;
         /// <summary>
         /// Initializes an instance of FlatwhiteCacheEntryChangeMonitor with revalidationKey
         /// </summary>
         /// <param name="revalidationKey"></param>
-        public FlatwhiteCacheEntryChangeMonitor(string revalidationKey = null)
+        public FlatwhiteCacheEntryChangeMonitor(string revalidationKey)
         {
             if (!string.IsNullOrWhiteSpace(revalidationKey))
             {
-                CacheKeys = new ReadOnlyCollection<string>(new[] {revalidationKey});
+                _revalidationKey = revalidationKey;
+                Global.RevalidateEvent += GlobalRevalidateEvent;
             }
-
-            Global.RevalidateEvent += GlobalRevalidateEvent;
         }
 
         private void GlobalRevalidateEvent(string revalidationKey)
         {
-            if (CacheKeys != null && CacheKeys.Contains(revalidationKey) && !_disposing)
+            if (_revalidationKey == revalidationKey && !_disposing)
             {
                 OnChanged(revalidationKey);
             }
@@ -41,14 +39,6 @@ namespace Flatwhite
             }
             _disposing = true;
         }
-       
-        /// <summary>
-        /// Gets a collection of cache keys that are monitored for changes. 
-        /// </summary>
-        /// <returns>
-        /// A collection of cache keys.
-        /// </returns>
-        public ReadOnlyCollection<string> CacheKeys { get; }
 
         /// <summary>
         /// Cache monitor change event

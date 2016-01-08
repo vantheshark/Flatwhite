@@ -9,7 +9,7 @@ namespace Flatwhite.Tests.Core
     public class YamlCacheProfileProviderTests
     {
         [Test]
-        public void Should_apply_profile_settingg()
+        public void Should_apply_profile_setting()
         {
             var att = new OutputCacheAttribute();
             Global.CacheProfileProvider.ApplyProfileSetting(att, "Profile1-Two-Seconds");
@@ -18,7 +18,7 @@ namespace Flatwhite.Tests.Core
             Assert.AreEqual(true, att.AutoRefresh);
             Assert.AreEqual("packageId", att.VaryByParam);
             Assert.AreEqual("*", att.VaryByCustom);
-            Assert.AreEqual("anything-about-user", att.RevalidationKey);
+            Assert.AreEqual("anything-about-{userId}", att.RevalidateKeyFormat);
 
 
 
@@ -36,7 +36,7 @@ namespace Flatwhite.Tests.Core
         }
 
         [Test]
-        public void Shuold_throw_exception_if_syntax_invalid()
+        public void Should_throw_exception_if_syntax_invalid()
         {
             Assert.Throws<InvalidDataException>(
                 () => YamlCacheProfileProvider.ReadYamlData(new List<string> {"\tKeyWithoutValue"}));

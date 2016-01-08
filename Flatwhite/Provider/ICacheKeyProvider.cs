@@ -14,5 +14,13 @@ namespace Flatwhite.Provider
         /// <param name="invocationContext"></param>
         /// <returns></returns>
         string GetCacheKey(_IInvocation invocation, IDictionary<string, object> invocationContext);
+
+        /// <summary>
+        /// Build the revalidation key from provided keyFormat
+        /// </summary>
+        /// <param name="invocation"></param>
+        /// <param name="keyFormat"></param>
+        /// <returns></returns>
+        string GetRevalidateKey(_IInvocation invocation, string keyFormat);
     }
 }

@@ -1,3 +1,6 @@
+* 1.0.17 (2016-01-08 11:00:00 AEDT)
+- RevalidateAttribute will revalidate relevant cache item only
+
 * 1.0.16 (2015-12-23 11:00:00 AEDT)
 - Add LogExecutionTimeAttribute and fix bug on executing async filter on async void methods
 

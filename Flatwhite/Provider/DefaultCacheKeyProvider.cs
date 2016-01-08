@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Flatwhite.Provider
 {
@@ -66,7 +67,7 @@ namespace Flatwhite.Provider
         }
 
         /// <summary>
-        /// Build the key with provided varyByParams
+        /// Build the key with provided customKey
         /// </summary>
         /// <param name="prefixKey"></param>
         /// <param name="invocationContext"></param>
@@ -127,7 +128,7 @@ namespace Flatwhite.Provider
         }
 
         /// <summary>
-        /// Build the key with provided varyByCustoms
+        /// Build the key with provided varyByParams
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="parameters"></param>
@@ -137,14 +138,41 @@ namespace Flatwhite.Provider
         {
             for (var i = 0; i < parameters.Length; i++)
             {
-                var arg = invocation.GetArgumentValue(i);
                 var argKey = "*";
                 if (varyByParams.Contains("*") || varyByParams.Contains(parameters[i].Name))
                 {
+                    var arg = invocation.GetArgumentValue(i);
                     argKey = _hashCodeGeneratorProvider.GetForType(parameters[i].ParameterType).GetCode(arg);
                 }
                 key.Append($"{parameters[i].ParameterType.Name}:{argKey}, ");
             }
+        }
+
+        /// <summary>
+        /// Build the revalidation key from provided keyFormat
+        /// </summary>
+        /// <param name="invocation"></param>
+        /// <param name="keyFormat"></param>
+        /// <returns></returns>
+        public virtual string GetRevalidateKey(_IInvocation invocation, string keyFormat)
+        {
+            var parameters = invocation.Method.GetParameters().ToList();
+            var placeholders = Regex.Matches(keyFormat, "{(?<Argument>[\\w\\d_]+)}", RegexOptions.Compiled | RegexOptions.Singleline);
+            
+            var key = new StringBuilder(keyFormat);
+            for (var i = 0; i < placeholders.Count; i++)
+            {
+                var match = placeholders[i].Groups["Argument"].Value;
+                var index = parameters.FindIndex(p => p.Name == match);
+                if (index >= 0)
+                {
+                    var arg = invocation.GetArgumentValue(index);
+                    var argKey = _hashCodeGeneratorProvider.GetForType(parameters[index].ParameterType).GetCode(arg);
+                    key = key.Replace($"{{{match}}}", argKey);
+                }
+            }
+
+            return key.ToString();
         }
     }
 }

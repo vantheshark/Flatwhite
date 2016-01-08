@@ -30,7 +30,7 @@ namespace Flatwhite.WebApi2.Controllers
             MaxAge = 3,
             StaleWhileRevalidate = 5,
             VaryByParam = "packageId",
-            RevalidationKey = "VaryByParamMethod",
+            RevalidateKeyFormat = "VaryByParamMethod",
             IgnoreRevalidationRequest = true)]
         public virtual async Task<IEnumerable<string>> Get()
         {
@@ -63,7 +63,7 @@ namespace Flatwhite.WebApi2.Controllers
             MaxAge = 2, 
             StaleWhileRevalidate = 10, 
             VaryByParam = "packageId", 
-            RevalidationKey = "VaryByParamMethod",
+            RevalidateKeyFormat = "VaryByParamMethod",
             IgnoreRevalidationRequest = true)]
         public HttpResponseMessage VaryByParam(string packageId)
         {

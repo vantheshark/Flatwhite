@@ -6,10 +6,10 @@ namespace Flatwhite.Tests
 {
     public interface IUserService
     {
-        [OutputCache(Duration = 2, StaleWhileRevalidate = 2, VaryByParam = "userId", RevalidationKey = "User")]
+        [OutputCache(Duration = 60, StaleWhileRevalidate = 2, VaryByParam = "userId", RevalidateKeyFormat = "User_{userId}")] 
         object GetById(Guid userId);
 
-        [OutputCache(Duration = 2, VaryByParam = "userId", RevalidationKey = "User")]
+        [OutputCache(Duration = 2, VaryByParam = "userId", RevalidateKeyFormat = "User_{userId}")]
         Task<object> GetByIdAsync(Guid userId);
 
         [NoCache, TestHandleException]
@@ -21,10 +21,10 @@ namespace Flatwhite.Tests
         [SwallowException, BadMethodFilter]
         IEnumerable<object> GetRoles(Guid userId);
 
-        [Revalidate("User")]
+        [Revalidate("User_{userId}")]
         void DisableUser(Guid userId);
 
-        [Revalidate("User")]
+        [Revalidate("User_{userId}")]
         [TestHandleException]
         Task DisableUserAsync(Guid userId);
 

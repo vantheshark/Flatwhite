@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Flatwhite.Provider;
 
 namespace Flatwhite
 {
@@ -14,15 +16,15 @@ namespace Flatwhite
         /// <summary>
         /// List of "revalidation keys" to notify the cache store. They are not neccessary the cache key
         /// </summary>
-        public List<string> Keys { get; }
+        public List<string> KeyFormats { get; }
 
         /// <summary>
         /// Initializes a <see cref="RevalidateAttribute" /> with a list of revalidation keys
         /// </summary>
-        /// <param name="keys">List of "revalidation keys" to notify the cache store. They are not neccessary the cache key</param>
-        public RevalidateAttribute(params string[] keys)
+        /// <param name="keyFormats">List of "revalidation key format" to notify the cache store. They are not the cache keys</param>
+        public RevalidateAttribute(params string[] keyFormats)
         {
-            Keys = keys.ToList();
+            KeyFormats = keyFormats.ToList();
         }
 
         /// <summary>
@@ -32,7 +34,8 @@ namespace Flatwhite
         /// <returns></returns>
         public override void OnMethodExecuted(MethodExecutedContext methodExecutedContext)
         {
-            Global.RevalidateCaches(Keys);
+            var revalidatedKeys = KeyFormats.Select(k => CacheKeyProvider.GetRevalidateKey(methodExecutedContext.Invocation, k)).ToList();
+            Global.RevalidateCaches(revalidatedKeys);
         }
 
         /// <summary>
@@ -42,7 +45,14 @@ namespace Flatwhite
         /// <returns></returns>
         public override Task OnMethodExecutedAsync(MethodExecutedContext methodExecutedContext)
         {
-            return Global.RevalidateCachesAsync(Keys);
+            var revalidateKeys = KeyFormats.Select(k => CacheKeyProvider.GetRevalidateKey(methodExecutedContext.Invocation, k)).ToList();
+            return Global.RevalidateCachesAsync(revalidateKeys);
         }
+
+        /// <summary>
+        /// Default cache key provider
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public virtual ICacheKeyProvider CacheKeyProvider => Global.CacheKeyProvider;
     }
 }

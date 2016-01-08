@@ -62,7 +62,7 @@ namespace Flatwhite
         /// <summary>
         /// A key to used to delete the cache when an method with relevant <see cref="RevalidateAttribute" /> is invoked
         /// </summary>
-        public string RevalidationKey { get; set; }
+        public string RevalidateKeyFormat { get; set; }
 
         /// <summary>
         /// If set to true, the cache will be auto refreshed every <see cref="Duration"/> second(s).
@@ -170,7 +170,7 @@ namespace Flatwhite
                 var changeMonitors = strategy.GetChangeMonitors(methodExecutedContext.Invocation, methodExecutedContext.InvocationContext);
                 foreach (var mon in changeMonitors)
                 {
-                    mon.CacheMonitorChanged += x =>
+                    mon.CacheMonitorChanged += state =>
                     {
                         RefreshCache(key);
                     };

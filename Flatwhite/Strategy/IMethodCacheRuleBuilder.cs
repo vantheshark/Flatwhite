@@ -55,7 +55,7 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="revalidationKey"></param>
         /// <returns></returns>
-        IMethodCacheStrategy<T> WithRevalidationKey(string revalidationKey);
+        IMethodCacheStrategy<T> WithRevalidateKeyFormat(string revalidationKey);
 
         /// <summary>
         /// Set the change monitors factory that will create the new change monitors when new cache entry is created
