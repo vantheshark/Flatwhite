@@ -25,6 +25,7 @@
             if (_revalidationKey == revalidationKey && !_disposing)
             {
                 OnChanged(revalidationKey);
+                Dispose();
             }
         }
 

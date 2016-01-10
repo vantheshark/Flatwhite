@@ -29,15 +29,12 @@ namespace Flatwhite.WebApi2.Controllers
         [WebApi.OutputCache(
             MaxAge = 3,
             StaleWhileRevalidate = 5,
-            VaryByParam = "packageId",
-            RevalidateKeyFormat = "VaryByParamMethod",
             IgnoreRevalidationRequest = true)]
         public virtual async Task<IEnumerable<string>> Get()
         {
             await Task.Delay(2000);
             return new[] { "value1", "value2" };
         }
-
 
 
         [HttpGet]
@@ -63,7 +60,7 @@ namespace Flatwhite.WebApi2.Controllers
             MaxAge = 2, 
             StaleWhileRevalidate = 10, 
             VaryByParam = "packageId", 
-            RevalidateKeyFormat = "VaryByParamMethod",
+            RevalidateKeyFormat = "VaryByParamMethod_{packageId}",
             IgnoreRevalidationRequest = true)]
         public HttpResponseMessage VaryByParam(string packageId)
         {
@@ -84,12 +81,12 @@ namespace Flatwhite.WebApi2.Controllers
             MaxAge = 3,
             StaleWhileRevalidate = 5,
             VaryByParam = "packageId",
+            RevalidateKeyFormat = "StringMethod_{packageId}",
             IgnoreRevalidationRequest = true)]
         public string String(string packageId)
         {
             return packageId;
         }
-
 
 
         [HttpGet]
@@ -106,11 +103,11 @@ namespace Flatwhite.WebApi2.Controllers
                 Content = new StringContent($"Elapsed {sw.ElapsedMilliseconds} milliseconds", Encoding.UTF8, "text/html")
             };
         }
-
+   
         [HttpGet]
-        [Route("api/reset")]
-        [WebApi.Revalidate("VaryByParamMethod")]
-        public virtual HttpResponseMessage ResetCache()
+        [Route("api/reset/{packageId}")]
+        [WebApi.Revalidate("VaryByParamMethod_{packageId}", "StringMethod_{packageId}")]
+        public virtual HttpResponseMessage ResetCache(string packageId)
         {
             return new HttpResponseMessage(HttpStatusCode.OK);
         }

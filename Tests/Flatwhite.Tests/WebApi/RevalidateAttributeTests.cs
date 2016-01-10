@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -65,15 +66,19 @@ namespace Flatwhite.Tests.WebApi
         }
 
 
-        private static HttpActionExecutedContext GetHttpActionExecutedContext()
+        private static HttpActionExecutedContext GetHttpActionExecutedContext(MethodInfo info = null)
         {
+            var actionDescriptor = Substitute.For<ReflectedHttpActionDescriptor>();
+            
+            actionDescriptor.MethodInfo = info ?? Substitute.For<MethodInfo>();
+
             var httpActionExecutedContext = new HttpActionExecutedContext(
                 new HttpActionContext(
                     new HttpControllerContext(
                         new HttpConfiguration(),
                         Substitute.For<IHttpRouteData>(),
                         new HttpRequestMessage()),
-                    Substitute.For<HttpActionDescriptor>()),
+                    actionDescriptor),
                 null);
             httpActionExecutedContext.Response = new HttpResponseMessage(HttpStatusCode.OK);
             return httpActionExecutedContext;

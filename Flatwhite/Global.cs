@@ -34,9 +34,9 @@ namespace Flatwhite
         /// <param name="revalidatedKeys"></param>
         public static void RevalidateCaches(List<string> revalidatedKeys)
         {
-            if (RevalidateEvent != null)
+            foreach (var key in revalidatedKeys)
             {
-                revalidatedKeys.ToList().ForEach(k => RevalidateEvent(k));
+                RevalidateEvent?.Invoke(key);
             }
         }
 
@@ -50,7 +50,7 @@ namespace Flatwhite
             if (RevalidateEvent != null)
             {
                 return Task.WhenAll(
-                    revalidateKeys.Select(k => Task.Run(() => { RevalidateEvent(k); }))
+                    revalidateKeys.Select(k => Task.Run(() => { RevalidateEvent?.Invoke(k); }))
                 );
             }
             return TaskHelpers.DefaultCompleted;

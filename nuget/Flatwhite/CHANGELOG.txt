@@ -1,3 +1,6 @@
+* 1.0.18 (2016-01-11 10:00:00 AEDT)
+- Fix RevalidateAttribute for WebApi
+
 * 1.0.17 (2016-01-08 11:00:00 AEDT)
 - RevalidateAttribute will revalidate relevant cache item only
 

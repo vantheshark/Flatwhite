@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+using Flatwhite.Provider;
 
 namespace Flatwhite.WebApi
 {
@@ -16,15 +19,15 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// List of "revalidation keys" to notify the cache store. They are not neccessary the cache key
         /// </summary>
-        public List<string> Keys { get; }
+        public List<string> KeyFormats { get; }
 
         /// <summary>
         /// Initializes a <see cref="RevalidateAttribute" /> with a list of revalidation keys
         /// </summary>
-        /// <param name="keys">List of "revalidation keys" to notify the cache store. They are not neccessary the cache key</param>
-        public RevalidateAttribute(params string[] keys)
+        /// <param name="keyFormats">List of "revalidation key format" to notify the cache store. They are not the cache keys</param>
+        public RevalidateAttribute(params string[] keyFormats)
         {
-            Keys = keys.ToList();
+            KeyFormats = keyFormats.ToList();
         }
 
         /// <summary>
@@ -36,7 +39,9 @@ namespace Flatwhite.WebApi
         {
             if (actionExecutedContext.ActionContext.Response != null && actionExecutedContext.ActionContext.Response.IsSuccessStatusCode)
             {
-                Global.RevalidateCaches(Keys);
+                var invocation = GetInvocation(actionExecutedContext.ActionContext);
+                var revalidatedKeys = KeyFormats.Select(k => CacheKeyProvider.GetRevalidateKey(invocation, k)).ToList();
+                Global.RevalidateCaches(revalidatedKeys);
             }
         }
 
@@ -50,9 +55,28 @@ namespace Flatwhite.WebApi
         {
             if (actionExecutedContext.ActionContext.Response != null && actionExecutedContext.ActionContext.Response.IsSuccessStatusCode)
             {
-                return Global.RevalidateCachesAsync(Keys);
+                var invocation = GetInvocation(actionExecutedContext.ActionContext);
+                var revalidatedKeys = KeyFormats.Select(k => CacheKeyProvider.GetRevalidateKey(invocation, k)).ToList();
+
+                return Global.RevalidateCachesAsync(revalidatedKeys);
             }
             return TaskHelpers.DefaultCompleted;
         }
+
+        /// <summary>
+        /// Get <see cref="_IInvocation" /> from <see cref="HttpActionContext" />
+        /// </summary>
+        /// <param name="actionContext"></param>
+        /// <returns></returns>
+        protected virtual _IInvocation GetInvocation(HttpActionContext actionContext)
+        {
+            return new WebApiInvocation(actionContext);
+        }
+
+        /// <summary>
+        /// Default cache key provider
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public virtual ICacheKeyProvider CacheKeyProvider => Global.CacheKeyProvider;
     }
 }
