@@ -26,6 +26,15 @@ namespace Flatwhite.Provider
                 return Global.Cache.HashCodeGeneratorCache[type];
             }
 
+            foreach (var key in Global.Cache.HashCodeGeneratorCache.Keys)
+            {
+                if (key.IsAssignableFrom(type) && !key.ToString().StartsWith("System."))
+                {
+                    return Global.Cache.HashCodeGeneratorCache[key];
+                }
+            }
+
+
             if (type.IsEnum || type.GetMethod("ToString").DeclaringType != typeof(object))
             {
                 Global.Cache.HashCodeGeneratorCache[type] = MethodInfoCache.ToStringGenerator;

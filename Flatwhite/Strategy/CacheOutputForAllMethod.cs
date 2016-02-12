@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -46,6 +47,28 @@ namespace Flatwhite.Strategy
         public CacheOutputForAllMethod Duration(uint durationSeconds)
         {
             _cacheAttribute.Duration = durationSeconds;
+            return this;
+        }
+
+        /// <summary>
+        /// Set stale while revalidate
+        /// </summary>
+        /// <param name="durationSeconds"></param>
+        /// <returns></returns>
+        public CacheOutputForAllMethod StaleWhileRevalidate(uint durationSeconds)
+        {
+            _cacheAttribute.StaleWhileRevalidate = durationSeconds;
+            return this;
+        }
+
+        /// <summary>
+        /// Apply configuration to cache attribute
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        public CacheOutputForAllMethod Config(Action<OutputCacheAttribute> configuration)
+        {
+            configuration(_cacheAttribute);
             return this;
         }
 

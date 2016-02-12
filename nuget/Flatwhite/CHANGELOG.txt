@@ -1,3 +1,7 @@
+* 1.0.19 (2016-02-12 14:00:00 AEDT)
+- Fix problem of using CacheForAllMethod() in an Autofac Module
+- Allow using registered HashCodeGenerator for derived type
+
 * 1.0.18 (2016-01-11 10:00:00 AEDT)
 - Fix RevalidateAttribute for WebApi
 

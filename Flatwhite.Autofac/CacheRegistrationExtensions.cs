@@ -6,7 +6,6 @@ using Autofac;
 using Autofac.Builder;
 using Autofac.Core;
 using Castle.DynamicProxy;
-using Flatwhite.Provider;
 using Flatwhite.Strategy;
 
 namespace Flatwhite.AutofacIntergration
@@ -16,7 +15,6 @@ namespace Flatwhite.AutofacIntergration
     /// </summary>
     public static class CacheRegistrationExtensions
     {
-        private static ContainerBuilder _currentBuilder;
         private static readonly string FlatwhiteFilterAttributes = "FlatwhiteFilterAttributes";
 
         /// <summary>
@@ -63,11 +61,6 @@ namespace Flatwhite.AutofacIntergration
         /// <returns></returns>
         internal static IRegistrationBuilder<TLimit, TActivatorData, TStyle> FilterWithAttributes<TLimit, TActivatorData, TStyle>(this IRegistrationBuilder<TLimit, TActivatorData, TStyle> builder, Tuple<MethodInfo, Attribute>[] filterAttributes)
         {
-            if (_currentBuilder == null)
-            {
-                throw new InvalidOperationException($"Please call {nameof(EnableFlatwhite)} on ContainerBuilder first!");
-            }
-
             bool firstTime = false;
             if (!builder.RegistrationData.Metadata.ContainsKey(FlatwhiteFilterAttributes))
             {
@@ -80,21 +73,9 @@ namespace Flatwhite.AutofacIntergration
             {
                 return builder;
             }
-
-            // Hook to attribute provider
+            
             var id = Guid.NewGuid();
-            _currentBuilder
-                .RegisterType<DynamicAttributeProvider>()
-                .Keyed<IAttributeProvider>(id)
-                .WithParameters(new[]
-                {
-                    TypedParameter.From<Func<List<Tuple<MethodInfo, Attribute>>>>(() => filters)
-                });
-
-            _currentBuilder
-                .RegisterType<MethodInterceptorAdaptor>()
-                .Keyed<IInterceptor>(id)
-                .WithParameter(ResolvedParameter.ForKeyed<IAttributeProvider>(id));
+            KeyInterceptorRegistrationSource.DynamicAttributeCache[id] = filters;
 
             var types = builder
                 .RegistrationData
@@ -128,11 +109,6 @@ namespace Flatwhite.AutofacIntergration
         /// <returns></returns>
         public static IRegistrationBuilder<TLimit, TActivatorData, TStyle> EnableInterceptors<TLimit, TActivatorData, TStyle>(this IRegistrationBuilder<TLimit, TActivatorData, TStyle> builder)
         {
-            if (_currentBuilder == null)
-            {
-                throw new InvalidOperationException($"Please call {nameof(EnableFlatwhite)} on ContainerBuilder first!");
-            }
-
             var types = builder.RegistrationData.Services
                                 .OfType<IServiceWithType>()
                                 .Select(s => s.ServiceType).ToList();
@@ -152,10 +128,10 @@ namespace Flatwhite.AutofacIntergration
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
+        [Obsolete("You can simply register FlatwhiteCoreModule()")]
         public static ContainerBuilder EnableFlatwhite(this ContainerBuilder builder)
         {
             builder.RegisterModule(new FlatwhiteCoreModule());
-            _currentBuilder = builder;
             return builder;
         }
     }
