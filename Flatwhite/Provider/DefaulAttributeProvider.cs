@@ -18,6 +18,11 @@ namespace Flatwhite.Provider
         /// <returns></returns>
         public IEnumerable<Attribute> GetAttributes(MethodInfo methodInfo, IDictionary<string, object> invocationContext)
         {
+            if (methodInfo == null)
+            {
+                return new Attribute[0];
+            }
+
             if (!Global.Cache.AttributeCache.ContainsKey(methodInfo))
             {
                 var atts = methodInfo.GetCustomAttributes(typeof (Attribute), true).OfType<Attribute>().ToList();

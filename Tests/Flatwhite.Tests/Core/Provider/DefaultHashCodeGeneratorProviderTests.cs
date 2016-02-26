@@ -25,6 +25,15 @@ namespace Flatwhite.Tests.Core.Provider
         }
 
         [Test]
+        public void Should_return_registered_generator_for_Enum()
+        {
+            var provider = new DefaultHashCodeGeneratorProvider();
+            var generator = NSubstitute.Substitute.For<IHashCodeGenerator>();
+            provider.Register<Enum>(generator);
+            Assert.AreSame(generator, provider.GetForType(typeof(Enum)));
+        }
+
+        [Test]
         public void Should_throw_exception_if_register_a_null_hashCodeGenerator()
         {
             var provider = new DefaultHashCodeGeneratorProvider();

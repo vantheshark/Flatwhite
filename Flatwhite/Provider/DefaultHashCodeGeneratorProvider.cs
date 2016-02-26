@@ -35,7 +35,7 @@ namespace Flatwhite.Provider
             }
 
 
-            if (type.IsEnum || type.GetMethod("ToString").DeclaringType != typeof(object))
+            if (type.IsEnum || typeof(Enum) == type || type.GetMethod("ToString").DeclaringType != typeof(object))
             {
                 Global.Cache.HashCodeGeneratorCache[type] = MethodInfoCache.ToStringGenerator;
                 return MethodInfoCache.ToStringGenerator;

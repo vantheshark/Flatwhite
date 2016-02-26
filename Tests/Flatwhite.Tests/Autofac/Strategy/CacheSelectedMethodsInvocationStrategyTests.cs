@@ -22,34 +22,30 @@ namespace Flatwhite.Tests.Autofac.Strategy
         }
 
         [Test]
-        public void Test_cache_on_selected_method()
+        public async void Test_cache_on_selected_method()
         {
             var builder = new ContainerBuilder().EnableFlatwhite();
             builder
                 .RegisterType<BlogService>()
-                .As<IBlogService>()
+                .As<INoneCaheBlogService>()
                 .CacheWithStrategy(
-                    CacheStrategies.ForService<IBlogService>()
-                        .ForMember(x => x.GetById(Argument.Any<Guid>()))
+                    CacheStrategies.ForService<INoneCaheBlogService>()
+                        .ForMember(x => x.GetByIdAsync(Argument.Any<Guid>()))
                         .Duration(1000)
-                        .VaryByParam("postId")
-                        
-                        .ForMember(x => x.GetComments(Argument.Any<Guid>(), Argument.Any<int>()))
-                        .Duration(2000)
                         .VaryByCustom("custom")
                         .VaryByParam("postId")
                 );
 
             var container = builder.Build();
 
-            var cachedService = container.Resolve<IBlogService>();
+            var cachedService = container.Resolve<INoneCaheBlogService>();
 
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
             for (var i = 0; i < 10; i++)
             {
-                var b1 = cachedService.GetById(id1);
-                var b2 = cachedService.GetById(id2);
+                var b1 = await cachedService.GetByIdAsync(id1);
+                var b2 = await cachedService.GetByIdAsync(id2);
             }
 
             dynamic blogSvc = cachedService;

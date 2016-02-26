@@ -46,7 +46,7 @@ namespace Flatwhite
                 Invocation = invocation
             };
 
-            var attributes = _attributeProvider.GetAttributes(invocation.Method, methodExecutingContext.InvocationContext).ToList();
+            var attributes = GetInvocationMethodFilterAttributes(invocation, methodExecutingContext.InvocationContext);
             if (attributes.Any(a => a is NoInterceptAttribute))
             {
                 invocation.Proceed();
@@ -132,7 +132,7 @@ namespace Flatwhite
         /// <param name="exceptionContext"></param>
         private void HandleException(MethodExceptionContext exceptionContext)
         {
-            var attributes = _attributeProvider.GetAttributes(exceptionContext.Invocation.Method, exceptionContext.InvocationContext);
+            var attributes = GetInvocationMethodFilterAttributes(exceptionContext.Invocation, exceptionContext.InvocationContext);
             var exceptionFilterAttributes = attributes.OfType<ExceptionFilterAttribute>().ToList();
             if (exceptionFilterAttributes.Count == 0)
             {
@@ -263,7 +263,7 @@ namespace Flatwhite
 
         private async Task HandleExceptionAsync(MethodExceptionContext exceptionContext)
         {
-            var attributes = _attributeProvider.GetAttributes(exceptionContext.Invocation.Method, exceptionContext.InvocationContext);
+            var attributes = GetInvocationMethodFilterAttributes(exceptionContext.Invocation, exceptionContext.InvocationContext);
             var exceptionFilterAttributes = attributes.OfType<ExceptionFilterAttribute>().ToList();
             if (exceptionFilterAttributes.Count == 0)
             {
@@ -289,6 +289,16 @@ namespace Flatwhite
             {
                 throw exceptionContext.Exception;
             }
+        }
+
+        private List<Attribute> GetInvocationMethodFilterAttributes(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        {
+            var attributes = _attributeProvider.GetAttributes(invocation.Method, invocationContext).ToList();
+            if (invocation.Method != invocation.MethodInvocationTarget)
+            {
+                attributes.AddRange(_attributeProvider.GetAttributes(invocation.MethodInvocationTarget, invocationContext));
+            }
+            return attributes;
         }
     }
 }

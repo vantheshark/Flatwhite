@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Castle.DynamicProxy;
@@ -9,6 +10,7 @@ namespace Flatwhite.AutofacIntergration
     /// Adapt from Castle Dynamic proxy IInvocation to Flatwhite _IInvocation
     /// </summary>
     [ExcludeFromCodeCoverage]
+    [DebuggerStepThrough]
     internal class InvocationAdaptor : _IInvocation
     {
         private readonly IInvocation _invocation;

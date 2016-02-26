@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
-using Autofac;
-using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
 using Flatwhite.Tests.Stubs;
 using NSubstitute;
@@ -32,7 +27,6 @@ namespace Flatwhite.Tests.Core
         [Test]
         public void Should_not_filter_if_method_is_not_interceptable()
         {
-            
             var attributeProvider = Substitute.For<IAttributeProvider>();
             var contextProvider = Substitute.For<IContextProvider>();
             var invocation = Substitute.For<_IInvocation>();
@@ -50,11 +44,11 @@ namespace Flatwhite.Tests.Core
         [Test]
         public void Should_not_filter_if_method_has_no_intercept_attribute_decorated()
         {
-
             var attributeProvider = new DefaulAttributeProvider();
             var contextProvider = Substitute.For<IContextProvider>();
             var invocation = Substitute.For<_IInvocation>();
             invocation.Method.Returns(typeof(MethodInterceptorTests).GetMethod(nameof(MethodWithNoInterceptAttribute)));
+            invocation.MethodInvocationTarget.Returns(typeof(MethodInterceptorTests).GetMethod(nameof(Should_not_filter_if_method_is_not_interceptable)));
             var interceptor = new MethodInterceptor(attributeProvider, contextProvider);
 
             // Action
@@ -100,6 +94,49 @@ namespace Flatwhite.Tests.Core
 
             // Action & Assert
             Assert.Throws<Exception>(() => interceptor.Intercept(invocation));
+        }
+
+        [TestCase(nameof(IValueInterface.GetSomeValue))]
+        [TestCase(nameof(IValueInterface.GetSomeValueAsync))]
+        public void Should_filter_if_MethodInvocationTarget_is_cachable(string methodName)
+        {
+            var invocation = Substitute.For<_IInvocation>();
+            invocation.Method.Returns(typeof(IValueInterface).GetMethod(methodName));
+            invocation.MethodInvocationTarget.Returns(typeof(ValueImplementation).GetMethod(methodName));
+            invocation.When(i => i.Proceed()).Do(callInfo =>
+            {
+                invocation.ReturnValue = 1;
+            });
+
+            var interceptor = new MethodInterceptor(new DefaulAttributeProvider(), Global.ContextProvider);
+
+            // Action
+            interceptor.Intercept(invocation);
+            interceptor.Intercept(invocation);
+            interceptor.Intercept(invocation);
+
+            // Assert
+            invocation.Received(1).Proceed();
+        }
+    }
+
+    public interface IValueInterface
+    {
+        int GetSomeValue();
+        Task<int> GetSomeValueAsync();
+    }
+
+    public class ValueImplementation : IValueInterface
+    {
+        [OutputCache(Duration = 10)]
+        public int GetSomeValue()
+        {
+            return 0;
+        }
+        [OutputCache(Duration = 10)]
+        public Task<int> GetSomeValueAsync()
+        {
+            return Task.FromResult(1);
         }
     }
 }

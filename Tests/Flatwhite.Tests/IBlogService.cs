@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Flatwhite.Tests
 {
+    public interface INoneCaheBlogService
+    {
+        Task<object> GetByIdAsync(Guid postId);
+    }
+
     [TestHandleException]
     [OutputCache(Duration = 50)]
     public interface IBlogService
     {
         object GetById(Guid postId);
         
-        Task<object> GetByIdAsync(Guid userId);
+        Task<object> GetByIdAsync(Guid postId);
 
         [TestMethodFilter]
         [TestMethod2Filter]
@@ -26,7 +30,7 @@ namespace Flatwhite.Tests
         IEnumerable<object> GetComments(Guid postId, int count);
     }
 
-    public class BlogService : IBlogService
+    public class BlogService : IBlogService, INoneCaheBlogService
     {
         [OutputCache(Duration = 2)]
         public virtual object GetById(Guid postId)
@@ -35,7 +39,7 @@ namespace Flatwhite.Tests
             return new {};
         }
 
-        public async Task<object> GetByIdAsync(Guid userId)
+        public async Task<object> GetByIdAsync(Guid postId)
         {
             await Task.Delay(1000);
             InvokeCount++;

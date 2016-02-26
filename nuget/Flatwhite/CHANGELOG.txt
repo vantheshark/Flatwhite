@@ -1,3 +1,7 @@
+* 1.0.20 (2016-02-26 17:00:00 AEDT)
+- Fix bug on DefaultAttributeProvider for "Enum"
+- Attributes will be resolved from both invocation.Method and invocation.MethodInvocationTarget
+
 * 1.0.19 (2016-02-12 14:00:00 AEDT)
 - Fix problem of using CacheForAllMethod() in an Autofac Module
 - Allow using registered HashCodeGenerator for derived type
