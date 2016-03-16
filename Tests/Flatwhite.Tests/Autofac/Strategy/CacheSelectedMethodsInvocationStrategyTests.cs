@@ -24,7 +24,8 @@ namespace Flatwhite.Tests.Autofac.Strategy
         [Test]
         public async void Test_cache_on_selected_method()
         {
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterType<BlogService>()
                 .As<INoneCaheBlogService>()
@@ -64,7 +65,8 @@ namespace Flatwhite.Tests.Autofac.Strategy
             });
 
             FlatwhiteCacheEntryChangeMonitor mon = null;
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(blogService)
                 .As<IBlogService>()
@@ -109,7 +111,8 @@ namespace Flatwhite.Tests.Autofac.Strategy
         public void Test_cache_on_selected_method_with_custom_cache_store_type()
         {
             var cacheStore = Substitute.For<ICacheStore>();
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterType<BlogService>()
                 .As<IBlogService>()

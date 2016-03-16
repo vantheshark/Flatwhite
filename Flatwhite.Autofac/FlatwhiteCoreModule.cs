@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -61,7 +62,7 @@ namespace Flatwhite.AutofacIntergration
     /// </summary>
     internal class KeyInterceptorRegistrationSource : IRegistrationSource
     {
-        public static readonly IDictionary<Guid, List<Tuple<MethodInfo, Attribute>>> DynamicAttributeCache = new Dictionary<Guid, List<Tuple<MethodInfo, Attribute>>>();
+        public static readonly IDictionary<Guid, List<Tuple<MethodInfo, Attribute>>> DynamicAttributeCache = new ConcurrentDictionary<Guid, List<Tuple<MethodInfo, Attribute>>>();
 
         public IEnumerable<IComponentRegistration> RegistrationsFor(Service service, Func<Service, IEnumerable<IComponentRegistration>> registrationAccessor)
         {
@@ -71,22 +72,36 @@ namespace Flatwhite.AutofacIntergration
                 // It's not a request for the IInterceptor
                 return Enumerable.Empty<IComponentRegistration>();
             }
-            
-            var id = Guid.Parse(keyedService.ServiceKey.ToString());
-            var registration = new ComponentRegistration(
-              id,
-              new DelegateActivator(keyedService.ServiceType, (c, p) =>
-              {
-                  var attributeProvider = new DynamicAttributeProvider(c.Resolve<IAttributeProvider>(), () => DynamicAttributeCache[id]);
-                  return new MethodInterceptorAdaptor(attributeProvider, c.Resolve<IContextProvider>());
-              }),
-              new CurrentScopeLifetime(),
-              InstanceSharing.None,
-              InstanceOwnership.OwnedByLifetimeScope,
-              new[] { service },
-              new Dictionary<string, object>());
 
-            return new IComponentRegistration[] { registration };
+            Guid id;
+            if (!Guid.TryParse(keyedService.ServiceKey.ToString(), out id))
+            {
+                return Enumerable.Empty<IComponentRegistration>();
+            }
+
+            var registration = new ComponentRegistration(
+                id,
+                new DelegateActivator(keyedService.ServiceType, (c, p) =>
+                {
+                    var attProvider = c.Resolve<IAttributeProvider>();
+                    var contextProvider = c.Resolve<IContextProvider>();
+
+                    if (!DynamicAttributeCache.ContainsKey(id))
+                    {
+                        Global.Logger.Info($"Couldn't find attributes cache for key {id}");
+                        return new MethodInterceptorAdaptor(attProvider, contextProvider);
+                    }
+
+                    var dynamicAttributeProvider = new DynamicAttributeProvider(attProvider, () => DynamicAttributeCache[id]);
+                    return new MethodInterceptorAdaptor(dynamicAttributeProvider, contextProvider);
+                }),
+                new CurrentScopeLifetime(),
+                InstanceSharing.None,
+                InstanceOwnership.OwnedByLifetimeScope,
+                new[] {service},
+                new Dictionary<string, object>());
+
+            return new IComponentRegistration[] {registration};
         }
 
         public bool IsAdapterForIndividualComponents { get; } = false;

@@ -1,3 +1,7 @@
+* 1.0.21 (2016-03-16 23:00:00 AEDT)
+- Make OutputCacheAttribute.SetCacheStrategy public
+- Fix potential concurrent problem on KeyInterceptorRegistrationSource. Should return empty IComponentRegistration[] when the KeyService for IInterceptor could not return
+
 * 1.0.20 (2016-02-26 17:00:00 AEDT)
 - Fix bug on DefaultAttributeProvider for "Enum"
 - Attributes will be resolved from both invocation.Method and invocation.MethodInvocationTarget

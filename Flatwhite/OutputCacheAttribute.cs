@@ -95,7 +95,7 @@ namespace Flatwhite
         /// Set the custom cache strategy <see cref="ICacheStrategy" />
         /// </summary>
         /// <param name="cacheStrategy"></param>
-        internal void SetCacheStrategy(ICacheStrategy cacheStrategy)
+        public void SetCacheStrategy(ICacheStrategy cacheStrategy)
         {
             _cacheStrategy = cacheStrategy;
         }
