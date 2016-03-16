@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Autofac\AutofacServiceActivatorTests.cs" />
     <Compile Include="Autofac\FlatwhiteBuilderInterceptModuleTests.cs" />
+    <Compile Include="Autofac\KeyInterceptorRegistrationSourceTests.cs" />
     <Compile Include="Autofac\OutputCacheAttributeTests.cs" />
     <Compile Include="Autofac\Strategy\CacheOutputForAllMethodTests.cs" />
     <Compile Include="Autofac\Strategy\CacheSelectedMethodsInvocationStrategyTests.cs" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Autofac;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
@@ -22,7 +23,7 @@ namespace Flatwhite.Tests.Autofac.Strategy
         }
 
         [Test]
-        public async void Test_cache_on_selected_method()
+        public async Task Test_cache_on_selected_method()
         {
             var builder = new ContainerBuilder();
             builder.RegisterModule(new FlatwhiteCoreModule());

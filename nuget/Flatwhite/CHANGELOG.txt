@@ -1,3 +1,6 @@
+* 1.0.22 (2016-03-17 11:00:00 AEDT)
+- Fix small bug on KeyInterceptorRegistrationSource & add unit test
+
 * 1.0.21 (2016-03-16 23:00:00 AEDT)
 - Make OutputCacheAttribute.SetCacheStrategy public
 - Fix potential concurrent problem on KeyInterceptorRegistrationSource. Should return empty IComponentRegistration[] when the KeyService for IInterceptor could not return

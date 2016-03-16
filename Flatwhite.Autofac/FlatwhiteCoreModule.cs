@@ -85,14 +85,14 @@ namespace Flatwhite.AutofacIntergration
                 {
                     var attProvider = c.Resolve<IAttributeProvider>();
                     var contextProvider = c.Resolve<IContextProvider>();
-
-                    if (!DynamicAttributeCache.ContainsKey(id))
+                    var attributes = new List<Tuple<MethodInfo, Attribute>>();
+                    if (!DynamicAttributeCache.ContainsKey(id) || !DynamicAttributeCache.TryGetValue(id, out attributes))
                     {
-                        Global.Logger.Info($"Couldn't find attributes cache for key {id}");
+                        Global.Logger.Info($"Couldn't get cached attributes for key {id}");
                         return new MethodInterceptorAdaptor(attProvider, contextProvider);
                     }
 
-                    var dynamicAttributeProvider = new DynamicAttributeProvider(attProvider, () => DynamicAttributeCache[id]);
+                    var dynamicAttributeProvider = new DynamicAttributeProvider(attProvider, () => attributes);
                     return new MethodInterceptorAdaptor(dynamicAttributeProvider, contextProvider);
                 }),
                 new CurrentScopeLifetime(),
