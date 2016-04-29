@@ -28,8 +28,9 @@ namespace Flatwhite.Tests.Autofac.Strategy
             svc.GetById(id1).Returns(new { Name = "Van", Email = "van@gmail.com", Id = id1 });
             svc.GetById(id2).Returns(new { Name = "Billy", Email = "billy@gmail.com", Id = id2 });
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
-            
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
+
             builder
                 .RegisterInstance(svc)
                 .As<IUserService>()
@@ -58,7 +59,8 @@ namespace Flatwhite.Tests.Autofac.Strategy
             svc.GetById(id1).Returns(new { Name = "Van", Email = "van@gmail.com", Id = id1 });
             svc.GetById(id2).Returns(new { Name = "Billy", Email = "billy@gmail.com", Id = id2 });
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(svc)
                 .As<IUserService>()
@@ -81,7 +83,8 @@ namespace Flatwhite.Tests.Autofac.Strategy
         [Test]
         public void Test_cache_all_method_strategy_on_registered_interface_type_service()
         {
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterType<BlogService>()
                 .As<IBlogService>()
@@ -106,7 +109,8 @@ namespace Flatwhite.Tests.Autofac.Strategy
         [Test]
         public void Test_cache_all_method_strategy_on_registered_class_type_service()
         {
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
 
             builder
                 .RegisterType<BlogService>()
@@ -132,8 +136,9 @@ namespace Flatwhite.Tests.Autofac.Strategy
             var svc = Substitute.For<IUserService>();
             string email = "van@gmail.com";
             svc.GetByEmail(email).Returns(new {Name = "Van", Email = email, Id = "1"});
-         
-            var builder = new ContainerBuilder().EnableFlatwhite();
+
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(svc)
                 .As<IUserService>()

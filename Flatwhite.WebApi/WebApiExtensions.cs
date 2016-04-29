@@ -25,11 +25,7 @@ namespace Flatwhite.WebApi
         /// </summary>
         internal static readonly string __flatwhite_dont_cache = "__flatwhite_dont_cache";
         // ReSharper restore InconsistentNaming
-
-        /// <summary>
-        /// This will be used by Phoenix to create Controller instance on the fly when cache is refreshing
-        /// </summary>
-        internal static IServiceActivator _dependencyResolverActivator;
+        
 
         internal static FlatwhiteWebApiConfiguration _fwConfig = new FlatwhiteWebApiConfiguration();
 
@@ -43,7 +39,6 @@ namespace Flatwhite.WebApi
             _fwConfig = flatwhiteConfig ?? new FlatwhiteWebApiConfiguration();
             Global.CacheStrategyProvider = new WebApiCacheStrategyProvider();
             Global.BackgroundTaskManager = new RegisteredTasks();
-            _dependencyResolverActivator = new WebApiDependencyResolverActivator(() => config.DependencyResolver);
 
             var allHandlers = config.DependencyResolver
                 .GetServices(typeof(ICachControlHeaderHandler))

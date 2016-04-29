@@ -29,7 +29,8 @@ namespace Flatwhite.Tests
             var mockObj = Substitute.For<IUserService>();
             mockObj.GetById(Arg.Any<Guid>()).Returns(new object());
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(mockObj)
                 .As<IUserService>()
@@ -53,7 +54,8 @@ namespace Flatwhite.Tests
             var mockObj = Substitute.For<IUserService>();
             mockObj.GetByIdAsync(Arg.Any<Guid>()).Returns(Task.FromResult(new object()));
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(mockObj)
                 .As<IUserService>()
@@ -77,7 +79,8 @@ namespace Flatwhite.Tests
             var mockObj = Substitute.For<IUserService>();
             mockObj.GetByIdAsync(Arg.Any<Guid>()).Returns(Task.FromResult(new object()));
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(mockObj)
                 .As<IUserService>()
@@ -102,7 +105,8 @@ namespace Flatwhite.Tests
                 .When(x => x.GetById(Arg.Any<Guid>()))
                 .Do(c => { throw new Exception(); });
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(mockObj)
                 .As<IUserService>()
@@ -123,7 +127,8 @@ namespace Flatwhite.Tests
                 .When(x => x.GetByEmail(Arg.Any<string>()))
                 .Do(c => { throw new Exception(); });
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(mockObj)
                 .As<IUserService>()
@@ -143,7 +148,8 @@ namespace Flatwhite.Tests
         {
             var mockObj = Substitute.For<IUserService>();
             mockObj.GetRoles(Arg.Any<Guid>()).Returns(new List<object> {new {}, new {}});
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(mockObj)
                 .As<IUserService>()
@@ -166,7 +172,8 @@ namespace Flatwhite.Tests
                 .When(x => x.GetByEmailAsync(Arg.Any<string>()))
                 .Do(c => { throw new Exception(); });
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(mockObj)
                 .As<IUserService>()
@@ -189,7 +196,8 @@ namespace Flatwhite.Tests
                 .When(x => x.DisableUserAsync(Arg.Any<Guid>()))
                 .Do(c => { throw new Exception(); });
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(mockObj)
                 .As<IUserService>()
@@ -253,7 +261,8 @@ namespace Flatwhite.Tests
             Global.CacheStoreProvider.RegisterStore(new ObjectCacheStore());
 
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterType<DummyUserService>()
                 .As<IUserService>()

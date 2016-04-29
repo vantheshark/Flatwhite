@@ -21,7 +21,6 @@ namespace Flatwhite.Tests.WebApi
         {
             Global.Init();
             WebApiExtensions._fwConfig = new FlatwhiteWebApiConfiguration();
-            WebApiExtensions._dependencyResolverActivator = new ServiceActivator();
             _requestMessage = UnitTestHelper.GetMessage();
             _client = Substitute.For<IHttpClient>();
             _client

@@ -92,24 +92,27 @@ namespace Flatwhite.Hot
 
             try
             {
-                var target = GetTargetInstance();
-                var invokedResult = await InvokeAndGetBareResult(target).ConfigureAwait(false);
-                var cacheItem = GetCacheItem(invokedResult);
-                if (cacheItem == null)
+                using (var dependencyScope = Activator.BeginScope())
                 {
-                    var disposing = new DisposingPhoenix(DieAsync());
-                    return disposing.Reborn(null);
+                    var target = GetTargetInstance(dependencyScope);
+                    var invokedResult = await InvokeAndGetBareResult(target).ConfigureAwait(false);
+                    var cacheItem = GetCacheItem(invokedResult);
+                    if (cacheItem == null)
+                    {
+                        var disposing = new DisposingPhoenix(DieAsync());
+                        return disposing.Reborn(null);
+                    }
+
+                    var cacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(_info.StoreId);
+                    //NOTE: Because the cacheItem was created before, the cacheStore cannot be null
+                    await cacheStore.SetAsync(_info.Key, cacheItem, DateTime.UtcNow.AddSeconds(_info.MaxAge + _info.StaleWhileRevalidate)).ConfigureAwait(false);
+
+                    Global.Logger.Info($"Updated key \"{_info.Key}\", store \"{_info.StoreId}\"");
+
+                    Retry(_info.GetRefreshTime());
+                    _phoenixState = new InActivePhoenix();
+                    return _phoenixState;
                 }
-
-                var cacheStore = Global.CacheStoreProvider.GetAsyncCacheStore(_info.StoreId);
-                //NOTE: Because the cacheItem was created before, the cacheStore cannot be null
-                await cacheStore.SetAsync(_info.Key, cacheItem, DateTime.UtcNow.AddSeconds(_info.MaxAge + _info.StaleWhileRevalidate)).ConfigureAwait(false);
-
-                Global.Logger.Info($"Updated key \"{_info.Key}\", store \"{_info.StoreId}\"");
-
-                Retry(_info.GetRefreshTime());
-                _phoenixState = new InActivePhoenix();
-                return _phoenixState;
             }
             catch (Exception ex)
             {
@@ -170,9 +173,9 @@ namespace Flatwhite.Hot
         /// </summary>
         /// <returns></returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        protected virtual object GetTargetInstance()
+        protected virtual object GetTargetInstance(ICacheDependencyScope scope)
         {
-            var instance = Activator.CreateInstance(MethodInfo.DeclaringType);
+            var instance = scope.CreateInstance(MethodInfo.DeclaringType);
             var target = _instanceTargetField != null ? _instanceTargetField.GetValue(instance) : instance;
             return target;
         }

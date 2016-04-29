@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Flatwhite.Hot;
 using Flatwhite.Provider;
-using Flatwhite.Tests.WebApi.OutputCacheAttributeTests;
-using Flatwhite.WebApi;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -22,6 +20,7 @@ namespace Flatwhite.Tests.Core
             var userService = Substitute.For<IUserService>();
             userService.When(x => x.GetById(Arg.Any<Guid>())).Do(c => { wait.Set(); });
             var activator = Substitute.For<IServiceActivator>();
+            activator.BeginScope().Returns(activator);
             activator.CreateInstance(Arg.Any<Type>()).Returns(userService);
 
             Global.ServiceActivator = activator;

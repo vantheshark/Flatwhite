@@ -20,6 +20,10 @@ namespace Flatwhite.AutofacIntergration
     /// </summary>
     public class FlatwhiteCoreModule : Module
     {
+        /// <summary>
+        /// Register all require components
+        /// </summary>
+        /// <param name="builder"></param>
         protected override void Load(ContainerBuilder builder)
         {
             builder.Register(c => Global.CacheKeyProvider);
@@ -44,16 +48,16 @@ namespace Flatwhite.AutofacIntergration
 
     internal class FlatwhiteStart : IStartable
     {
-        private readonly IComponentContext _containerContext;
+        private readonly ILifetimeScope _container;
 
-        public FlatwhiteStart(IComponentContext containerContext)
+        public FlatwhiteStart(ILifetimeScope container)
         {
-            _containerContext = containerContext;
+            _container = container;
         }
 
         public void Start()
         {
-            Global.ServiceActivator = new AutofacServiceActivator(_containerContext);
+            Global.ServiceActivator = new AutofacServiceActivator(_container);
         }
     }
 

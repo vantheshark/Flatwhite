@@ -71,7 +71,7 @@ namespace Flatwhite
             HashCodeGeneratorProvider = new DefaultHashCodeGeneratorProvider();
             CacheKeyProvider = new DefaultCacheKeyProvider(HashCodeGeneratorProvider);
             CacheStoreProvider = new DefaultCacheStoreProvider();
-            ServiceActivator = new ServiceActivator();
+            ServiceActivator = new DefaultServiceActivator();
             Logger = new NullLogger();
             BackgroundTaskManager = new DefaultBackgroundTaskManager();
 

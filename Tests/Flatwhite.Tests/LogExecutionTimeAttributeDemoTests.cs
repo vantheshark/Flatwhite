@@ -21,7 +21,8 @@ namespace Flatwhite.Tests
         [Test]
         public async Task Test_profiling()
         {
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder.RegisterType<CallerLevel0>().AsSelf().EnableInterceptors();
             builder.RegisterType<CallerLevel1>().AsSelf().EnableInterceptors();
             builder.RegisterType<CallerLevel2>().AsSelf().EnableInterceptors();

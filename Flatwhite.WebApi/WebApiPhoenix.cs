@@ -91,9 +91,31 @@ namespace Flatwhite.WebApi
         {
             return new HttpClientAdaptor();
         }
+
         [ExcludeFromCodeCoverage]
         private class HttpClientAdaptor : HttpClient, IHttpClient
         {
+        }
+
+        /// <summary>
+        /// Not support in WebAPI
+        /// </summary>
+        protected override IServiceActivator Activator
+        {
+            get
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// Not support in WebAPI
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <returns></returns>
+        protected override object GetTargetInstance(ICacheDependencyScope scope)
+        {
+            throw new NotSupportedException();
         }
     }
 }

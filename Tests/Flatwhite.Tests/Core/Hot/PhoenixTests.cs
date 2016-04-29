@@ -50,11 +50,14 @@ namespace Flatwhite.Tests.Core.Hot
                 }
             }
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
+
             builder
                 .RegisterInstance(svc)
                 .As<IUserService>()
                 .EnableInterceptors();
+            
             var container = builder.Build();
             var proxy = container.Resolve<IUserService>();
 

@@ -77,7 +77,6 @@
     <Compile Include="WebApiExtensions.cs" />
     <Compile Include="WebApiInvocation.cs" />
     <Compile Include="WebApiPhoenix.cs" />
-    <Compile Include="WebApiDependencyResolverActivator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Flatwhite\Flatwhite.csproj">

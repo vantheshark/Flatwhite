@@ -66,7 +66,8 @@ namespace Flatwhite.Tests.Core
             var mockObj = Substitute.For<IUserService>();
             mockObj.GetById(Arg.Any<Guid>()).Returns(c => (object)c.Arg<Guid>());
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(mockObj)
                 .As<IUserService>()

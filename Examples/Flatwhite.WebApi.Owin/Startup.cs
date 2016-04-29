@@ -36,7 +36,8 @@ namespace Flatwhite.WebApi.Owin
 
         private IContainer BuildAutofacContainer(HttpConfiguration config)
         {
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder.RegisterModule(new FlatwhiteOptionalModule());
 
             builder.RegisterType<FlatwhiteCoffeeService>().AsImplementedInterfaces().EnableInterceptors();

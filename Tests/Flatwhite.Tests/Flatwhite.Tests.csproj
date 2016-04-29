@@ -130,7 +130,6 @@
     <Compile Include="WebApi\WebApiCacheStrategyProviderTests.cs" />
     <Compile Include="WebApi\WebApiCacheStrategyTests.cs" />
     <Compile Include="WebApi\WebApiContextProviderTests.cs" />
-    <Compile Include="WebApi\WebApiDependencyResolverActivatorTests.cs" />
     <Compile Include="WebApi\WebApiPhoenixTests.cs" />
   </ItemGroup>
   <ItemGroup>

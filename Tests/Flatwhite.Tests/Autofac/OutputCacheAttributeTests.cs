@@ -28,7 +28,8 @@ namespace Flatwhite.Tests.Autofac
             svc.GetById(id1).Returns(new { Name = "Van", Email = "van@gmail.com", Id = id1 });
             svc.GetById(id2).Returns(new { Name = "Billy", Email = "billy@gmail.com", Id = id2 });
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(svc)
                 .AsImplementedInterfaces()
@@ -54,7 +55,8 @@ namespace Flatwhite.Tests.Autofac
             var svc = Substitute.For<IUserService>();
             svc.TestCustomStoreId().Returns(new { Name = "Van", Email = "van@gmail.com" });
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(svc)
                 .AsImplementedInterfaces()
@@ -84,7 +86,8 @@ namespace Flatwhite.Tests.Autofac
             svc.When(x => x.GetById(id1))
                 .Do(c => { count.Signal(); });
 
-            var builder = new ContainerBuilder().EnableFlatwhite();
+            var builder = new ContainerBuilder();
+            builder.RegisterModule(new FlatwhiteCoreModule());
             builder
                 .RegisterInstance(svc)
                 .AsImplementedInterfaces()
