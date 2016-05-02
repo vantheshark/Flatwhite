@@ -17,18 +17,23 @@ namespace Flatwhite.WebApi
     public class WebApiPhoenix : Phoenix
     {
         private readonly WebApiCacheItem _cacheItem;
-        private readonly HttpRequestMessage _clonedRequestMessage;
+        private readonly HttpRequestMessage _originalRequestMessage;
 
         /// <summary>
         /// Initializes a WebApiPhoenix
         /// </summary>
         /// <param name="invocation"></param>
         /// <param name="cacheItem">This should the the WebApiCacheItem instance</param>
-        /// <param name="requestMessage"></param>
-        public WebApiPhoenix(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage requestMessage) : base(invocation, cacheItem)
+        /// <param name="originalRequestMessage"></param>
+        public WebApiPhoenix(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage originalRequestMessage) : base(invocation, cacheItem)
         {
             _cacheItem = cacheItem;
-            _clonedRequestMessage = new HttpRequestMessage
+            _originalRequestMessage = originalRequestMessage;
+        }
+
+        private HttpRequestMessage CloneRequestMessage(HttpRequestMessage requestMessage)
+        {
+            var clonedRequestMessage = new HttpRequestMessage
             {
                 RequestUri = requestMessage.RequestUri,
                 Method = requestMessage.Method,
@@ -36,19 +41,21 @@ namespace Flatwhite.WebApi
             };
             if (!string.IsNullOrWhiteSpace(WebApiExtensions._fwConfig.LoopbackAddress))
             {
-                _clonedRequestMessage.RequestUri = new Uri($"{WebApiExtensions._fwConfig.LoopbackAddress}{_clonedRequestMessage.RequestUri.PathAndQuery}");
+                clonedRequestMessage.RequestUri = new Uri($"{WebApiExtensions._fwConfig.LoopbackAddress}{clonedRequestMessage.RequestUri.PathAndQuery}");
             }
-            
-            _clonedRequestMessage.Content = null;
+
+            clonedRequestMessage.Content = null;
 
             foreach (var h in requestMessage.Headers)
             {
-                _clonedRequestMessage.Headers.Add(h.Key, h.Value);
+                clonedRequestMessage.Headers.Add(h.Key, h.Value);
             }
 
-            _clonedRequestMessage.Headers.CacheControl = requestMessage.Headers.CacheControl ?? new CacheControlHeaderValue();
+            clonedRequestMessage.Headers.CacheControl = requestMessage.Headers.CacheControl ?? new CacheControlHeaderValue();
+            clonedRequestMessage.Headers.CacheControl.Extensions.Add(new NameValueHeaderValue(WebApiExtensions.__cacheControl_flatwhite_force_refresh, "true"));
+            clonedRequestMessage.Properties.Clear();
+            return clonedRequestMessage;
         }
-        
 
         /// <summary>
         /// Send a http request with special header to loop back address to by pass the cache
@@ -61,15 +68,14 @@ namespace Flatwhite.WebApi
                 var sw = Stopwatch.StartNew();
                 using (var client = GetHttpClient())
                 {
-                    client.Timeout = TimeSpan.FromSeconds(_cacheItem.MaxAge - _cacheItem.Age + Math.Max(_cacheItem.StaleWhileRevalidate, _cacheItem.StaleIfError));
-                    _clonedRequestMessage.Headers.CacheControl.Extensions.Add(new NameValueHeaderValue(WebApiExtensions.__cacheControl_flatwhite_force_refresh, "true"));
-                    _clonedRequestMessage.Properties.Clear();
-                    var response = await client.SendAsync(_clonedRequestMessage, HttpCompletionOption.ResponseHeadersRead);
+                    //client.Timeout = TimeSpan.FromSeconds(_cacheItem.MaxAge - _cacheItem.Age + Math.Max(_cacheItem.StaleWhileRevalidate, _cacheItem.StaleIfError));
+                    var cloneRequestMessage = CloneRequestMessage(_originalRequestMessage);
+                    var response = await client.SendAsync(cloneRequestMessage, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
                 }
 
                 sw.Stop();
-                Global.Logger.Info($"{nameof(WebApiPhoenix)} updated key: \"{_cacheItem.Key}\", store: \"{_cacheItem.StoreId}\", request: {_clonedRequestMessage.RequestUri.PathAndQuery}, duration: {sw.ElapsedMilliseconds}ms");
+                Global.Logger.Info($"{nameof(WebApiPhoenix)} updated key: \"{_cacheItem.Key}\", store: \"{_cacheItem.StoreId}\", request: {_originalRequestMessage.RequestUri.PathAndQuery}, duration: {sw.ElapsedMilliseconds}ms");
                 Retry(_info.GetRefreshTime());
                 _phoenixState = new InActivePhoenix();
                 return _phoenixState;

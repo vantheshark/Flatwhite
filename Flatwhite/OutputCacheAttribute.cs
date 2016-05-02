@@ -206,10 +206,12 @@ namespace Flatwhite
                 return;
             }
 
-            if (Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
+            Phoenix phoenix;
+            if (Global.Cache.PhoenixFireCage.TryGetValue(cacheItem.Key, out phoenix))
             {
-                Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();
+                phoenix?.Dispose();
             }
+
             Global.Cache.PhoenixFireCage[cacheItem.Key] = new Phoenix(invocation, cacheItem);
         }
 

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
@@ -11,6 +13,10 @@ namespace Flatwhite.Hot
     /// </summary>
     public class Phoenix : IDisposable
     {
+        private static readonly IDictionary<string, Phoenix> _allPhoenix = new ConcurrentDictionary<string, Phoenix>();
+        private static readonly object _phoenixCage = new object();
+        private readonly string _id;
+
         /// <summary>
         /// Get information about the cache
         /// </summary>
@@ -20,9 +26,7 @@ namespace Flatwhite.Hot
         /// <summary>
         /// Phoenix state
         /// </summary>
-        protected internal IPhoenixState _phoenixState;
-
-        private static readonly object _phoenixCage = new object();
+        protected IPhoenixState _phoenixState;
 
         /// <summary>
         /// The timer to refresh the cache item. It will run every "Duration" seconds if "StaleWhileRevalidate" > 0
@@ -56,8 +60,9 @@ namespace Flatwhite.Hot
         /// <param name="info"></param>
         public Phoenix(_IInvocation invocation, CacheItem info)
         {
+            _id = Guid.NewGuid().ToString("N");
             _info = info.CloneWithoutData();
-            _phoenixState = _info.StaleWhileRevalidate > 0 ? (IPhoenixState)new InActivePhoenix() : new DisposingPhoenix(DieAsync());
+            _phoenixState = _info.StaleWhileRevalidate > 0 ? (IPhoenixState) new InActivePhoenix() : new DisposingPhoenix(DieAsync());
             if (invocation.Proxy != null)
             { 
                 // It is really a dynamic proxy
@@ -65,21 +70,39 @@ namespace Flatwhite.Hot
             }
 
             Arguments = invocation.Arguments;
-
             MethodInfo = invocation.Method;
-            _timer = new Timer(_ => Reborn(), null, _info.GetRefreshTime(), TimeSpan.Zero);
+
+            _allPhoenix[_id] = this;
+
+            //NOTE: Memory leak: http://www.codeproject.com/Questions/185734/Threading-Timer-prevents-GC-collection
+            _timer = new Timer(RebornCallback, _id, _info.GetRefreshTime(), TimeSpan.Zero);
+            
+        }
+        
+        private static void RebornCallback(object phoenixId)
+        {
+            lock (_phoenixCage)
+            {
+                Phoenix phoenix;
+                if (_allPhoenix.TryGetValue((string)phoenixId, out phoenix))
+                {
+                    phoenix._phoenixState = phoenix._phoenixState.Reborn(phoenix.FireAsync);
+                }
+            }
         }
 
         /// <summary>
         /// Refresh the cache and change the internal <see cref="IPhoenixState"/> to avoid refreshing too many unnecessary times
         /// <para>The call will happen in background so the caller will not have to wait</para>
         /// </summary>
-        public virtual void Reborn()
+        public void Reborn()
         {
-            lock (_phoenixCage)
-            {
-                _phoenixState = _phoenixState.Reborn(FireAsync);
-            }
+            RebornCallback(_id);
+        }
+
+        internal IPhoenixState GetCurrentState()
+        {
+            return _phoenixState;
         }
 
         /// <summary>
@@ -192,12 +215,10 @@ namespace Flatwhite.Hot
         /// </summary>
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _disposed = true;
-                _timer?.Dispose();
-                Global.Cache.PhoenixFireCage.Remove(_info.Key);
-            }
+            _disposed = true;
+            _allPhoenix.Remove(_id);
+            _timer.Dispose();
+            Global.Cache.PhoenixFireCage.Remove(_info.Key);
         }
 
         private async Task DieAsync()

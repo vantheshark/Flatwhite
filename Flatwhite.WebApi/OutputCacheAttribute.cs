@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Dependencies;
 using System.Web.Http.Filters;
+using Flatwhite.Hot;
 using Flatwhite.Provider;
 
 namespace Flatwhite.WebApi
@@ -470,10 +471,12 @@ namespace Flatwhite.WebApi
                 return;
             }
 
-            if (Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
+            Phoenix phoenix;
+            if (Global.Cache.PhoenixFireCage.TryGetValue(cacheItem.Key, out phoenix))
             {
-                Global.Cache.PhoenixFireCage[cacheItem.Key].Dispose();
+                phoenix?.Dispose();
             }
+
             Global.Cache.PhoenixFireCage[cacheItem.Key] = new WebApiPhoenix(invocation, cacheItem, request);
         }
 

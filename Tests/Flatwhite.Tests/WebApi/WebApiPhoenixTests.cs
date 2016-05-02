@@ -53,7 +53,6 @@ namespace Flatwhite.Tests.WebApi
 
                 // Assert
                 Assert.IsTrue(state is InActivePhoenix);
-                _client.Received(1).Timeout = Arg.Is<TimeSpan>(x => x.TotalSeconds > 4);
                 await _client
                     .Received(1)
                     .SendAsync(Arg.Is<HttpRequestMessage>(msg => msg.Properties.Count == 0 && 
@@ -232,8 +231,8 @@ namespace Flatwhite.Tests.WebApi
         [DebuggerStepThrough]
         private class WebApiPhoenixWithPublicMethods : WebApiPhoenix
         {
-            public WebApiPhoenixWithPublicMethods(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage requestMessage)
-                : base(invocation, cacheItem, requestMessage)
+            public WebApiPhoenixWithPublicMethods(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage originalRequestMessage)
+                : base(invocation, cacheItem, originalRequestMessage)
             {
             }
 

@@ -70,7 +70,7 @@ namespace Flatwhite.WebApi
 
                 var status = cacheItem != null ? new CacheItemStatus(cacheItem) : new CacheItemStatus(unknownCacheObject);
                 status.Key = p.Key;
-                status.PhoenixStatus = p.Value._phoenixState.GetState();
+                status.PhoenixStatus = p.Value.GetCurrentState().GetState();
                 status.Type = p.Value.GetType().Name;
                 if (cacheItem == p.Value._info)
                 {
@@ -128,7 +128,7 @@ namespace Flatwhite.WebApi
             {
                 if (Global.Cache.PhoenixFireCage.ContainsKey(i.Key))
                 {
-                    i.PhoenixStatus = Global.Cache.PhoenixFireCage[i.Key]._phoenixState.GetState();
+                    i.PhoenixStatus = Global.Cache.PhoenixFireCage[i.Key].GetCurrentState().GetState();
                 }
             }
 
