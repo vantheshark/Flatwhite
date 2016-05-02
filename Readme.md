@@ -37,7 +37,8 @@ public class UserService
 		// ...
 	}    
 }
-var builder = new ContainerBuilder().EnableFlatwhite();
+var builder = new ContainerBuilder();
+builder.RegisterModule(new FlatwhiteCoreModule());
 builder
 	.RegisterType<CustomerService>()	
 	.EnableInterceptors();
@@ -58,7 +59,8 @@ public interface IUserService
     IEnumerable<object> GetRoles(Guid userId);
 }
 
-var builder = new ContainerBuilder().EnableFlatwhite();
+var builder = new ContainerBuilder();
+builder.RegisterModule(new FlatwhiteCoreModule());
 builder.RegisterType<UserService>()	  
 	   .As<IUserService>()	 
        .EnableInterceptors();
@@ -68,7 +70,8 @@ builder.RegisterType<UserService>()
 If you don't want to decorate the **OutputCache** attribute on the interface, you can do like this to enable cache on *all* methods
 
 ```C#
-var builder = new ContainerBuilder().EnableFlatwhite();
+var builder = new ContainerBuilder();
+builder.RegisterModule(new FlatwhiteCoreModule());
 builder.RegisterType<UserService>()	  
 	   .As<IUserService>()	 
        .CacheWithStrategy(CacheStrategies
@@ -82,7 +85,8 @@ builder.RegisterType<UserService>()
 If you want to cache on just some methods, you can selectively do like below. Again, it works only on virtual methods if you are registering class service; interface services are fine.
 
 ```C#
-var builder = new ContainerBuilder().EnableFlatwhite();
+var builder = new ContainerBuilder();
+builder.RegisterModule(new FlatwhiteCoreModule());
 builder.RegisterType<BlogService>()
 	   .As<IBlogService>()
 	   .CacheWithStrategy(
@@ -119,7 +123,7 @@ builder
 builder.RegisterModule<FlatwhiteBuilderInterceptModule>();            
 var container = builder.Build();
 ```
-Note that you don't have to call EnableFlatwhite() after creating ContainerBuilder like the other methods.
+
 
 #### 6/ Auto refresh stale data
 Flatwhite can auto refresh the stale content if you set **StaleWhileRevalidate** with a value greater than 0.
