@@ -75,7 +75,7 @@ namespace Flatwhite
             Logger = new NullLogger();
             BackgroundTaskManager = new DefaultBackgroundTaskManager();
 
-            var configFolder = Path.GetDirectoryName(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+            var configFolder = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
             CacheProfileProvider = new YamlCacheProfileProvider(Path.Combine(configFolder ?? "", "cacheProfile.yaml"));
         }
 
