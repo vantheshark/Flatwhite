@@ -40,7 +40,7 @@ public class UserService
 var builder = new ContainerBuilder();
 builder.RegisterModule(new FlatwhiteCoreModule());
 builder
-	.RegisterType<CustomerService>()	
+	.RegisterType<UserService>()	
 	.EnableInterceptors();
 ```
 
