@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using System.Web.Http.Dependencies;
 using System.Web.Http.Routing;
 using Flatwhite.WebApi;
 using NSubstitute;
@@ -95,7 +96,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
             });
 
             Global.CacheStoreProvider.RegisterAsyncStore(store);
-            var att = new Flatwhite.WebApi.OutputCacheAttribute { MaxAge = 5, CacheStoreId = 1000, StaleWhileRevalidate = 5 };
+            var att = new Flatwhite.WebApi.OutputCacheAttribute { MaxAge = 5, CacheStoreId = 1000, StaleWhileRevalidate = 5, AutoRefresh = true};
 
             // Action
             await att.OnActionExecutingAsync(_actionContext, CancellationToken.None);

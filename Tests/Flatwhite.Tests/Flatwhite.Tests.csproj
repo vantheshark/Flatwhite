@@ -115,7 +115,8 @@
     <Compile Include="WebApi\FlatwhiteStatusControllerTests.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\OutputCacheAttributeWithPublicMethods.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodApplyCacheHeaders.cs" />
-    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodCreatePhoenix.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodDisposeOldPhoenixAndCreateNew.cs" />
+    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodOnActionExecutedAsync.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\ThePropertyCacheProfile.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodOnActionExecutingAsync.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetInvocationContext.cs" />
@@ -123,7 +124,6 @@
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodHashCacheKey.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetAllVaryCustomKey.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodShouldIgnoreCache.cs" />
-    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetCacheResponseBuilder.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodGetCacheStrategy.cs" />
     <Compile Include="WebApi\RevalidateAttributeTests.cs" />
     <Compile Include="WebApi\UnitTestHelper.cs" />

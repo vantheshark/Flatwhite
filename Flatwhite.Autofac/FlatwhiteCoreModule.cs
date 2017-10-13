@@ -28,7 +28,7 @@ namespace Flatwhite.AutofacIntergration
         {
             builder.Register(c => Global.CacheKeyProvider);
             builder.Register(c => Global.CacheStoreProvider);
-            builder.Register(c => Global.ContextProvider);
+            builder.RegisterInstance(new EmptyContextProvider()).As<IContextProvider>().SingleInstance();
             builder.Register(c => Global.CacheStrategyProvider);
             builder.Register(c => Global.AttributeProvider);
             builder.Register(c => Global.HashCodeGeneratorProvider);
@@ -58,6 +58,17 @@ namespace Flatwhite.AutofacIntergration
         public void Start()
         {
             Global.ServiceActivator = new AutofacServiceActivator(_container);
+        }
+    }
+
+    /// <summary>
+    /// A default context provider which returns empty dictionary
+    /// </summary>
+    internal class EmptyContextProvider : IContextProvider
+    {
+        public IDictionary<string, object> GetContext()
+        {
+            return new Dictionary<string, object>();
         }
     }
 

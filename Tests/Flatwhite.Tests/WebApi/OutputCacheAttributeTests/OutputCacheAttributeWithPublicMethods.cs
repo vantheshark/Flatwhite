@@ -1,25 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using Flatwhite.WebApi;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Web.Http.Controllers;
-using System.Web.Http.Dependencies;
-using Flatwhite.WebApi;
 
 namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
 {
     [DebuggerStepThrough]
     public class OutputCacheAttributeWithPublicMethods : Flatwhite.WebApi.OutputCacheAttribute
     {
-        public ICacheStrategy GetCacheStrategyPublic(IDependencyScope scope, _IInvocation invocation, IDictionary<string, object> invocationContext)
+        public ICacheStrategy GetCacheStrategyPublic(HttpRequestMessage request, _IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            return GetCacheStrategy(scope, invocation, invocationContext);
-        }
-
-        public ICacheResponseBuilder GetCacheResponseBuilderPublic(IDependencyScope scope)
-        {
-            return GetCacheResponseBuilder(scope);
+            return GetCacheStrategy(request, invocation, invocationContext);
         }
 
         public bool ShouldIgnoreCachePublic(CacheControlHeaderValue cacheControl, HttpRequestMessage request)
@@ -29,7 +23,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
 
         public void ApplyCacheHeadersPublic(HttpResponseMessage response, HttpRequestMessage request)
         {
-            ApplyCacheHeaders(response, request);
+            ApplyResponseCacheHeaders(response, request);
         }
 
         public string HashCacheKeyPublic(string originalCacheKey)
@@ -47,9 +41,9 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
             return GetInvocationContext(actionContext);
         }
 
-        public void CreatePhoenixPublic(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request)
+        public void DisposeOldPhoenixAndCreateNew_Public(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request)
         {
-            var methodInfo = typeof(Flatwhite.WebApi.OutputCacheAttribute).GetMethod("CreatePhoenix", BindingFlags.Instance | BindingFlags.NonPublic);
+            var methodInfo = typeof(Flatwhite.WebApi.OutputCacheAttribute).GetMethod("DisposeOldPhoenixAndCreateNew", BindingFlags.Instance | BindingFlags.NonPublic);
             methodInfo.Invoke(this, new object[] { invocation, cacheItem, request });
         }
     }

@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Flatwhite.Hot;
 using Flatwhite.Provider;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -43,7 +44,7 @@ namespace Flatwhite.WebApi
         /// <returns></returns>
         [HttpGet]
         [OutputCache(MaxAge = 1)]
-        public async Task<IHttpActionResult> Phoenix()
+        public async Task<IHttpActionResult> Phoenixes()
         {
             var all = Global.Cache.PhoenixFireCage.ToList();
             var items = new List<CacheItemStatus>();
@@ -56,27 +57,28 @@ namespace Flatwhite.WebApi
                 }
 
                 var cacheItem = p.Value._info;
-                object unknownCacheObject = null;
 
                 var asyncStore = _cacheStoreProvider.GetAsyncCacheStore(p.Value._info.StoreId);
                 if (asyncStore != null)
                 {
-                    unknownCacheObject = await asyncStore.GetAsync(p.Key);
+                    var unknownCacheObject = await asyncStore.GetAsync(p.Key);
                     if (unknownCacheObject is CacheItem)
                     {
                         cacheItem = unknownCacheObject as CacheItem;
                     }
                 }
-
-                var status = cacheItem != null ? new CacheItemStatus(cacheItem) : new CacheItemStatus(unknownCacheObject);
-                status.Key = p.Key;
-                status.PhoenixStatus = p.Value.GetCurrentState().GetState();
-                status.Type = p.Value.GetType().Name;
-                if (cacheItem == p.Value._info)
+                if (cacheItem != null)
                 {
-                    status = status.CacheItemNotFound();
+                    var status = new CacheItemStatus(cacheItem);
+                    status.Key = p.Key;
+                    status.PhoenixStatus = p.Value.GetCurrentState().GetState();
+                    status.Type = p.Value.GetType().Name;
+                    if (cacheItem == p.Value._info)
+                    {
+                        status = status.CacheItemNotFound();
+                    }
+                    items.Add(status);
                 }
-                items.Add(status);
             }
 
             return Json(items,
@@ -86,6 +88,40 @@ namespace Flatwhite.WebApi
                    ContractResolver = new CamelCasePropertyNamesContractResolver(),
                    Formatting = Formatting.Indented
                });
+        }
+
+
+        [HttpGet]
+        public async Task<IHttpActionResult> Phoenix(string id)
+        {
+            Phoenix p;
+            if (!Global.Cache.PhoenixFireCage.TryGetValue(id, out p))
+            {
+                return NotFound();
+            }
+
+            var asyncStore = _cacheStoreProvider.GetAsyncCacheStore(p._info.StoreId);
+            if (asyncStore != null)
+            {
+                var unknownCacheObject = await asyncStore.GetAsync(id);
+                if (unknownCacheObject is CacheItem)
+                {
+                    var cacheItemStatus = new CacheItemStatus(unknownCacheObject as CacheItem)
+                        {
+                            PhoenixStatus = p.GetCurrentState().GetState()
+                        };
+
+                    return Json(cacheItemStatus,
+                        new JsonSerializerSettings
+                        {
+                            NullValueHandling = NullValueHandling.Ignore,
+                            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                            Formatting = Formatting.Indented
+                        });
+                }
+                
+            }
+            return NotFound();
         }
 
         /// <summary>
@@ -117,10 +153,6 @@ namespace Flatwhite.WebApi
                 if (cacheItem != null)
                 {
                     items.Add(new CacheItemStatus(cacheItem));
-                }
-                else
-                {
-                    items.Add(new CacheItemStatus(k.Value) { Key = k.Key });
                 }
             }
 
@@ -184,12 +216,6 @@ namespace Flatwhite.WebApi
         {
             public CacheItemStatus()
             {
-            }
-
-            public CacheItemStatus(object unknownObject)
-            {
-                Type = "unknown";
-                Size = GetObjectSize(unknownObject);
             }
 
             public CacheItemStatus(CacheItem cacheItem)

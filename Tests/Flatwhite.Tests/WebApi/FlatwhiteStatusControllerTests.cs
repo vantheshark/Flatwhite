@@ -32,7 +32,7 @@ namespace Flatwhite.Tests.WebApi
         }
 
         [Test]
-        public async Task Store_action_should_get_all_cache_item_from_stores_that_matched_the_id()
+        public async Task Store_action_should_get_all_cacheItem_from_stores_that_matched_the_id()
         {
             Global.Cache.PhoenixFireCage.Add("item1", Substitute.For<Phoenix>(Substitute.For<_IInvocation>(), new CacheItem()));
             Global.Cache.PhoenixFireCage.Add("item2", Substitute.For<Phoenix>(Substitute.For<_IInvocation>(), new CacheItem()));
@@ -67,7 +67,7 @@ namespace Flatwhite.Tests.WebApi
             var jsonResult = (JsonResult<List<FlatwhiteStatusController.CacheItemStatus>>) result;
 
             // Assert
-            Assert.AreEqual(8, jsonResult.Content.Count);
+            Assert.AreEqual(4, jsonResult.Content.Count);
         }
 
         [Test]
@@ -102,7 +102,7 @@ namespace Flatwhite.Tests.WebApi
             var controller = new FlatwhiteStatusController(provider);
 
             // Action
-            var result = await controller.Phoenix();
+            var result = await controller.Phoenixes();
             var jsonResult = (JsonResult<List<FlatwhiteStatusController.CacheItemStatus>>)result;
 
             // Assert

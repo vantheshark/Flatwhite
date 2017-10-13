@@ -51,7 +51,7 @@ namespace Flatwhite
                 var args = method.ReturnType.GetGenericArguments();
                 if (args.Length == 1 && typeof (Task).IsAssignableFrom(args[0]))
                 {
-                    throw new NotSupportedException("method with return type \"Task<Task>\" does not supported");
+                    throw new NotSupportedException("method with return type \"Task<Task>\" is not supported");
                 }
             }
         }

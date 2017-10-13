@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="AsyncCountdownEvent.cs" />
     <Compile Include="CacheControl\CachControlHeaderHandlerProvider.cs" />
+    <Compile Include="CacheControl\EvaluateServerCacheHandler.cs" />
     <Compile Include="CacheControl\EtagHeaderHandler.cs" />
     <Compile Include="CacheControl\ICachControlHeaderHandlerProvider.cs" />
     <Compile Include="CacheMessageHandler.cs" />

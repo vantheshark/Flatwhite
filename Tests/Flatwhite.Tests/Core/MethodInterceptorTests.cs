@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
 using Flatwhite.Tests.Stubs;
 using NSubstitute;
@@ -108,7 +109,7 @@ namespace Flatwhite.Tests.Core
                 invocation.ReturnValue = 1;
             });
 
-            var interceptor = new MethodInterceptor(new DefaulAttributeProvider(), Global.ContextProvider);
+            var interceptor = new MethodInterceptor(new DefaulAttributeProvider(), new EmptyContextProvider());
 
             // Action
             interceptor.Intercept(invocation);

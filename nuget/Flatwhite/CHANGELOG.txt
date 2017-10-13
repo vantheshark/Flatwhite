@@ -1,3 +1,8 @@
+* 1.0.26 (2017-10-18 11:22:00 AEDT)
+- Optimize OutputCacheAttribute (WebApi)
+- Add EvaluateServerCacheHandler which intercept the request and response cache result asap
+- Add ResponseBuilder and IgnoreVaryCustomKeys settings to FlatwhiteWebApiConfiguration
+
 * 1.0.24 (2016-08-25 08:45:00 AEDT)
 - Support EnableSystemDiagnosticsTracing
 
