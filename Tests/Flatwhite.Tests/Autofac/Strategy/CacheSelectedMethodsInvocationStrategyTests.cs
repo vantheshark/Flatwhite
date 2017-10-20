@@ -1,13 +1,12 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
 using Flatwhite.Strategy;
 using Flatwhite.Tests.Stubs;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Threading.Tasks;
 // ReSharper disable InconsistentNaming
 
 namespace Flatwhite.Tests.Autofac.Strategy
@@ -52,60 +51,6 @@ namespace Flatwhite.Tests.Autofac.Strategy
 
             dynamic blogSvc = cachedService;
             Assert.AreEqual(2, blogSvc.__target.InvokeCount);
-        }
-
-        [Test]
-        public void Test_cache_on_selected_method_with_change_monitor()
-        {
-            var blogService = Substitute.For<IBlogService>();
-            var wait = new CountdownEvent(2);
-            blogService.When(x => x.GetById(Arg.Any<Guid>())).Do(c =>
-            {
-                c.Returns(new object {});
-                wait.Signal();
-            });
-
-            FlatwhiteCacheEntryChangeMonitor mon = null;
-            var builder = new ContainerBuilder();
-            builder.RegisterModule(new FlatwhiteCoreModule());
-            builder
-                .RegisterInstance(blogService)
-                .As<IBlogService>()
-                .SingleInstance()
-                .CacheWithStrategy(
-                    CacheStrategies.ForService<IBlogService>()
-                        .ForMember(x => x.GetById(Argument.Any<Guid>()))
-                        .Duration(100000)
-                        .StaleWhileRevalidate(500)
-                        .VaryByParam("postId")
-                        .WithCacheStore(0)
-                        .WithRevalidateKeyFormat("posts")
-                        .WithChangeMonitors((i, context) =>
-                        {
-                            mon = new FlatwhiteCacheEntryChangeMonitor("revalidationKey");
-                            return new[] {mon};
-                        })
-                );
-
-            var container = builder.Build();
-
-            var cachedService = container.Resolve<IBlogService>();
-
-            var id = Guid.NewGuid();
-            for (var i = 0; i < 1000; i++)
-            {
-                var result = cachedService.GetById(id);
-            }
-            //NOTE: After this, the cache item should be refreshed by Phoenix
-            mon.OnChanged(null);
-            
-            for (var i = 0; i < 1000; i++)
-            {
-                var result = cachedService.GetById(id);
-            }
-            //NOTE: Because the phoenix reborn is none-blocking (on a background thread), it may need time to let the Task finish.
-            Assert.IsTrue(wait.Wait(2000));
-            mon.Dispose();
         }
 
         [Test]

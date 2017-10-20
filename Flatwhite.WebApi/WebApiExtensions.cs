@@ -1,7 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web.Http;
+using System.Web.Http.Dependencies;
 using Flatwhite.Provider;
 using Flatwhite.WebApi.CacheControl;
 
@@ -34,7 +38,7 @@ namespace Flatwhite.WebApi
             FlatwhiteWebApiConfiguration flatwhiteConfig = null)
         {
             _fwConfig = flatwhiteConfig ?? new FlatwhiteWebApiConfiguration();
-            Global.CacheStrategyProvider = config.DependencyResolver.GetService(typeof(ICacheStrategyProvider)) as ICacheStrategyProvider ?? new WebApiCacheStrategyProvider();
+            Global.CacheStrategyProvider = config.DependencyResolver.GetService(typeof(ICacheStrategyProvider)) as WebApiCacheStrategyProvider ?? new WebApiCacheStrategyProvider();
             Global.BackgroundTaskManager = config.DependencyResolver.GetService(typeof(IBackgroundTaskManager)) as IBackgroundTaskManager ?? new RegisteredTasks();
 
             var allHandlers = config.DependencyResolver.GetServices(typeof(ICachControlHeaderHandler)).OfType<ICachControlHeaderHandler>().ToList();
@@ -85,6 +89,36 @@ namespace Flatwhite.WebApi
         internal static string GetUrlBaseCacheKey(this HttpRequestMessage request)
         {
             return $"{request.Method}:{request.RequestUri.PathAndQuery}:{request.Headers.Accept}";
+        }
+
+        /// <summary>
+        /// Get <see cref="ICacheStrategy" /> from <see cref="IDependencyScope" /> if <see cref="IHaveCacheStrategyType.CacheStrategyType"/> has value
+        /// <para>Otherwise resolve from <see cref="Global.CacheStrategyProvider"/></para>
+        /// </summary>
+        /// <param name="source">The attribute object</param>
+        /// <param name="request"></param>
+        /// <param name="invocation"></param>
+        /// <param name="invocationContext"></param>
+        /// <returns></returns>
+        internal static ICacheStrategy GetCacheStrategy(this IHaveCacheStrategyType source, HttpRequestMessage request, _IInvocation invocation, IDictionary<string, object> invocationContext)
+        {
+            ICacheStrategy strategy = null;
+            if (source.CacheStrategyType != null)
+            {
+                strategy = request.GetDependencyScope().GetService(source.CacheStrategyType) as ICacheStrategy;
+                if (strategy?.GetType() != source.CacheStrategyType)
+                {
+                    throw new Exception($"Cannot find cache strategy type {source.CacheStrategyType.Name} from dependecy scope of this request {request.RequestUri.PathAndQuery}");
+                }
+            }
+
+            if (strategy == null)
+            {
+                strategy = Global.CacheStrategyProvider.GetStrategy(invocation, invocationContext);
+            }
+
+            if (strategy == null) throw new Exception($"Cannot find cache strategy from Global.CacheStrategyProvider of this request {request.RequestUri.PathAndQuery}");
+            return strategy;
         }
     }
 }

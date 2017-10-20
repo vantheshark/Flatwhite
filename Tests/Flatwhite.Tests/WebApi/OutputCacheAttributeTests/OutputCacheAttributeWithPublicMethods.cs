@@ -13,7 +13,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
     {
         public ICacheStrategy GetCacheStrategyPublic(HttpRequestMessage request, _IInvocation invocation, IDictionary<string, object> invocationContext)
         {
-            return GetCacheStrategy(request, invocation, invocationContext);
+            return this.GetCacheStrategy(request, invocation, invocationContext);
         }
 
         public bool ShouldIgnoreCachePublic(CacheControlHeaderValue cacheControl, HttpRequestMessage request)

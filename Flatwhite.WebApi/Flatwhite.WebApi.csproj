@@ -62,9 +62,11 @@
     <Compile Include="CacheMessageHandler.cs" />
     <Compile Include="CacheControl\ICachControlHeaderHandler.cs" />
     <Compile Include="CacheResponseBuilder.cs" />
+    <Compile Include="FlatwhiteActionFilterAttribute.cs" />
     <Compile Include="FlatwhiteWebApiConfiguration.cs" />
     <Compile Include="ICacheResponseBuilder.cs" />
     <Compile Include="FlatwhiteStatusController.cs" />
+    <Compile Include="IHaveCacheStrategyType.cs" />
     <Compile Include="IHttpClient.cs" />
     <Compile Include="RegisteredTasks.cs" />
     <Compile Include="WebApiCacheItem.cs" />

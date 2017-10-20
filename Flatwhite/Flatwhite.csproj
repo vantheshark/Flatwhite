@@ -65,7 +65,6 @@
     <Compile Include="MethodFilterAttribute.cs" />
     <Compile Include="Argument.cs" />
     <Compile Include="CacheStoreAdaptor.cs" />
-    <Compile Include="FlatwhiteCacheEntryChangeMonitor.cs" />
     <Compile Include="MethodInfoCache.cs" />
     <Compile Include="MethodInterceptor.cs" />
     <Compile Include="Provider\DynamicAttributeProvider.cs" />

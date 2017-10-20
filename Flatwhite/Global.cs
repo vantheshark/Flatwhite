@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Flatwhite.Provider;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Flatwhite.Provider;
 
 namespace Flatwhite
 {
@@ -12,21 +11,29 @@ namespace Flatwhite
     /// </summary>
     public class Global
     {
+        // ReSharper disable InconsistentNaming
         internal static readonly string __flatwhite_outputcache_attribute = "__flatwhite_outputcache_attribute";
         internal static readonly string __flatwhite_outputcache_strategy = "__flatwhite_outputcache_strategy";
         internal static readonly string __flatwhite_outputcache_store = "__flatwhite_outputcache_store";
         internal static readonly string __flatwhite_outputcache_key = "__flatwhite_outputcache_key";
         internal static readonly string __flatwhite_outputcache_restored = "__flatwhite_outputcache_restored";
-        
+        // ReSharper restore InconsistentNaming
+
         /// <summary>
         /// Internal cache for Flatwhite objects
         /// </summary>
         internal static MethodInfoCache Cache { get; set; }
 
         /// <summary>
-        /// Global router for revalidation event
+        /// Remember revalidate key to the CacheStore (id = 0)
         /// </summary>
-        public static event Action<string> RevalidateEvent;
+        /// <param name="revalidateKey"></param>
+        /// <param name="cacheKey"></param>
+        /// <param name="absoluteExpiration"></param>
+        public static void RememberRevalidateKey(string revalidateKey, string cacheKey, DateTimeOffset absoluteExpiration)
+        {
+            CacheStoreProvider.GetCacheStore().Set(revalidateKey, cacheKey, absoluteExpiration);
+        }
 
         /// <summary>
         /// Revalidate the caches with provided revalidateKeys
@@ -36,7 +43,21 @@ namespace Flatwhite
         {
             foreach (var key in revalidatedKeys)
             {
-                RevalidateEvent?.Invoke(key);
+                var cacheKey = CacheStoreProvider.GetCacheStore().Get(key) as string;
+                if (cacheKey == null)
+                {
+                    Logger.Warn($"Cannot find original cache key for revalidate key '{key}' on host '{Environment.MachineName}'");
+                    continue;
+                }
+
+                if (Cache.PhoenixFireCage.ContainsKey(cacheKey))
+                {
+                    Cache.PhoenixFireCage[cacheKey].Reborn();
+                }
+                else
+                {
+                    Logger.Warn($"Cannot find phoenix key '{cacheKey}' on host '{Environment.MachineName}'");
+                }
             }
         }
 
@@ -47,13 +68,7 @@ namespace Flatwhite
         /// <returns></returns>
         public static Task RevalidateCachesAsync(List<string> revalidateKeys)
         {
-            if (RevalidateEvent != null)
-            {
-                return Task.WhenAll(
-                    revalidateKeys.Select(k => Task.Run(() => { RevalidateEvent?.Invoke(k); }))
-                );
-            }
-            return TaskHelpers.DefaultCompleted;
+            return Task.Run(() => RevalidateCaches(revalidateKeys));
         }
 
         static Global()

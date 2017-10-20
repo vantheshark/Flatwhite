@@ -1,14 +1,14 @@
-﻿using System.Reflection;
-using System.Web.Http;
-using Autofac;
+﻿using Autofac;
 using Autofac.Integration.WebApi;
 using Flatwhite.AutofacIntergration;
 using Flatwhite.Provider;
 using Flatwhite.WebApi.CacheControl;
+using Flatwhite.WebApi.Owin.Controllers;
 using Flatwhite.WebApi2;
-using Flatwhite.WebApi2.Controllers;
 using log4net;
 using Owin;
+using System.Reflection;
+using System.Web.Http;
 using Module = Autofac.Module;
 
 namespace Flatwhite.WebApi.Owin

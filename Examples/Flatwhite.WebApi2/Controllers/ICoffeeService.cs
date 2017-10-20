@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Flatwhite.WebApi2.Controllers
+namespace Flatwhite.WebApi.Owin.Controllers
 {
-    [OutputCache(Duration = 2, StaleWhileRevalidate = 5)]
+    [Flatwhite.OutputCache(Duration = 2, StaleWhileRevalidate = 5)]
     public interface ICoffeeService
     {
         Task<string> OrderCoffeeAsync();

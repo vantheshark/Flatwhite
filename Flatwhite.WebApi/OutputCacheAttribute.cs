@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Flatwhite.Hot;
+using Flatwhite.Provider;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -8,10 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
-using System.Web.Http.Dependencies;
 using System.Web.Http.Filters;
-using Flatwhite.Hot;
-using Flatwhite.Provider;
 
 namespace Flatwhite.WebApi
 {
@@ -23,7 +21,7 @@ namespace Flatwhite.WebApi
     /// Represents an attribute that is used to mark an WebApi action method whose output will be cached.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-    public class OutputCacheAttribute : ActionFilterAttribute, ICacheSettings
+    public class OutputCacheAttribute : FlatwhiteActionFilterAttribute, IHaveCacheStrategyType, ICacheSettings
     {
         #region -- Cache params --
         /// <summary>
@@ -180,34 +178,6 @@ namespace Flatwhite.WebApi
 
         #endregion
 
-        /// <summary>
-        /// Get <see cref="ICacheStrategy" /> from <see cref="IDependencyScope" /> if <see cref="CacheStrategyType"/> has value
-        /// <para>Otherwise resolve from <see cref="Global.CacheStrategyProvider"/></para>
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="invocation"></param>
-        /// <param name="invocationContext"></param>
-        /// <returns></returns>
-        protected virtual ICacheStrategy GetCacheStrategy(HttpRequestMessage request, _IInvocation invocation, IDictionary<string, object> invocationContext)
-        {
-            ICacheStrategy strategy = null;
-            if (CacheStrategyType != null)
-            {
-                strategy = request.GetDependencyScope().GetService(CacheStrategyType) as ICacheStrategy;
-                if (strategy?.GetType() != CacheStrategyType)
-                {
-                    throw new Exception($"Cannot find cache strategy type {CacheStrategyType.Name} from dependecy scope of this request {request.RequestUri.PathAndQuery}");
-                }
-            }
-
-            if (strategy == null)
-            {
-                strategy = Global.CacheStrategyProvider.GetStrategy(invocation, invocationContext);
-            }
-            
-            if (strategy == null) throw new Exception($"Cannot find cache strategy from Global.CacheStrategyProvider of this request {request.RequestUri.PathAndQuery}");
-            return strategy;
-        }
         
         /// <summary>
         /// Check CacheControl request, get CacheItem, build response and return if cache available
@@ -237,7 +207,7 @@ namespace Flatwhite.WebApi
             
             var invocation = GetInvocation(actionContext);
             var context = GetInvocationContext(actionContext);
-            var strategy = GetCacheStrategy(request, invocation, context);
+            var strategy = this.GetCacheStrategy(request, invocation, context);
             
             var cacheKey = strategy.CacheKeyProvider.GetCacheKey(invocation, context);
             var hashedKey = HashCacheKey(cacheKey);
@@ -251,7 +221,7 @@ namespace Flatwhite.WebApi
             var cacheItem = await cacheStore.GetAsync(storedKey).ConfigureAwait(false) as WebApiCacheItem;
             if (cacheItem != null)
             {
-                if (cacheItem.IsStale() && AutoRefresh)
+                if (AutoRefresh && cacheItem.IsStale())
                 {
                     RefreshTheCache(cacheItem, invocation, request);
                 }
@@ -334,6 +304,7 @@ namespace Flatwhite.WebApi
 
             if (responseContent != null)
             {
+                var request = actionExecutedContext.Request;
                 var cacheItem = new WebApiCacheItem
                 {
                     Key = storedKey,
@@ -347,38 +318,34 @@ namespace Flatwhite.WebApi
                     IgnoreRevalidationRequest = IgnoreRevalidationRequest,
                     StaleIfError = StaleIfError,
                     AutoRefresh = AutoRefresh,
-                    Path = $"{actionExecutedContext.Request.Method} {actionExecutedContext.Request.RequestUri.PathAndQuery}"
+                    Path = $"{request.Method} {request.RequestUri.PathAndQuery}"
                 };
 
                 var invocation = GetInvocation(actionExecutedContext.ActionContext);
-
-                if (AutoRefresh)
-                {
-                    // Create if not there
-                    DisposeOldPhoenixAndCreateNew(invocation, cacheItem, actionExecutedContext.Request);
-                }
-
-                if (StaleWhileRevalidate > 0) // Only auto refresh when revalidate if this value > 0, creating a Phoenix is optional 
-                { 
-                    var context = GetInvocationContext(actionExecutedContext.ActionContext);
-                    var strategy = (ICacheStrategy)actionExecutedContext.Request.Properties[Global.__flatwhite_outputcache_strategy];
-                    var changeMonitors = strategy.GetChangeMonitors(invocation, context);
-                    foreach (var mon in changeMonitors)
-                    {
-                        mon.CacheMonitorChanged += state => { TryToRefreshCacheWhileRevalidate(storedKey); };
-                    }
-                }
-
-                actionExecutedContext.Response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}-{cacheItem.Checksum}\"");
-
                 var absoluteExpiration = DateTime.UtcNow.AddSeconds(MaxAge + Math.Max(StaleWhileRevalidate, StaleIfError));
 
+                if (!string.IsNullOrEmpty(RevalidateKeyFormat))
+                {
+                    var strategy = (ICacheStrategy)request.Properties[Global.__flatwhite_outputcache_strategy];
+                    cacheItem.RevalidateKey = strategy.CacheKeyProvider.GetRevalidateKey(invocation, RevalidateKeyFormat);
+                    Global.RememberRevalidateKey(cacheItem.RevalidateKey, cacheItem.Key, absoluteExpiration);
+                }
+
+                if (AutoRefresh || !string.IsNullOrEmpty(RevalidateKeyFormat))
+                {
+                    // Create if not there
+                    DisposeOldPhoenixAndCreateNew(invocation, cacheItem, request);
+                }
+                
+                actionExecutedContext.Response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}-{cacheItem.Checksum}\"");
+                
+                var ignoreVaryCustomKeys = request.GetConfiguration().GetFlatwhiteCacheConfiguration().IgnoreVaryCustomKeys;
                 await Task.WhenAll(new[]
                 {
                     //Save url base cache key that can map to the real cache key which will be used by EvaluateServerCacheHandler
-                    cacheStore.SetAsync(actionExecutedContext.Request.GetUrlBaseCacheKey(), cacheItem.Key, absoluteExpiration),
+                    ignoreVaryCustomKeys ? cacheStore.SetAsync(request.GetUrlBaseCacheKey(), cacheItem.Key, absoluteExpiration) : TaskHelpers.DefaultCompleted,
                     //Save the actual cache
-                    cacheStore.SetAsync(cacheItem.Key, cacheItem, absoluteExpiration)
+                    cacheStore.SetAsync(cacheItem.Key, cacheItem, absoluteExpiration) 
                 }).ConfigureAwait(false);
             }
         }
@@ -402,14 +369,6 @@ namespace Flatwhite.WebApi
                 }
             }
             return false;
-        }
-        
-        private void TryToRefreshCacheWhileRevalidate(string storedKey)
-        {
-            if (Global.Cache.PhoenixFireCage.ContainsKey(storedKey))
-            {
-                Global.Cache.PhoenixFireCage[storedKey].Reborn();
-            }
         }
 
         /// <summary>
@@ -462,29 +421,6 @@ namespace Flatwhite.WebApi
             {
                 return md5Hash.ComputeHash(Encoding.ASCII.GetBytes(originalCacheKey)).ToHex();
             }
-        }
-        
-        /// <summary>
-        /// Get <see cref="_IInvocation" /> from <see cref="HttpActionContext" />
-        /// </summary>
-        /// <param name="actionContext"></param>
-        /// <returns></returns>
-        protected virtual _IInvocation GetInvocation(HttpActionContext actionContext)
-        {
-            return new WebApiInvocation(actionContext);
-        }
-
-        /// <summary>
-        /// Get context data from <see cref="HttpActionContext" />
-        /// </summary>
-        /// <param name="actionContext"></param>
-        /// <returns></returns>
-        protected virtual IDictionary<string, object> GetInvocationContext(HttpActionContext actionContext)
-        {
-            var provider = new WebApiContextProvider(actionContext);
-            var context = provider.GetContext();
-            context[Global.__flatwhite_outputcache_attribute] = this;
-            return context;
         }
 
         private void DisposeOldPhoenixAndCreateNew(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request)

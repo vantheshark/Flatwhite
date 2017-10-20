@@ -22,7 +22,7 @@ namespace Flatwhite.Tests.WebApi
             var httpActionExecutedContext = GetHttpActionExecutedContext();
 
             var str = "";
-            Global.RevalidateEvent += s => { str = s; };
+            //Global.RevalidateEvent += s => { str = s; };
             att.OnActionExecuted(httpActionExecutedContext);
             Assert.AreEqual("User", str);
         }
@@ -35,7 +35,7 @@ namespace Flatwhite.Tests.WebApi
             httpActionExecutedContext.Response = new HttpResponseMessage(HttpStatusCode.NotFound);
 
             var str = "";
-            Global.RevalidateEvent += s => { str = s; };
+            //Global.RevalidateEvent += s => { str = s; };
             att.OnActionExecuted(httpActionExecutedContext);
             Assert.AreEqual("", str);
         }
@@ -47,7 +47,7 @@ namespace Flatwhite.Tests.WebApi
             var httpActionExecutedContext = GetHttpActionExecutedContext();
 
             var str = "";
-            Global.RevalidateEvent += s => { str = s; };
+            //Global.RevalidateEvent += s => { str = s; };
             await att.OnActionExecutedAsync(httpActionExecutedContext, CancellationToken.None);
             Assert.AreEqual("User", str);
         }
@@ -60,7 +60,7 @@ namespace Flatwhite.Tests.WebApi
             httpActionExecutedContext.Response = new HttpResponseMessage(HttpStatusCode.NotFound);
 
             var str = "";
-            Global.RevalidateEvent += s => { str = s; };
+            //Global.RevalidateEvent += s => { str = s; };
             await att.OnActionExecutedAsync(httpActionExecutedContext, CancellationToken.None);
             Assert.AreEqual("", str);
         }

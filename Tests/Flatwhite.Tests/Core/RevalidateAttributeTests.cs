@@ -35,10 +35,10 @@ namespace Flatwhite.Tests.Core
                 KeyFormats = { "user", "book"}
             };
             string abc = "";
-            Global.RevalidateEvent += x =>
-            {
-                abc += x;
-            };
+            //Global.RevalidateEvent += x =>
+            //{
+            //    abc += x;
+            //};
             await att.OnMethodExecutedAsync(_methodExecutedContext);
 
             Assert.AreEqual(8, abc.Length);

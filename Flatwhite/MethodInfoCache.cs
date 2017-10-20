@@ -54,5 +54,10 @@ namespace Flatwhite
         public readonly IDictionary<MethodInfo, bool> InterceptableCache = new ConcurrentDictionary<MethodInfo, bool>();
         public readonly IDictionary<Type, IHashCodeGenerator> HashCodeGeneratorCache = new ConcurrentDictionary<Type, IHashCodeGenerator>();
         public readonly IDictionary<string, Phoenix> PhoenixFireCage = new ConcurrentDictionary<string, Phoenix>();
+
+        public void RememberRevalidateKey(string revalidateKey, string cacheKey)
+        {
+
+        }
     }
 }

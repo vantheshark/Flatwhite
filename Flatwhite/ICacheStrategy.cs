@@ -34,14 +34,6 @@ namespace Flatwhite
         IAsyncCacheStore GetAsyncCacheStore(_IInvocation invocation, IDictionary<string, object> invocationContext);
 
         /// <summary>
-        /// Get the change monitor by invocation and context
-        /// </summary>
-        /// <param name="invocation"></param>
-        /// <param name="invocationContext"></param>
-        /// <returns></returns>
-        IEnumerable<IChangeMonitor> GetChangeMonitors(_IInvocation invocation, IDictionary<string, object> invocationContext);
-
-        /// <summary>
         /// Cache key provider
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]

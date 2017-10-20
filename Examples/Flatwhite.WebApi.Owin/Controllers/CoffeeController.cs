@@ -1,10 +1,9 @@
-﻿using System.Diagnostics;
+﻿using log4net;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Flatwhite.WebApi2.Controllers;
-using log4net;
 
 namespace Flatwhite.WebApi.Owin.Controllers
 {
@@ -23,7 +22,7 @@ namespace Flatwhite.WebApi.Owin.Controllers
             _logger = logger;
         }
 
-        public CoffeeController() : this (new FlatwhiteCoffeeService(), LogManager.GetLogger(typeof(ValuesController)))
+        public CoffeeController() : this (new FlatwhiteCoffeeService(), LogManager.GetLogger(typeof(CoffeeController)))
         {
         }
 

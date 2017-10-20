@@ -156,27 +156,27 @@ namespace Flatwhite
 
                 var cacheStore = methodExecutedContext.TryGet<ICacheStore>(Global.__flatwhite_outputcache_store);
                 var strategy = methodExecutedContext.TryGet<ICacheStrategy>(Global.__flatwhite_outputcache_strategy);
+                
                 var cacheItem = new CacheItem
                 {
                     Key = key,
+                    
                     Data = methodExecutedContext.Result,
                     StoreId = cacheStore.StoreId,
                     StaleWhileRevalidate = StaleWhileRevalidate,
                     MaxAge = Duration,
                     CreatedTime = DateTime.UtcNow
                 };
-                CreatePhoenix(methodExecutedContext.Invocation, cacheItem);
 
-                var changeMonitors = strategy.GetChangeMonitors(methodExecutedContext.Invocation, methodExecutedContext.InvocationContext);
-                foreach (var mon in changeMonitors)
+                var absoluteExpiration = DateTime.UtcNow.AddSeconds(Duration + StaleWhileRevalidate);
+                if (!string.IsNullOrEmpty(RevalidateKeyFormat))
                 {
-                    mon.CacheMonitorChanged += state =>
-                    {
-                        RefreshCache(key);
-                    };
+                    cacheItem.RevalidateKey = strategy.CacheKeyProvider.GetRevalidateKey(methodExecutedContext.Invocation, RevalidateKeyFormat);
+                    Global.RememberRevalidateKey(cacheItem.RevalidateKey, cacheItem.Key, absoluteExpiration);
                 }
-                
-                cacheStore.Set(key, cacheItem, DateTime.UtcNow.AddSeconds(Duration + StaleWhileRevalidate));
+
+                CreatePhoenix(methodExecutedContext.Invocation, cacheItem);
+                cacheStore.Set(key, cacheItem, absoluteExpiration);
             }
         }
 

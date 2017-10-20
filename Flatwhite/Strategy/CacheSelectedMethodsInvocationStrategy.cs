@@ -145,6 +145,7 @@ namespace Flatwhite.Strategy
         /// </summary>
         /// <param name="changeMonitorFactory"></param>
         /// <returns></returns>
+        [Obsolete("Don't use Change Monitor anymore")]
         public IMethodCacheStrategy<T> WithChangeMonitors(Func<_IInvocation, IDictionary<string, object>, IEnumerable<IChangeMonitor>> changeMonitorFactory)
         {
             _currentExpression.ChangeMonitorFactory = changeMonitorFactory;

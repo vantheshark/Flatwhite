@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using Flatwhite.Provider;
 
 namespace Flatwhite.WebApi
 {
@@ -14,7 +11,7 @@ namespace Flatwhite.WebApi
     /// Use this attribute to decorate on a method where you want to revalidate a specific cache entry after a method is invoked
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class RevalidateAttribute : ActionFilterAttribute
+    public class RevalidateAttribute : FlatwhiteActionFilterAttribute, IHaveCacheStrategyType
     {
         /// <summary>
         /// List of "revalidation keys" to notify the cache store. They are not neccessary the cache key
@@ -40,7 +37,9 @@ namespace Flatwhite.WebApi
             if (actionExecutedContext.ActionContext.Response != null && actionExecutedContext.ActionContext.Response.IsSuccessStatusCode)
             {
                 var invocation = GetInvocation(actionExecutedContext.ActionContext);
-                var revalidatedKeys = KeyFormats.Select(k => CacheKeyProvider.GetRevalidateKey(invocation, k)).ToList();
+                var strategy = this.GetCacheStrategy(actionExecutedContext.Request, invocation, GetInvocationContext(actionExecutedContext.ActionContext));
+                var revalidatedKeys = KeyFormats.Select(k => strategy.CacheKeyProvider.GetRevalidateKey(invocation, k)).ToList();
+                
                 Global.RevalidateCaches(revalidatedKeys);
             }
         }
@@ -56,27 +55,18 @@ namespace Flatwhite.WebApi
             if (actionExecutedContext.ActionContext.Response != null && actionExecutedContext.ActionContext.Response.IsSuccessStatusCode)
             {
                 var invocation = GetInvocation(actionExecutedContext.ActionContext);
-                var revalidatedKeys = KeyFormats.Select(k => CacheKeyProvider.GetRevalidateKey(invocation, k)).ToList();
-
+                var strategy = this.GetCacheStrategy(actionExecutedContext.Request, invocation, GetInvocationContext(actionExecutedContext.ActionContext));
+                var revalidatedKeys = KeyFormats.Select(k => strategy.CacheKeyProvider.GetRevalidateKey(invocation, k)).ToList();
+                
                 return Global.RevalidateCachesAsync(revalidatedKeys);
             }
             return TaskHelpers.DefaultCompleted;
         }
 
         /// <summary>
-        /// Get <see cref="_IInvocation" /> from <see cref="HttpActionContext" />
+        /// The custom type of <see cref="ICacheStrategy" /> to use. If not provided, the default strategy from <see cref="Global.CacheStrategyProvider"/> will be used
+        /// <para>If the relevant <see cref="OutputCacheAttribute.CacheStrategyType"/> is set, this value should be the same value</para>
         /// </summary>
-        /// <param name="actionContext"></param>
-        /// <returns></returns>
-        protected virtual _IInvocation GetInvocation(HttpActionContext actionContext)
-        {
-            return new WebApiInvocation(actionContext);
-        }
-
-        /// <summary>
-        /// Default cache key provider
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public virtual ICacheKeyProvider CacheKeyProvider => Global.CacheKeyProvider;
+        public Type CacheStrategyType { get; set; }
     }
 }

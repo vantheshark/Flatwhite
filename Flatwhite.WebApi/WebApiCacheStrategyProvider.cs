@@ -15,7 +15,7 @@ namespace Flatwhite.WebApi
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        public ICacheStrategy GetStrategy(_IInvocation invocation, IDictionary<string, object> invocationContext)
+        public virtual ICacheStrategy GetStrategy(_IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             return invocationContext.ContainsKey(WebApiExtensions.__webApi) 
                 ? new WebApiCacheStrategy() 

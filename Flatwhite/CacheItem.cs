@@ -14,6 +14,11 @@ namespace Flatwhite
         public string Key { get; set; }
 
         /// <summary>
+        /// The optional revalidation key to be used to revalidate this cache entry
+        /// </summary>
+        public string RevalidateKey { get; set; }
+
+        /// <summary>
         /// The response data
         /// </summary>
         public object Data { get; set; }
