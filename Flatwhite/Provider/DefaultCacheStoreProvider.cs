@@ -28,6 +28,10 @@ namespace Flatwhite.Provider
             _cacheStoreTypes[typeof(IAsyncCacheStore)] = adaptor;
         }
 
+        /// <summary>
+        /// Gets all async cache stores registered in the system
+        /// </summary>
+        /// <value>All async cache stores.</value>
         public ICollection<IAsyncCacheStore> AllAsyncCacheStores
         {
             get

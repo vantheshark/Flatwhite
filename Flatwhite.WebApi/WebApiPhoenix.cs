@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -22,10 +23,9 @@ namespace Flatwhite.WebApi
         /// <summary>
         /// Initializes a WebApiPhoenix
         /// </summary>
-        /// <param name="invocation"></param>
         /// <param name="cacheItem">This should the the WebApiCacheItem instance</param>
         /// <param name="originalRequestMessage"></param>
-        public WebApiPhoenix(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage originalRequestMessage) : base(invocation, cacheItem)
+        public WebApiPhoenix(WebApiCacheItem cacheItem, HttpRequestMessage originalRequestMessage) : base(NullInvocation.Instance, cacheItem)
         {
             _cacheItem = cacheItem;
             _originalRequestMessage = originalRequestMessage;
@@ -53,6 +53,11 @@ namespace Flatwhite.WebApi
 
             clonedRequestMessage.Headers.CacheControl = requestMessage.Headers.CacheControl ?? new CacheControlHeaderValue();
             clonedRequestMessage.Headers.CacheControl.Extensions.Add(new NameValueHeaderValue(WebApiExtensions.__cacheControl_flatwhite_force_refresh, "true"));
+            clonedRequestMessage.Headers.Accept.Clear();
+            foreach (var mediaTypeWithQualityHeaderValue in requestMessage.Headers.Accept)
+            {
+                clonedRequestMessage.Headers.Accept.Add(mediaTypeWithQualityHeaderValue);
+            }
             clonedRequestMessage.Properties.Clear();
             return clonedRequestMessage;
         }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Flatwhite.Hot;
+using Flatwhite.Provider;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -7,10 +10,6 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Flatwhite.Hot;
-using Flatwhite.Provider;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace Flatwhite.WebApi
 {
@@ -214,33 +213,17 @@ namespace Flatwhite.WebApi
         [ExcludeFromCodeCoverage]
         public class CacheItemStatus 
         {
-            public CacheItemStatus()
-            {
-            }
-
             public CacheItemStatus(CacheItem cacheItem)
             {
-
-                Type = cacheItem.GetType().Name;
                 Key = cacheItem.Key;
-                StaleWhileRevalidate = cacheItem.StaleWhileRevalidate;
-                MaxAge = cacheItem.MaxAge;
-                StoreId = cacheItem.StoreId;
-                CreatedTime = cacheItem.CreatedTime;
-                AutoRefresh = cacheItem.AutoRefresh;
-                Age = cacheItem.Age;
+                Type = cacheItem.GetType().Name;
+                CacheData = cacheItem;
                 IsStale = cacheItem.IsStale();
                 
                 var webApiCacheItem = cacheItem as WebApiCacheItem;
-
                 if (webApiCacheItem != null)
                 {
                     Size = webApiCacheItem.Content?.Length ?? -1;
-                    Checksum = webApiCacheItem.Checksum;
-                    ResponseCharSet = webApiCacheItem.ResponseCharSet;
-                    ResponseMediaType = webApiCacheItem.ResponseMediaType;
-                    StaleIfError = webApiCacheItem.StaleIfError;
-                    StaleWhileRevalidate = webApiCacheItem.StaleWhileRevalidate;
                 }
                 else
                 {
@@ -250,32 +233,21 @@ namespace Flatwhite.WebApi
 
             public CacheItemStatus CacheItemNotFound()
             {
-                CreatedTime = null;
                 Size = null;
-                StoreId = null;
-                ResponseCharSet = null;
-                ResponseMediaType = null;
-                Age = null;
                 return this;
             }
 
+            public string Key { get; set; }
+
             [JsonProperty("_type")]
             public string Type { get; set; }
-            public string Key { get; set; }
-            public int? Size { get; set; }
-            public DateTime? CreatedTime { get; set; }
-            public uint? MaxAge { get; set; }
-            public uint? StaleWhileRevalidate { get; set; }
-            public int? StoreId { get; set; }
-            public uint? Age { get; set; }
             public bool? IsStale { get; set; }
-            public string Checksum { get; set; }
-            public string ResponseMediaType { get; set; }
-            public string ResponseCharSet { get; set; }
-            public uint? StaleIfError { get; set; }
-            public bool? IgnoreRevalidationRequest { get; set; }
-            public bool? AutoRefresh { get; set; }
+
             public string PhoenixStatus { get; set; }
+
+            public CacheItem CacheData { get; set; }
+
+            public int? Size { get; set; }
         }
 #pragma warning restore 1591
     }

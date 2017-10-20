@@ -26,5 +26,10 @@ namespace Flatwhite.WebApi2
         {
             _logger.Info(message);
         }
+
+        public void Warn(string message)
+        {
+            _logger.Warn(message);
+        }
     }
 }

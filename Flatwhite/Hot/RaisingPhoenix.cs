@@ -9,11 +9,11 @@ namespace Flatwhite.Hot
     internal class RaisingPhoenix : IPhoenixState
     {
         private IPhoenixState _newPhoenixState;
-        private bool _startable = true;
+        
         /// <summary>
         /// true if the phoenix is executing rebornAction. This is to avoid many call on method Reborn many time
         ///  </summary>
-
+        private bool _startable = true;
 
         public IPhoenixState Reborn(Func<Task<IPhoenixState>> rebornAction)
         {

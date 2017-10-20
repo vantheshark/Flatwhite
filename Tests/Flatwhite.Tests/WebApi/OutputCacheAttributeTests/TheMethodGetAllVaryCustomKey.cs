@@ -15,7 +15,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
                 VaryByHeader = "UserAgent, CacheControl.Public"
             };
             // Action
-            Assert.AreEqual("query.query1, query.query2, headers.UserAgent, headers.CacheControl.Public", att.GetAllVaryCustomKey());
+            Assert.AreEqual("query.query1, query.query2, headers.UserAgent, headers.CacheControl.Public, headers.Accept", att.GetAllVaryCustomKey());
             
         }
     }

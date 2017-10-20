@@ -2,7 +2,6 @@
 using NSubstitute;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -187,7 +186,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
                 StoreId = 1000,
                 CreatedTime = DateTime.UtcNow.AddSeconds(-5).AddMilliseconds(-1),
             };
-            var existingPhoenix = Substitute.For<WebApiPhoenix>(_invocation, objCacheItem, _request);
+            var existingPhoenix = Substitute.For<WebApiPhoenix>(objCacheItem, _request);
             Global.Cache.PhoenixFireCage[CacheKey] = existingPhoenix;
 
             // Action
@@ -229,7 +228,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
                 StoreId = 1000,
                 CreatedTime = DateTime.UtcNow.AddSeconds(-5).AddMilliseconds(-1),
             };
-            var existingPhoenix = Substitute.For<WebApiPhoenix>(_invocation, objCacheItem, _request);
+            var existingPhoenix = Substitute.For<WebApiPhoenix>(objCacheItem, _request);
             Global.Cache.PhoenixFireCage[CacheKey] = existingPhoenix;
             existingPhoenix.When(x => x.Reborn()).Do(c =>
             {

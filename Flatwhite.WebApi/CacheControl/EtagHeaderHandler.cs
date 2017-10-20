@@ -61,12 +61,21 @@ namespace Flatwhite.WebApi.CacheControl
                             var hashedKey = etagString.Substring(0, index);
                             var checkSum = etagString.Substring(index + 1);
                             var cacheItem = (await cacheStore.GetAsync(hashedKey)) as WebApiCacheItem;
-
-                            if (cacheItem != null && cacheItem.Checksum == checkSum)
+                            
+                            if (cacheItem != null)
                             {
-                                request.Properties[WebApiExtensions.__webApi_etag_matched] = true;
+                                if (cacheItem.Checksum == checkSum)
+                                {
+                                    request.Properties[WebApiExtensions.__webApi_etag_matched] = true;
+                                }
+
+                                var response = _builder.GetResponse(cacheControl, cacheItem, request);
+                                if (response != null && cacheItem.RequiresPhoenix())
+                                {
+                                    cacheItem.CreatesPhoenixIfNotExist(() => new WebApiPhoenix(cacheItem, request));
+                                }
+                                return response;
                             }
-                            return _builder.GetResponse(cacheControl, cacheItem, request);
                         }
                     }
                 }

@@ -11,7 +11,7 @@ namespace Flatwhite.WebApi
     /// Use this attribute to decorate on a method where you want to revalidate a specific cache entry after a method is invoked
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class RevalidateAttribute : FlatwhiteActionFilterAttribute, IHaveCacheStrategyType
+    public class RevalidateAttribute : FlatwhiteActionFilterAttribute, ICacheStrategyResolvable
     {
         /// <summary>
         /// List of "revalidation keys" to notify the cache store. They are not neccessary the cache key

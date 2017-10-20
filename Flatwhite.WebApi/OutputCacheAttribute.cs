@@ -1,6 +1,6 @@
-﻿using Flatwhite.Hot;
-using Flatwhite.Provider;
+﻿using Flatwhite.Provider;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -21,7 +21,7 @@ namespace Flatwhite.WebApi
     /// Represents an attribute that is used to mark an WebApi action method whose output will be cached.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-    public class OutputCacheAttribute : FlatwhiteActionFilterAttribute, IHaveCacheStrategyType, ICacheSettings
+    public class OutputCacheAttribute : FlatwhiteActionFilterAttribute, ICacheStrategyResolvable, ICacheSettings
     {
         #region -- Cache params --
         /// <summary>
@@ -221,24 +221,14 @@ namespace Flatwhite.WebApi
             var cacheItem = await cacheStore.GetAsync(storedKey).ConfigureAwait(false) as WebApiCacheItem;
             if (cacheItem != null)
             {
-                if (AutoRefresh && cacheItem.IsStale())
+                if (cacheItem.AutoRefresh && cacheItem.IsStale())
                 {
-                    RefreshTheCache(cacheItem, invocation, request);
+                    cacheItem.Refresh(() => new WebApiPhoenix(cacheItem, request));
                 }
 
                 var config = actionContext.RequestContext.Configuration.GetFlatwhiteCacheConfiguration();
                 actionContext.Response = config.ResponseBuilder.GetResponse(cacheControl, cacheItem, request);
             }
-        }
-
-        private static void RefreshTheCache(WebApiCacheItem cacheItem, _IInvocation invocation, HttpRequestMessage request)
-        {
-            //Question: Should we create the phoenix only on the server that created it the first place?
-            if (!Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
-            {
-                Global.Cache.PhoenixFireCage[cacheItem.Key] = new WebApiPhoenix(invocation, cacheItem, request);
-            }
-            Global.Cache.PhoenixFireCage[cacheItem.Key].Reborn();
         }
 
         /// <summary>
@@ -331,10 +321,9 @@ namespace Flatwhite.WebApi
                     Global.RememberRevalidateKey(cacheItem.RevalidateKey, cacheItem.Key, absoluteExpiration);
                 }
 
-                if (AutoRefresh || !string.IsNullOrEmpty(RevalidateKeyFormat))
+                if (cacheItem.RequiresPhoenix())
                 {
-                    // Create if not there
-                    DisposeOldPhoenixAndCreateNew(invocation, cacheItem, request);
+                    cacheItem.DisposeAndCreateNewPhoenix(() => new WebApiPhoenix(cacheItem, request));
                 }
                 
                 actionExecutedContext.Response.Headers.ETag = new EntityTagHeaderValue($"\"{cacheItem.Key}-{cacheItem.Checksum}\"");
@@ -423,18 +412,6 @@ namespace Flatwhite.WebApi
             }
         }
 
-        private void DisposeOldPhoenixAndCreateNew(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request)
-        {
-            //Question: Should we do it only on the box that created the phoenix the first place?
-            Phoenix phoenix;
-            if (Global.Cache.PhoenixFireCage.TryGetValue(cacheItem.Key, out phoenix))
-            {
-                phoenix?.Dispose();
-            }
-
-            Global.Cache.PhoenixFireCage[cacheItem.Key] = new WebApiPhoenix(invocation, cacheItem, request);
-        }
-
         /// <summary>
         /// Get all vary by custom string
         /// </summary>
@@ -442,7 +419,7 @@ namespace Flatwhite.WebApi
         public virtual string GetAllVaryCustomKey()
         {
             var varyByHeaders = (VaryByHeader ?? "").Split(new[] {',', ' '}, StringSplitOptions.RemoveEmptyEntries);
-            return $"{VaryByCustom}, {string.Join(", ", varyByHeaders.Select(h => $"headers.{h}"))}";
+            return $"{VaryByCustom}, {string.Join(", ", varyByHeaders.Select(h => $"headers.{h}"))}, headers.Accept";
         }
     }
 }

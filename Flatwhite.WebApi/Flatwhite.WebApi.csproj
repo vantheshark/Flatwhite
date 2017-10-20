@@ -66,8 +66,9 @@
     <Compile Include="FlatwhiteWebApiConfiguration.cs" />
     <Compile Include="ICacheResponseBuilder.cs" />
     <Compile Include="FlatwhiteStatusController.cs" />
-    <Compile Include="IHaveCacheStrategyType.cs" />
+    <Compile Include="ICacheStrategyResolvable.cs" />
     <Compile Include="IHttpClient.cs" />
+    <Compile Include="NullInvocation.cs" />
     <Compile Include="RegisteredTasks.cs" />
     <Compile Include="WebApiCacheItem.cs" />
     <Compile Include="ExtensionMethods.cs" />

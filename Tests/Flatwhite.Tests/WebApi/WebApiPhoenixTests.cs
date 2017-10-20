@@ -40,10 +40,9 @@ namespace Flatwhite.Tests.WebApi
                 StaleIfError = 4,
                 Key = "1"
             };
-            var invocation = Substitute.For<_IInvocation>();
 
 
-            using (var phoenix = new WebApiPhoenixWithPublicMethods(invocation, currentCacheItem, _requestMessage))
+            using (var phoenix = new WebApiPhoenixWithPublicMethods(currentCacheItem, _requestMessage))
             { 
                 phoenix.HttpClient = _client;
             
@@ -70,7 +69,7 @@ namespace Flatwhite.Tests.WebApi
             {
                 LoopbackAddress = "http://192.188.2.1:8080"
             };
-            using (var phoenix = new WebApiPhoenixWithPublicMethods(Substitute.For<_IInvocation>(), new WebApiCacheItem { Key = "1" }, _requestMessage))
+            using (var phoenix = new WebApiPhoenixWithPublicMethods(new WebApiCacheItem { Key = "1" }, _requestMessage))
             {
                 phoenix.HttpClient = _client;
 
@@ -95,7 +94,7 @@ namespace Flatwhite.Tests.WebApi
                 .SendAsync(Arg.Any<HttpRequestMessage>(), HttpCompletionOption.ResponseHeadersRead)
                 .Returns(Task.FromResult(new HttpResponseMessage { StatusCode = System.Net.HttpStatusCode.InternalServerError }));
 
-            using (var phoenix = new WebApiPhoenixWithPublicMethods(Substitute.For<_IInvocation>(), new WebApiCacheItem {Key = "1"}, _requestMessage))
+            using (var phoenix = new WebApiPhoenixWithPublicMethods(new WebApiCacheItem {Key = "1"}, _requestMessage))
             { 
                 phoenix.HttpClient = _client;
 
@@ -231,8 +230,8 @@ namespace Flatwhite.Tests.WebApi
         [DebuggerStepThrough]
         private class WebApiPhoenixWithPublicMethods : WebApiPhoenix
         {
-            public WebApiPhoenixWithPublicMethods(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage originalRequestMessage)
-                : base(invocation, cacheItem, originalRequestMessage)
+            public WebApiPhoenixWithPublicMethods(WebApiCacheItem cacheItem, HttpRequestMessage originalRequestMessage)
+                : base(cacheItem, originalRequestMessage)
             {
             }
 

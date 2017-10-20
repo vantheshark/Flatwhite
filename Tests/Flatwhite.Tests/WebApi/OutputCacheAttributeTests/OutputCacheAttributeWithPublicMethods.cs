@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Web.Http.Controllers;
 
 namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
@@ -39,12 +38,6 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
         public IDictionary<string, object> GetInvocationContextPublic(HttpActionContext actionContext)
         {
             return GetInvocationContext(actionContext);
-        }
-
-        public void DisposeOldPhoenixAndCreateNew_Public(_IInvocation invocation, WebApiCacheItem cacheItem, HttpRequestMessage request)
-        {
-            var methodInfo = typeof(Flatwhite.WebApi.OutputCacheAttribute).GetMethod("DisposeOldPhoenixAndCreateNew", BindingFlags.Instance | BindingFlags.NonPublic);
-            methodInfo.Invoke(this, new object[] { invocation, cacheItem, request });
         }
     }
 }

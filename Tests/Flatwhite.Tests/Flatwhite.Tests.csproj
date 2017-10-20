@@ -114,7 +114,6 @@
     <Compile Include="WebApi\FlatwhiteStatusControllerTests.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\OutputCacheAttributeWithPublicMethods.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodApplyCacheHeaders.cs" />
-    <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodDisposeOldPhoenixAndCreateNew.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodOnActionExecutedAsync.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\ThePropertyCacheProfile.cs" />
     <Compile Include="WebApi\OutputCacheAttributeTests\TheMethodOnActionExecutingAsync.cs" />

@@ -48,7 +48,12 @@ namespace Flatwhite.WebApi.CacheControl
                 var cacheItem = await cacheStore.GetAsync(originalKey).ConfigureAwait(false) as WebApiCacheItem;
                 if (cacheItem != null)
                 {
-                    return _builder.GetResponse(cacheControl, cacheItem, request);
+                    var response = _builder.GetResponse(cacheControl, cacheItem, request);
+                    if (response != null && cacheItem.RequiresPhoenix())
+                    {
+                        cacheItem.CreatesPhoenixIfNotExist(() => new WebApiPhoenix(cacheItem, request));
+                    }
+                    return response;
                 }
             }
             return null;

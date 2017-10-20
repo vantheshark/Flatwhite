@@ -1,4 +1,3 @@
-using System;
 using Flatwhite.Provider;
 
 namespace Flatwhite
@@ -42,7 +41,7 @@ namespace Flatwhite
         /// <returns></returns>
         public string GetCode(object value)
         {
-            return value?.ToString() ?? "null";
+            return value?.ToString().Replace(" ", "") ?? "null";
         }
     }
 }

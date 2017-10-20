@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Flatwhite.Provider;
+using Flatwhite.WebApi.CacheControl;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Web.Http;
 using System.Web.Http.Dependencies;
-using Flatwhite.Provider;
-using Flatwhite.WebApi.CacheControl;
 
 namespace Flatwhite.WebApi
 {
@@ -92,7 +91,7 @@ namespace Flatwhite.WebApi
         }
 
         /// <summary>
-        /// Get <see cref="ICacheStrategy" /> from <see cref="IDependencyScope" /> if <see cref="IHaveCacheStrategyType.CacheStrategyType"/> has value
+        /// Get <see cref="ICacheStrategy" /> from <see cref="IDependencyScope" /> if <see cref="ICacheStrategyResolvable.CacheStrategyType"/> has value
         /// <para>Otherwise resolve from <see cref="Global.CacheStrategyProvider"/></para>
         /// </summary>
         /// <param name="source">The attribute object</param>
@@ -100,7 +99,7 @@ namespace Flatwhite.WebApi
         /// <param name="invocation"></param>
         /// <param name="invocationContext"></param>
         /// <returns></returns>
-        internal static ICacheStrategy GetCacheStrategy(this IHaveCacheStrategyType source, HttpRequestMessage request, _IInvocation invocation, IDictionary<string, object> invocationContext)
+        public static ICacheStrategy GetCacheStrategy(this ICacheStrategyResolvable source, HttpRequestMessage request, _IInvocation invocation, IDictionary<string, object> invocationContext)
         {
             ICacheStrategy strategy = null;
             if (source.CacheStrategyType != null)

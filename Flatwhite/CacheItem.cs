@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Flatwhite.Hot;
 
 namespace Flatwhite
 {
@@ -79,6 +80,55 @@ namespace Flatwhite
             var clone = (CacheItem)MemberwiseClone();
             clone.Data = null;
             return clone;
+        }
+
+        /// <summary>
+        /// Determine if a cache item require a <see cref="Phoenix"/> object in the background to actively auto refresh or revalidate when needed
+        /// </summary>
+        /// <returns></returns>
+        internal bool RequiresPhoenix()
+        {
+            return AutoRefresh || !string.IsNullOrWhiteSpace(RevalidateKey);
+        }
+
+        /// <summary>
+        /// Refresh the cache by invoking the Phoenix, create new phoenix if it's not created
+        /// </summary>
+        /// <param name="createPhoenixFunc"></param>
+        internal void Refresh(Func<Phoenix> createPhoenixFunc)
+        {
+            if (!Global.Cache.PhoenixFireCage.ContainsKey(Key))
+            {
+                Global.Cache.PhoenixFireCage[Key] = createPhoenixFunc();
+            }
+            Global.Cache.PhoenixFireCage[Key].Reborn();
+        }
+
+        /// <summary>
+        /// Dispose the current phoenix if created previously and create a new one
+        /// </summary>
+        /// <param name="createPhoenixFunc"></param>
+        internal void DisposeAndCreateNewPhoenix(Func<Phoenix> createPhoenixFunc)
+        {
+            Phoenix phoenix;
+            if (Global.Cache.PhoenixFireCage.TryGetValue(Key, out phoenix))
+            {
+                phoenix?.Dispose();
+            }
+
+            Global.Cache.PhoenixFireCage[Key] = createPhoenixFunc();
+        }
+
+        /// <summary>
+        /// Createthe phoenix if not created in current process
+        /// </summary>
+        /// <param name="createPhoenixFunc"></param>
+        internal void CreatesPhoenixIfNotExist(Func<Phoenix> createPhoenixFunc)
+        {
+            if (!Global.Cache.PhoenixFireCage.ContainsKey(Key))
+            {
+                Global.Cache.PhoenixFireCage[Key] = createPhoenixFunc();
+            }
         }
     }
 }

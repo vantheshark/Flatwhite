@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Linq;
 
 namespace Flatwhite
 {
@@ -17,6 +19,7 @@ namespace Flatwhite
         internal static readonly string __flatwhite_outputcache_store = "__flatwhite_outputcache_store";
         internal static readonly string __flatwhite_outputcache_key = "__flatwhite_outputcache_key";
         internal static readonly string __flatwhite_outputcache_restored = "__flatwhite_outputcache_restored";
+        internal static readonly IDictionary<string, string[]> _revalidationKeys = new ConcurrentDictionary<string, string[]>();
         // ReSharper restore InconsistentNaming
 
         /// <summary>
@@ -32,7 +35,12 @@ namespace Flatwhite
         /// <param name="absoluteExpiration"></param>
         public static void RememberRevalidateKey(string revalidateKey, string cacheKey, DateTimeOffset absoluteExpiration)
         {
-            CacheStoreProvider.GetCacheStore().Set(revalidateKey, cacheKey, absoluteExpiration);
+            string[] keys;
+            if (!_revalidationKeys.TryGetValue(revalidateKey, out keys) || !keys.Contains(cacheKey))
+            {
+                _revalidationKeys[revalidateKey] = new List<string>(keys ?? new string[0]).Union(new[] { cacheKey }).ToArray();
+                CacheStoreProvider.GetCacheStore().Set(revalidateKey, _revalidationKeys[revalidateKey], absoluteExpiration);
+            }
         }
 
         /// <summary>
@@ -43,20 +51,28 @@ namespace Flatwhite
         {
             foreach (var key in revalidatedKeys)
             {
-                var cacheKey = CacheStoreProvider.GetCacheStore().Get(key) as string;
-                if (cacheKey == null)
+                string[] cacheKeys;
+                if (!_revalidationKeys.TryGetValue(key, out cacheKeys))
                 {
-                    Logger.Warn($"Cannot find original cache key for revalidate key '{key}' on host '{Environment.MachineName}'");
+                    cacheKeys = CacheStoreProvider.GetCacheStore().Get(key) as string[];
+                }
+
+                if (cacheKeys == null || cacheKeys.Length == 0)
+                {
+                    Logger.Warn($"Cannot find original cache key(s) for revalidate key '{key}' on host '{Environment.MachineName}'");
                     continue;
                 }
 
-                if (Cache.PhoenixFireCage.ContainsKey(cacheKey))
+                foreach (var cacheKey in cacheKeys)
                 {
-                    Cache.PhoenixFireCage[cacheKey].Reborn();
-                }
-                else
-                {
-                    Logger.Warn($"Cannot find phoenix key '{cacheKey}' on host '{Environment.MachineName}'");
+                    if (Cache.PhoenixFireCage.ContainsKey(cacheKey))
+                    {
+                        Cache.PhoenixFireCage[cacheKey].Reborn();
+                    }
+                    else
+                    {
+                        Logger.Warn($"Cannot find phoenix key '{cacheKey}' on host '{Environment.MachineName}'");
+                    }
                 }
             }
         }
@@ -99,7 +115,7 @@ namespace Flatwhite
         public static ICacheKeyProvider CacheKeyProvider { get; set; }
 
         /// <summary>
-        /// Cache strategy provider helps find the suitable cache strategy from the current invocation & context
+        /// Cache strategy provider helps find the suitable cache strategy from the current invocation and context
         /// </summary>
         public static ICacheStrategyProvider CacheStrategyProvider { get; set; }
         
