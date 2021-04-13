@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Web.Http.Dependencies;
-using Flatwhite.Provider;
-using Flatwhite.WebApi;
+﻿using Flatwhite.WebApi;
 using NSubstitute;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Web.Http.Dependencies;
+using Flatwhite.Provider;
 
 namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
 {
@@ -22,7 +23,7 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
         public void Should_return_WebApiCacheStrategy_by_default()
         {
             // Arrange
-            var scope = Substitute.For<IDependencyScope>();
+            var request = CreateHttpRequestMessage();
             var invocation = Substitute.For<_IInvocation>();
             var invocationContext = new Dictionary<string, object>
             {
@@ -32,65 +33,83 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
             var att = new OutputCacheAttributeWithPublicMethods();
 
             // Action
-            var startegy = att.GetCacheStrategyPublic(scope, invocation, invocationContext);
+            var startegy = att.GetCacheStrategyPublic(request, invocation, invocationContext);
 
             // Assert
-            Assert.That(startegy is WebApiCacheStrategy);
-        }
-
-        [Test]
-        public void Should_try_to_resolve_by_type()
-        {
-            var scope = Substitute.For<IDependencyScope>();
-            var invocation = Substitute.For<_IInvocation>();
-            var invocationContext = new Dictionary<string, object>
-            {
-                {WebApiExtensions.__webApi, true}
-            };
-
-            var att = new OutputCacheAttributeWithPublicMethods
-            {
-                CacheStrategyType = Substitute.For<ICacheStrategy>().GetType()
-            };
-
-            // Action
-            var startegy = att.GetCacheStrategyPublic(scope, invocation, invocationContext);
-
-            // Assert
-            scope.Received(1).GetService(Arg.Is<Type>(t => t == att.CacheStrategyType));
             Assert.That(startegy is WebApiCacheStrategy);
         }
 
         [Test]
         public void Should_be_able_to_resolve_by_type_from_scope()
         {
-            var scope = Substitute.For<IDependencyScope>();
+            var scop = Substitute.For<IDependencyScope>();
+            var request = CreateHttpRequestMessage(scop);
+
+            var invocation = Substitute.For<_IInvocation>();
+            var invocationContext = new Dictionary<string, object>
+            {
+                {WebApiExtensions.__webApi, true}
+            };
+            var cacheStrategy = Substitute.For<ICacheStrategy>();
+            scop.GetService(cacheStrategy.GetType()).Returns(cacheStrategy);
+            var att = new OutputCacheAttributeWithPublicMethods
+            {
+                CacheStrategyType = cacheStrategy.GetType()
+            };
+
+            // Action
+            var startegy = att.GetCacheStrategyPublic(request, invocation, invocationContext);
+
+            // Assert
+            Assert.AreSame(cacheStrategy, startegy);
+            scop.Received(1).GetService(Arg.Is<Type>(t => t == att.CacheStrategyType));
+        }
+
+
+        [Test]
+        public void Should_throw_if_cannot_resolve_srategy_from_scope()
+        {
+            var request = CreateHttpRequestMessage();
+            var invocation = Substitute.For<_IInvocation>();
+            var invocationContext = new Dictionary<string, object>
+            {
+                {WebApiExtensions.__webApi, true}
+            };
+            var cacheStrategy = Substitute.For<ICacheStrategy>();
+
+            var att = new OutputCacheAttributeWithPublicMethods
+            {
+                CacheStrategyType = cacheStrategy.GetType()
+            };
+
+            // Action
+            Assert.Throws<Exception>(() => { att.GetCacheStrategyPublic(request, invocation, invocationContext); });
+        }
+
+        [Test]
+        public void Should_be_able_to_resolve_from_provider_when_CacheStrategyType_not_available()
+        {
+            var request = CreateHttpRequestMessage();
+
+            var invocation = Substitute.For<_IInvocation>();
+            var invocationContext = new Dictionary<string, object>
+            {
+                {WebApiExtensions.__webApi, true}
+            };
             
-            var invocation = Substitute.For<_IInvocation>();
-            var invocationContext = new Dictionary<string, object>
-            {
-                {WebApiExtensions.__webApi, true}
-            };
-
-            var att = new OutputCacheAttributeWithPublicMethods
-            {
-                CacheStrategyType = Substitute.For<ICacheStrategy>().GetType()
-            };
-            var expectedStrategy = Substitute.For<ICacheStrategy>();
-            scope.GetService(Arg.Is<Type>(t => t == att.CacheStrategyType)).Returns(expectedStrategy);
+            var att = new OutputCacheAttributeWithPublicMethods();
 
             // Action
-            var startegy = att.GetCacheStrategyPublic(scope, invocation, invocationContext);
+            var startegy = att.GetCacheStrategyPublic(request, invocation, invocationContext);
 
             // Assert
-            scope.Received(1).GetService(Arg.Is<Type>(t => t == att.CacheStrategyType));
-            Assert.That(startegy == expectedStrategy);
+            Assert.IsInstanceOf<WebApiCacheStrategy>(startegy);
         }
 
         [Test]
-        public void Should_try_to_resolve_strategy_provider_from_scope_first()
+        public void Should_throw_exception_if_cannot_find_cache_strategy()
         {
-            var scope = Substitute.For<IDependencyScope>();
+            var request = CreateHttpRequestMessage();
 
             var invocation = Substitute.For<_IInvocation>();
             var invocationContext = new Dictionary<string, object>
@@ -98,46 +117,20 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
                 {WebApiExtensions.__webApi, true}
             };
 
-            var att = new OutputCacheAttributeWithPublicMethods
-            {
-                CacheStrategyType = Substitute.For<ICacheStrategy>().GetType()
-            };
-
-            var provider = Substitute.For<ICacheStrategyProvider>();
-            var expectedStrategy = Substitute.For<ICacheStrategy>();
-            provider.GetStrategy(Arg.Any<_IInvocation>(), Arg.Any<IDictionary<string, object>>()).Returns(expectedStrategy);
-            scope.GetService(Arg.Is<Type>(t => t == typeof(ICacheStrategyProvider))).Returns(provider);
+            var att = new OutputCacheAttributeWithPublicMethods();
+            Global.CacheStrategyProvider = Substitute.For<ICacheStrategyProvider>();
+            Global.CacheStrategyProvider.GetStrategy(Arg.Any<_IInvocation>(), Arg.Any<IDictionary<string, object>>()).Returns(default(ICacheStrategy));
 
             // Action
-            var startegy = att.GetCacheStrategyPublic(scope, invocation, invocationContext);
-
-            // Assert
-            scope.Received(1).GetService(Arg.Is<Type>(t => t == att.CacheStrategyType));
-            Assert.That(startegy == expectedStrategy);
+            Assert.Throws<Exception>(() => { att.GetCacheStrategyPublic(request, invocation, invocationContext); });
         }
 
-        [Test]
-        public void Should_throw_if_cannot_resolve_srategy()
+        private static HttpRequestMessage CreateHttpRequestMessage(IDependencyScope dependencyScope = null)
         {
-            var scope = Substitute.For<IDependencyScope>();
-
-            var invocation = Substitute.For<_IInvocation>();
-            var invocationContext = new Dictionary<string, object>
-            {
-                {WebApiExtensions.__webApi, true}
-            };
-
-            var att = new OutputCacheAttributeWithPublicMethods
-            {
-                CacheStrategyType = Substitute.For<ICacheStrategy>().GetType()
-            };
-
-            var provider = Substitute.For<ICacheStrategyProvider>();
-            provider.GetStrategy(Arg.Any<_IInvocation>(), Arg.Any<IDictionary<string, object>>()).Returns((ICacheStrategy)null);
-            scope.GetService(Arg.Is<Type>(t => t == typeof(ICacheStrategyProvider))).Returns(provider);
-
-            // Action
-            Assert.Throws<Exception>(() => { att.GetCacheStrategyPublic(scope, invocation, invocationContext); });
+            var request = Substitute.For<HttpRequestMessage>();
+            request.Properties["MS_DependencyScope"] = dependencyScope ?? Substitute.For<IDependencyScope>();
+            request.RequestUri = new Uri("http://server.com/api");
+            return request;
         }
     }
 }

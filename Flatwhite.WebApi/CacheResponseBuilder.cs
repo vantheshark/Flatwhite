@@ -45,6 +45,7 @@ namespace Flatwhite.WebApi
             };
 
             var cacheNotQualified = false;
+            //http://stackoverflow.com/questions/1046966/whats-the-difference-between-cache-control-max-age-0-and-no-cache
             bool stale = cacheControl?.MaxAge?.TotalSeconds > 0 && cacheControl.MaxAge.Value.TotalSeconds < ageInSeconds;
             
             if (cacheItem.IsStale())
@@ -62,6 +63,7 @@ namespace Flatwhite.WebApi
                     responseCacheControl.Extensions.Add(new NameValueHeaderValue("stale-while-revalidate", cacheItem.StaleWhileRevalidate.ToString()));
                 }
 
+                /* It's responsibility is building the response, it should not worry about refresh or anything
                 if (!Global.Cache.PhoenixFireCage.ContainsKey(cacheItem.Key))
                 {
                     // No phoenix yet, let the OutputCacheFilter created the phoenix and call the builder again
@@ -72,6 +74,7 @@ namespace Flatwhite.WebApi
                 {
                     Global.Cache.PhoenixFireCage[cacheItem.Key].Reborn();
                 }
+                */
             }
 
             var response = request.CreateResponse();
@@ -91,7 +94,7 @@ namespace Flatwhite.WebApi
                 request.Properties[WebApiExtensions.__webApi_cache_is_stale] = true;
                 response.Headers.Add("X-Flatwhite-Warning", "Response is Stale");
                 //https://tools.ietf.org/html/rfc7234#page-31
-                response.Headers.Add("Warning", $"110 - \"Response is Stale\"");
+                response.Headers.Add("Warning", "110 - \"Response is Stale\"");
             }
             
             response.Headers.Age = TimeSpan.FromSeconds(ageInSeconds);

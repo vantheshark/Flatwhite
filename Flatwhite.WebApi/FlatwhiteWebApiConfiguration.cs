@@ -1,3 +1,5 @@
+using Flatwhite.WebApi.CacheControl;
+
 namespace Flatwhite.WebApi
 {
     /// <summary>
@@ -22,6 +24,22 @@ namespace Flatwhite.WebApi
         public FlatwhiteWebApiConfiguration()
         {
             EnableStatusController = true;
+            ResponseBuilder = new CacheResponseBuilder();
+            IgnoreVaryCustomKeys = false;
         }
+
+        /// <summary>
+        /// Default cache response builder
+        /// </summary>
+        public ICacheResponseBuilder ResponseBuilder { get; set; }
+
+        /// <summary>
+        /// If you dont use vary by headers and vary by custom, Flatwhite cache will try to match the cache by keys generated from the request Uri
+        /// <para>So if there is an available cache, it will return the response straight away and improve the performance significantly as it doesn't need to wait until the Controller and OutputCache action filter to be created.
+        /// However every (normally GET) requests come to the server will make the cache store check the cache key which could be the issue.
+        /// You can override <see cref="EvaluateServerCacheHandler"/> to make it smarter by avoid the known requests that you don't need checking the cache and register to WebApi DependencyResolver
+        /// </para>
+        /// </summary>
+        public bool IgnoreVaryCustomKeys { get; set; }
     }
 }

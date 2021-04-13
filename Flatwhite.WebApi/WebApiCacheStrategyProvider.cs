@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Web.Http.Dependencies;
-using Flatwhite.Provider;
+﻿using Flatwhite.Provider;
 using Flatwhite.Strategy;
+using System.Collections.Generic;
 
 namespace Flatwhite.WebApi
 {

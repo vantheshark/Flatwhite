@@ -53,7 +53,7 @@ namespace Flatwhite
         public uint Age => (uint)Math.Round(DateTime.UtcNow.Subtract(CreatedTime).TotalSeconds);
 
         /// <summary>
-        /// Return true if the cache item is started to stale
+        /// Return true if the cache item has started to stale
         /// </summary>
         public bool IsStale()
         {

@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http.Controllers;
+using System.Web.Http.Services;
+
 #pragma warning disable 1591
 
 namespace Flatwhite.WebApi
@@ -20,7 +22,33 @@ namespace Flatwhite.WebApi
         public object[] Arguments => _httpActionContext.ActionArguments.Values.Select(v => v).ToArray();
         public Type[] GenericArguments => new Type[0];
         public object InvocationTarget => _httpActionContext.ControllerContext.Controller;
-        public MethodInfo Method => ((ReflectedHttpActionDescriptor) _httpActionContext.ActionDescriptor).MethodInfo;
+        public MethodInfo Method
+        {
+            get
+            {
+                // It seems the concrete type for ActionDescriptor depends on whether or not the Global Web API Services
+                // contains an instance of ITraceWriter (see: Tracing in ASP.NET Web API).
+                // By default, the ActionDescriptor will be of type ReflectedHttpActionDescriptor. But when tracing is enabled
+                // by calling the config.EnableSystemDiagnosticsTracing() the ActionDescriptor will be wrapped inside an
+                // HttpActionDescriptorTracer type instead
+
+                ReflectedHttpActionDescriptor reflectedActionDescriptor;
+
+                // Check whether the ActionDescriptor is wrapped in a decorator or not.
+                var wrapper = _httpActionContext.ActionDescriptor as IDecorator<HttpActionDescriptor>;
+                if (wrapper != null)
+                {
+                    reflectedActionDescriptor = wrapper.Inner as ReflectedHttpActionDescriptor;
+                }
+                else
+                {
+                    reflectedActionDescriptor = _httpActionContext.ActionDescriptor as ReflectedHttpActionDescriptor;
+                }
+
+
+                return reflectedActionDescriptor?.MethodInfo;
+            }
+        }
 
         public MethodInfo MethodInvocationTarget => Method;
 

@@ -60,6 +60,11 @@ namespace Flatwhite.WebApi
         public bool IgnoreRevalidationRequest { get; set; }
 
         /// <summary>
+        /// The path that was cached
+        /// </summary>
+        public string Path { get; set; }
+
+        /// <summary>
         /// Clone the WebApiCacheItem without the content and with a fresh CreatedTime
         /// </summary>
         /// <returns></returns>

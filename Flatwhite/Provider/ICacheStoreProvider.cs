@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Flatwhite.Provider
 {
@@ -50,5 +51,10 @@ namespace Flatwhite.Provider
         /// <param name="store"></param>
         /// <returns></returns>
         void RegisterAsyncStore(IAsyncCacheStore store);
+
+        /// <summary>
+        /// Get all available async cache stores
+        /// </summary>
+        ICollection<IAsyncCacheStore> AllAsyncCacheStores { get; }
     }
 }

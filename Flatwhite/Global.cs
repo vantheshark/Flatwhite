@@ -64,8 +64,7 @@ namespace Flatwhite
         internal static void Init()
         {
             Cache = new MethodInfoCache();
-
-            ContextProvider = new EmptyContextProvider();
+        
             CacheStrategyProvider = new DefaultCacheStrategyProvider();
             AttributeProvider = new DefaulAttributeProvider();
             HashCodeGeneratorProvider = new DefaultHashCodeGeneratorProvider();
@@ -75,20 +74,17 @@ namespace Flatwhite
             Logger = new NullLogger();
             BackgroundTaskManager = new DefaultBackgroundTaskManager();
 
-            var configFolder = Path.GetDirectoryName(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+            var configFolder = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
             CacheProfileProvider = new YamlCacheProfileProvider(Path.Combine(configFolder ?? "", "cacheProfile.yaml"));
         }
-
-        /// <summary>
-        /// Context provider
-        /// </summary>
-        public static IContextProvider ContextProvider { get; set; }
+        
         /// <summary>
         /// Cache key provider
         /// </summary>
         public static ICacheKeyProvider CacheKeyProvider { get; set; }
+
         /// <summary>
-        /// Cache strategy provider
+        /// Cache strategy provider helps find the suitable cache strategy from the current invocation & context
         /// </summary>
         public static ICacheStrategyProvider CacheStrategyProvider { get; set; }
         

@@ -39,7 +39,7 @@ namespace Flatwhite.WebApi
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // TODO: Ignore static files if WebAPI hosted with MVC web app. Probably keep it like this for now as everything will be changed once vNext release
-
+            
             var handlers = _handlerProvider.Get(request);
             foreach (var handler in handlers)
             {
@@ -53,7 +53,7 @@ namespace Flatwhite.WebApi
                 }
                 catch (Exception ex)
                 {
-                    Global.Logger.Error("Error during handling the request", ex);
+                    Global.Logger.Error($"Error during handling the request by {handler.GetType().Name}", ex);
                 }
             }
 

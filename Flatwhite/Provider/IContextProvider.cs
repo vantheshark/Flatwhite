@@ -13,15 +13,4 @@ namespace Flatwhite.Provider
         /// <returns></returns>
         IDictionary<string, object> GetContext();
     }
-
-    /// <summary>
-    /// A default context provider which returns empty dictionary
-    /// </summary>
-    internal class EmptyContextProvider : IContextProvider
-    {
-        public IDictionary<string, object> GetContext()
-        {
-            return new Dictionary<string, object>();
-        }
-    }
 }

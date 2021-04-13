@@ -39,7 +39,6 @@ namespace Flatwhite.Tests.WebApi.OutputCacheAttributeTests
 
             // Assert
             Assert.AreSame(att, context[Global.__flatwhite_outputcache_attribute]);
-            Assert.AreSame(dependencyScope, context[WebApiExtensions.__webApi_dependency_scope]);
             Assert.IsTrue((bool)context[WebApiExtensions.__webApi]);
             Assert.IsNotNull(context["headers"]);
             Assert.IsNotNull(context["method"]);
